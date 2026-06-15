@@ -305,6 +305,7 @@
                 localStorage.removeItem('mobile_app_role');
             };
 
+            // تعديل دالة تحديث الحالة لحفظ التواريخ الصحيحة المتوافقة مع لوحة التحكم
             const updateStatus = async (docId, newStatus) => {
                 const order = allOrders.find(o => o.docId === docId);
                 if (order && order.status === 'تم الاستلام') {
@@ -313,17 +314,32 @@
                 }
 
                 const now = new Date();
-                const dateString = now.toLocaleDateString('en-GB'); 
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                const todayYYYYMMDD = `${y}-${m}-${d}`; // تاريخ اليوم بتنسيق YYYY-MM-DD المطابق لقاعدة البيانات
+                
                 const timeString = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+
+                // تجهيز الحقول التي سيتم تحديثها فقط دون تغيير باقي محتوى الطلب
+                const updateFields = {
+                    status: newStatus,
+                    updatedAt: Date.now(),
+                    actionTime: timeString
+                };
+
+                // إذا كانت الحالة تحولت لتم الاستلام، نغير تاريخ الاستلام فقط ليطابق لوحة تحكم الإدارة
+                if (newStatus === 'تم الاستلام') {
+                    updateFields.receiveDate = todayYYYYMMDD;
+                } else if (newStatus === 'تم التحضير') {
+                    updateFields.prepDate = todayYYYYMMDD;
+                }
 
                 const updated = allOrders.map(o => {
                     if (o.docId === docId) {
                         return { 
                             ...o, 
-                            status: newStatus, 
-                            updatedAt: Date.now(),
-                            date: dateString,       
-                            actionTime: timeString  
+                            ...updateFields
                         };
                     }
                     return o;
@@ -332,48 +348,41 @@
                 setAllOrders(updated);
                 showToast(`تم تحديث الحالة إلى "${newStatus}"`, "success");
 
+                // تحديث الذاكرة المحلية أولاً لضمان التزامن الفوري
+                updateLocalOrder(docId, updateFields, updated);
+
                 if (isOnline && user && db) {
                     try {
                         const orderRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('orders').doc(docId);
-                        
-                        await orderRef.update({ 
-                            status: newStatus, 
-                            updatedAt: Date.now(),
-                            date: dateString,       
-                            actionTime: timeString  
-                        });
+                        await orderRef.update(updateFields);
                     } catch (error) {
-                        console.error("Cloud update failed, updating locally:", error);
-                        updateLocalOrder(docId, newStatus, dateString, timeString);
+                        console.error("Cloud update failed, saved locally:", error);
                     }
-                } else {
-                    updateLocalOrder(docId, newStatus, dateString, timeString);
                 }
             };
 
-            const updateLocalOrder = (docId, newStatus, dateString, timeString) => {
-                const cachedOrders = JSON.parse(localStorage.getItem('smartOrderData_v4')) || [];
-                const idx = cachedOrders.findIndex(o => o.docId === docId);
-                if (idx !== -1) {
-                    cachedOrders[idx].status = newStatus;
-                    cachedOrders[idx].updatedAt = Date.now();
-                    cachedOrders[idx].date = dateString;
-                    cachedOrders[idx].actionTime = timeString;
-                    localStorage.setItem('smartOrderData_v4', JSON.stringify(cachedOrders));
-                }
+            const updateLocalOrder = (docId, updateFields, updatedList) => {
+                localStorage.setItem('smartOrderData_v4', JSON.stringify(updatedList));
+                
+                // تنبيه التبويبات المجاورة بالتغيير
+                window.dispatchEvent(new Event('storage'));
+
                 const currentLocalOrders = JSON.parse(localStorage.getItem('local_cached_orders')) || [];
                 const cIdx = currentLocalOrders.findIndex(o => o.docId === docId);
                 if(cIdx !== -1) {
-                    currentLocalOrders[cIdx].status = newStatus;
-                    currentLocalOrders[cIdx].updatedAt = Date.now();
-                    currentLocalOrders[cIdx].date = dateString;
-                    currentLocalOrders[cIdx].actionTime = timeString;
+                    currentLocalOrders[cIdx] = {
+                        ...currentLocalOrders[cIdx],
+                        ...updateFields
+                    };
                     localStorage.setItem('local_cached_orders', JSON.stringify(currentLocalOrders));
                 }
             };
 
+            // تحديث منطق تصفية الأوردرات ليعرض كافة الأوردرات لمسئولي التسليم والشامل
             const myOrders = allOrders.filter(o => {
-                const isMyOrder = o.person && o.person.trim() === selectedPerson.trim();
+                const showAll = personRole === 'تسليم' || personRole === 'شامل';
+                const isMyOrder = showAll || (o.person && o.person.trim() === selectedPerson.trim());
+                
                 const query = searchQuery.trim().toLowerCase();
                 const matchesSearch = query === '' || 
                                       (o.orderNum && o.orderNum.toString().toLowerCase().includes(query)) || 
@@ -562,6 +571,13 @@
                                                     </div>
                                                 </div>
 
+                                                <div className="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 py-2.5 text-slate-500">
+                                                    <div>تاريخ الطلب: <span className="font-bold text-slate-700">{order.orderDate || '-'}</span></div>
+                                                    <div>تاريخ التحضير: <span className="font-bold text-slate-700">{order.prepDate || '-'}</span></div>
+                                                    <div className="col-span-2">تاريخ التسليم: <span className="font-bold text-emerald-700">{order.receiveDate || '-'}</span></div>
+                                                    <div className="col-span-2">المسئول الحالي: <span className="font-bold text-slate-700">{order.person || 'غير محدد'}</span></div>
+                                                </div>
+
                                                 {order.notes && (
                                                     <div className="mt-2 bg-[#f8f9fa] border border-slate-200 rounded-lg p-2 text-xs">
                                                         <span className="font-bold text-slate-500 block mb-1">الملاحظات:</span> 
@@ -583,7 +599,7 @@
                                                                 </React.Fragment>
                                                             )}
                                                             {(personRole === 'تسليم' || personRole === 'شامل') && (
-                                                                <button onClick={() => updateStatus(order.docId, 'تم الاستلام')} className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${order.status === 'تم الاستلام' ? 'bg-[#e2f0d9] text-[#385723] border-[#c3e6cb] shadow-inner font-extrabold' : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700'}`}>تم الاستلام النهائي</button>
+                                                                <button onClick={() => updateStatus(order.docId, 'تم الاستلام')} className="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700">تم الاستلام النهائي</button>
                                                             )}
                                                         </div>
                                                     </div>
