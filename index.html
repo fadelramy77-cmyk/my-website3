@@ -58,19 +58,34 @@
 
         .search-bar { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; width: 250px; }
         
-        .main-btns { display: flex; gap: 10px; }
-        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 5px; font-size: 14px; }
-        .btn-add { background: var(--primary); color: white; }
-        .btn-import { background: var(--accent); color: white; }
+        /* -------------- تحديث ستايل الأزرار لتطابق الصورة المرفقة -------------- */
+        .main-btns { display: flex; gap: 10px; align-items: center; }
+        .btn { 
+            padding: 8px 18px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: opacity 0.2s; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 6px; 
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-add { background: #e3242b; color: white; } /* أحمر مثل الصورة */
+        .btn-import { background: #1c2229; color: white; } /* رمادي غامق مثل الصورة */
         .btn-export { background: #27ae60; color: white; }
-        .btn-delete { background: #e74c3c; color: white; }
+        .btn-delete { background: #c0392b; color: white; }
         .btn-secondary { background: #7f8c8d; color: white; }
 
         /* Table */
         .table-container { background: #fffffffa; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 10px rgb(0, 0, 0); }
-        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1500px; }
         th { background: var(--primary); color: white; padding: 15px; position: sticky; top: 0; text-align: center; font-size: 13px; vertical-align: top; }
-        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; }
+        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
         tr:hover { background-color: #f8fbff; }
         
         /* Column Search Inputs */
@@ -114,12 +129,27 @@
         .s-waiting { background: var(--waiting-bg); color: var(--waiting-text); }
         .s-none { background: #eee; color: #777; }
 
+        /* -------------- تصميم شارة البراند لمطابقة صورة "FUTURE" -------------- */
+        .brand-badge {
+            background-color: #060707; /* لون خلفية غامق */
+            color: #f7f6f4; /* لون نص مائل للأصفر/الذهبي أو الأبيض */
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 900;
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            display: inline-block;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            border: 2px solid #080808;
+            text-transform: uppercase;
+        }
+
         .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; transition: transform 0.2s; }
         .btn-icon:hover { transform: scale(1.2); }
 
         /* Modal العامة */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 25px; border-radius: 15px; width: 550px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; }
+        .modal-content { background: #fff; padding: 25px; border-radius: 15px; width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: bold; color: #444; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
@@ -131,7 +161,7 @@
         #printArea { text-align: right; direction: rtl; }
         .print-field { margin-bottom: 15px; }
         .print-label { font-size: 14px; color: #666; font-weight: bold; margin-bottom: 4px; }
-        .print-value { padding: 10px; background: #f9f9f9; border: 1px solid #eee; border-radius: 6px; font-size: 18px; font-weight: bold; }
+        .print-value { padding: 10px; background: #f9f9f9; border: 1px solid #eee; border-radius: 6px; font-size: 16px; font-weight: bold; }
         .print-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .print-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         .print-header { border-bottom: 2px solid #2c3e50; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -188,9 +218,10 @@
                 <div class="main-btns">
                     <button class="btn btn-delete" id="bulkDeleteBtn" style="display:none" onclick="removeSelected()">حذف المختار</button>
                     <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(this)">
-                    <button class="btn btn-import" onclick="document.getElementById('importFile').click()">📁 رفع CSV</button>
-                    <button class="btn btn-export" onclick="exportToCSV()">📊 تصدير Excel</button>
-                    <button class="btn btn-add" onclick="openModal()">+ إضافة يدوي</button>
+                    <button class="btn btn-export" onclick="exportToCSV()">تصدير Excel</button>
+                    <!-- الأزرار بالتصميم الجديد -->
+                    <button class="btn btn-import" onclick="document.getElementById('importFile').click()">رفع CSV</button>
+                    <button class="btn btn-add" onclick="openModal()">+ أوردر جديد</button>
                 </div>
             </div>
 
@@ -216,6 +247,9 @@
                         <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"></th>
                         <th>رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="render()" placeholder="تصفية..."></th>
                         <th>رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="render()" placeholder="تصفية..."></th>
+                        <!-- تمت إضافة خانة البراند هنا -->
+                        <th>البراند<br><input type="text" class="col-search" id="c-brand" oninput="render()" placeholder="تصفية..."></th>
+                        
                         <th>الموديل<br><input type="text" class="col-search" id="c-model" oninput="render()" placeholder="تصفية..."></th>
                         <th>العدد<br><input type="text" class="col-search" id="c-qty" oninput="render()" placeholder="تصفية..."></th>
                         <th>اللون<br><input type="text" class="col-search" id="c-color" oninput="render()" placeholder="تصفية..."></th>
@@ -302,6 +336,8 @@
         <div style="display:flex; gap:10px">
             <div class="form-group" style="flex:1"><label>رقم الأوردر</label><input type="text" id="f-orderNum"></div>
             <div class="form-group" style="flex:1"><label>رقم التحويلة</label><input type="text" id="f-id"></div>
+            <!-- إضافة البراند للنافذة -->
+            <div class="form-group" style="flex:1"><label>البراند</label><input type="text" id="f-brand" placeholder="مثل: FUTURE"></div>
         </div>
 
         <div style="display:flex; gap:10px">
@@ -337,9 +373,9 @@
         </div>
 
         <div class="form-group"><label>الملاحظات</label><textarea id="f-notes" placeholder="أي ملاحظات إضافية..."></textarea></div>
-        <div style="text-align:left; margin-top:20px">
-            <button onclick="closeModal()" style="padding:10px 20px; border:none; background:#ccc; border-radius:8px; cursor:pointer">إلغاء</button>
-            <button class="btn btn-add" style="display:inline-block" onclick="save()">حفظ البيانات</button>
+        <div style="text-align:left; margin-top:20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="closeModal()" class="btn btn-secondary" style="padding:10px 20px;">إلغاء</button>
+            <button class="btn btn-add" style="padding:10px 20px;" onclick="save()">حفظ البيانات</button>
         </div>
     </div>
 </div>
@@ -370,7 +406,7 @@
         </div>
 
         <div style="text-align:left; margin-top:20px; display: flex; gap: 10px; justify-content: flex-end;">
-            <button onclick="closePersonModal()" style="padding:10px 20px; border:none; background:#ccc; border-radius:8px; cursor:pointer">إلغاء</button>
+            <button onclick="closePersonModal()" class="btn btn-secondary" style="padding:10px 20px;">إلغاء</button>
             <button class="btn btn-add" onclick="savePerson()">حفظ الحساب</button>
         </div>
     </div>
@@ -396,7 +432,12 @@
                 </div>
             </div>
             
+            <!-- إضافة البراند للطباعة -->
             <div class="print-row-3">
+                <div class="print-field">
+                    <div class="print-label">البراند</div>
+                    <div id="p-brand" class="print-value" style="color:#121312;"></div>
+                </div>
                 <div class="print-field">
                     <div class="print-label">الموديل</div>
                     <div id="p-model" class="print-value"></div>
@@ -405,13 +446,13 @@
                     <div class="print-label">العدد</div>
                     <div id="p-qty" class="print-value"></div>
                 </div>
+            </div>
+
+            <div class="print-row-3">
                 <div class="print-field">
                     <div class="print-label">اللون</div>
                     <div id="p-color" class="print-value"></div>
                 </div>
-            </div>
-
-            <div class="print-row">
                 <div class="print-field">
                     <div class="print-label">التصنيف</div>
                     <div id="p-type" class="print-value"></div>
@@ -450,7 +491,7 @@
 
         <div style="margin-top:20px; display:flex; gap:10px;" class="no-print">
             <button onclick="window.print()" class="btn btn-import" style="flex:1; justify-content:center">🖨️ تنفيذ الطباعة</button>
-            <button onclick="closePrintModal()" class="btn" style="flex:1; background:#eee; justify-content:center">إغلاق</button>
+            <button onclick="closePrintModal()" class="btn btn-secondary" style="flex:1; justify-content:center">إغلاق</button>
         </div>
     </div>
 </div>
@@ -466,16 +507,15 @@
         </div>
         
         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
-            <button onclick="confirmImport()" class="btn btn-export" style="flex: 1; justify-content: center;">✅ موافقة وحفظ</button>
-            <button onclick="cancelImport()" class="btn btn-delete" style="flex: 1; justify-content: center;">❌ إلغاء الأمر</button>
+            <button onclick="confirmImport()" class="btn btn-export" style="flex: 1;">✅ موافقة وحفظ</button>
+            <button onclick="cancelImport()" class="btn btn-delete" style="flex: 1;">❌ إلغاء الأمر</button>
         </div>
     </div>
 </div>
 
 <script>
     // ==========================================
-    // ⚠️ تنبيه هام جداً: ضع إعدادات مشروع Firebase الحقيقي الخاص بك هنا
-    // وسيقوم تطبيق الجوال بقراءتها تلقائياً من هذا الملف دون الحاجة لكتابتها مرتين!
+    // إعدادات مشروع Firebase 
     // ==========================================
     const customFirebaseConfig = {
         apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
@@ -486,12 +526,10 @@
         appId: "1:974299124203:web:821e75330a0b434addc9ae"
     };
 
-    // حفظ الإعدادات لتطبيق الموبايل ليقرأها تلقائياً بالمتصفح المشترك
     if (customFirebaseConfig && customFirebaseConfig.apiKey) {
         localStorage.setItem('shared_firebase_config', JSON.stringify(customFirebaseConfig));
     }
 
-    // التحقق من الإعدادات السحابية
     let firebaseConfig = {};
     try {
         if (customFirebaseConfig.apiKey) {
@@ -514,7 +552,6 @@
     let auth = null;
     let useLocalFallback = true; 
 
-    // دالة توحيد صيغ التواريخ المستوردة وتحويلها لصيغة YYYY-MM-DD المقبولة بالمتصفحات
     function formatDateToYYYYMMDD(dateStr) {
         if (!dateStr) return "";
         dateStr = dateStr.toString().trim();
@@ -555,7 +592,23 @@
         return "";
     }
 
-    // تهيئة السحابة الحقيقية
+    // دالة ترتيب الأوردرات برمجياً لضمان ثبات الترتيب بتاريخ الطلب
+    function sortOrdersArray(ordersList) {
+        return ordersList.sort((a, b) => {
+            let dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
+            if(isNaN(dateA)) dateA = 0;
+            
+            let dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
+            if(isNaN(dateB)) dateB = 0;
+
+            if (dateB !== dateA) {
+                return dateB - dateA; // الأحدث بتاريخ الطلب أولاً
+            }
+            // إذا تطابق تاريخ الطلب (أو كان فارغاً)، نرتب بناءً على وقت الإضافة لعدم تغير الترتيب عشوائياً
+            return (b.timestamp || 0) - (a.timestamp || 0);
+        });
+    }
+
     const statusBadge = document.getElementById('db-status-badge');
     if (firebaseConfig && firebaseConfig.apiKey) {
         try {
@@ -584,7 +637,6 @@
         }
     }
 
-    // التنقل بين التبويبات (الأوردرات / الحسابات)
     function switchTab(tabId) {
         const ordersSection = document.getElementById('ordersSection');
         const personsSection = document.getElementById('personsSection');
@@ -606,17 +658,13 @@
         }
     }
 
-    // تهيئة الاتصال والمصادقة
     async function initAuth() {
         if (useLocalFallback) {
             loadLocalData();
             return;
         }
         try {
-            // نتحقق مما إذا كان المستخدم قد قام بإدخال apiKey خاص بمشروعه الفردي
             const isCustomConfigUsed = customFirebaseConfig && customFirebaseConfig.apiKey && customFirebaseConfig.apiKey !== "";
-            
-            // في حال وجود apiKey مخصص، نتجاهل توكن المنصة الخاطئ لتجنب خطأ تعارض الـ audience
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !isCustomConfigUsed) {
                 await auth.signInWithCustomToken(__initial_auth_token);
             } else {
@@ -624,12 +672,9 @@
             }
         } catch (error) {
             console.error("Auth Error:", error);
-            // حل بديل فوري للمصادقة المجهولة عند حدوث أي خطأ في التوكن لمنع توقف السحابة
             try {
-                console.log("Attempting fallback anonymous authentication...");
                 await auth.signInAnonymously();
             } catch (fallbackError) {
-                console.error("Fallback Auth failed, enabling local fallback:", fallbackError);
                 enableLocalFallback();
             }
         }
@@ -669,24 +714,26 @@
             return p;
         });
 
+        sortOrdersArray(orders);
         updatePersonDropdown();
         updateFilterUIs();
         render();
         renderPersons();
     }
 
-    // الاستماع اللحظي للبيانات السحابية
     function setupRealtimeSync() {
         if (!user || !db) return;
 
-        // 1. مزامنة الأوردرات لحظياً
         db.collection('artifacts').doc(appId).collection('public').doc('data').collection('orders')
             .onSnapshot((snapshot) => {
                 orders = [];
                 snapshot.forEach((doc) => {
                     orders.push({ docId: doc.id, ...doc.data() });
                 });
-                orders.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                
+                // تطبيق الترتيب الصحيح بتاريخ الطلب بعد جلب البيانات
+                sortOrdersArray(orders);
+                
                 updateFilterUIs();
                 render();
                 renderPersons(); 
@@ -695,7 +742,6 @@
                 enableLocalFallback();
             });
 
-        // 2. مزامنة قائمة المسئولين وحساباتهم لحظياً
         db.collection('artifacts').doc(appId).collection('public').doc('data').collection('persons')
             .onSnapshot((snapshot) => {
                 savedPersons = [];
@@ -709,7 +755,6 @@
             });
     }
 
-    // تحديث قائمة المسئولين في القائمة المنسدلة في فورم الأوردر
     function updatePersonDropdown() {
         const select = document.getElementById('f-person');
         if (!select) return;
@@ -719,7 +764,6 @@
         });
     }
 
-    // حفظ البيانات محلياً
     function saveData() {
         if (useLocalFallback) {
             localStorage.setItem('smartOrderData_v4', JSON.stringify(orders));
@@ -727,7 +771,6 @@
         }
     }
 
-    // عرض وتحديث جدول وإحصائيات المسئولين بالتاب الثاني
     function renderPersons() {
         const tbody = document.getElementById('personsTableBody');
         if (!tbody) return;
@@ -864,9 +907,7 @@
         }
     }
 
-    function editPerson(idx) {
-        openPersonModal(idx);
-    }
+    function editPerson(idx) { openPersonModal(idx); }
 
     function deletePerson(idx) {
         const p = savedPersons[idx];
@@ -907,7 +948,6 @@
         return result;
     }
 
-    // تحديث خيارات التصفية التلقائية
     function updateFilterUIs() {
         const statuses = [...new Set(orders.map(o => o.status || 'معلق'))];
         const types = [...new Set(orders.map(o => o.type || 'PA'))];
@@ -955,6 +995,7 @@
         const colFilters = {
             orderNum: document.getElementById('c-orderNum').value.toLowerCase(),
             id: document.getElementById('c-id').value.toLowerCase(),
+            brand: document.getElementById('c-brand').value.toLowerCase(), // فلتر البراند
             model: document.getElementById('c-model').value.toLowerCase(),
             qty: document.getElementById('c-qty').value.toLowerCase(),
             color: document.getElementById('c-color').value.toLowerCase(),
@@ -984,6 +1025,7 @@
             const matchesSearch = !query ||
                                  (o.id && o.id.toLowerCase().includes(query)) ||
                                  (o.orderNum && o.orderNum.toLowerCase().includes(query)) ||
+                                 (o.brand && o.brand.toLowerCase().includes(query)) ||
                                  o.model.toLowerCase().includes(query) ||
                                  (o.person && o.person.toLowerCase().includes(query)) ||
                                  (o.notes && o.notes.toLowerCase().includes(query));
@@ -995,6 +1037,7 @@
             const matchesColFilters = 
                 checkColMatch(o.orderNum, colFilters.orderNum) &&
                 checkColMatch(o.id, colFilters.id) &&
+                checkColMatch(o.brand, colFilters.brand) &&
                 checkColMatch(o.model, colFilters.model) &&
                 checkColMatch(o.qty, colFilters.qty) &&
                 checkColMatch(o.color, colFilters.color) &&
@@ -1010,22 +1053,15 @@
                 c.total++;
                 let sClass = "s-none";
                 
-                if (statusStr === "تم الاستلام") {
-                    sClass = "s-received";
-                    c.received++;
-                }
-                else if (statusStr === "تم التحضير") {
-                    sClass = "s-prep-done";
-                    c.prepDone++;
-                }
-                else if (statusStr === "جاري التحضير") {
-                    sClass = "s-preparing";
-                    c.prep++;
-                }
-                else if (statusStr === "معلق") {
-                    sClass = "s-waiting";
-                    c.wait++;
-                }
+                if (statusStr === "تم الاستلام") { sClass = "s-received"; c.received++; }
+                else if (statusStr === "تم التحضير") { sClass = "s-prep-done"; c.prepDone++; }
+                else if (statusStr === "جاري التحضير") { sClass = "s-preparing"; c.prep++; }
+                else if (statusStr === "معلق") { sClass = "s-waiting"; c.wait++; }
+
+                // تجهيز عنصر البراند
+                let brandDisplay = o.brand && o.brand.trim() !== '' 
+                    ? `<span class="brand-badge">${o.brand}</span>` 
+                    : '-';
 
                 const tr = document.createElement('tr');
                 if(o.selected) tr.className = 'selected-row';
@@ -1034,6 +1070,7 @@
                     <td><input type="checkbox" ${o.selected ? 'checked' : ''} onchange="toggleSelect(${i})"></td>
                     <td style="white-space: nowrap;"><b>${o.orderNum || '-'}</b></td>
                     <td style="white-space: nowrap;"><b>${o.id || '-'}</b></td>
+                    <td>${brandDisplay}</td>
                     <td>${o.model}</td>
                     <td>${o.qty}</td>
                     <td>${o.color || '-'}</td>
@@ -1041,9 +1078,9 @@
                     <td>${o.type}</td>
                     <td><b>${o.person || '-'}</b></td>
                     <td style="font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${o.notes || ''}">${o.notes || '-'}</td>
-                    <td>${o.orderDate || '-'}</td>
-                    <td>${o.prepDate || '-'}</td>
-                    <td>${o.receiveDate || '-'}</td>
+                    <td style="white-space: nowrap;">${o.orderDate || '-'}</td>
+                    <td style="white-space: nowrap;">${o.prepDate || '-'}</td>
+                    <td style="white-space: nowrap;">${o.receiveDate || '-'}</td>
                     <td>
                         <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: nowrap;">
                             <button class="btn-icon" onclick="edit(${i})" title="تعديل">✏️</button>
@@ -1071,6 +1108,7 @@
         const o = orders[i];
         document.getElementById('p-orderNum').innerText = o.orderNum || '-';
         document.getElementById('p-id').innerText = o.id || '-';
+        document.getElementById('p-brand').innerText = o.brand || '-'; // عرض البراند
         document.getElementById('p-model').innerText = o.model;
         document.getElementById('p-qty').innerText = o.qty;
         document.getElementById('p-color').innerText = o.color || '-';
@@ -1085,9 +1123,7 @@
         document.getElementById('printModal').style.display = 'flex';
     }
 
-    function closePrintModal() {
-        document.getElementById('printModal').style.display = 'none';
-    }
+    function closePrintModal() { document.getElementById('printModal').style.display = 'none'; }
 
     function importCSV(input) {
         const file = input.files[0];
@@ -1106,6 +1142,7 @@
             const map = {
                 orderNum: headers.findIndex(h => h.includes('الأوردر') || h.includes('الاوردر')),
                 id: headers.findIndex(h => h.includes('التحويل') || h.toLowerCase().includes('id')),
+                brand: headers.findIndex(h => h.includes('البراند') || h.toLowerCase().includes('brand')), // تعيين البراند
                 model: headers.findIndex(h => h.includes('الموديل') || h.toLowerCase().includes('model')),
                 qty: headers.findIndex(h => h.includes('العدد') || h.toLowerCase().includes('qty')),
                 color: headers.findIndex(h => h.includes('اللون') || h.toLowerCase().includes('color')),
@@ -1133,7 +1170,8 @@
                     let newOrder = {
                         orderNum: orderNumValue,
                         id: map.id !== -1 ? (cols[map.id] || '') : '',
-                        model: map.model !== -1 ? (cols[map.model] || 'غير مححدد') : 'غير حدد',
+                        brand: map.brand !== -1 ? (cols[map.brand] || '') : '', // حفظ البراند
+                        model: map.model !== -1 ? (cols[map.model] || 'غير محدد') : 'غير محدد',
                         qty: map.qty !== -1 ? (cols[map.qty] || 0) : 0,
                         color: map.color !== -1 ? (cols[map.color] || '') : '',
                         status: map.status !== -1 ? (cols[map.status] || 'معلق') : 'معلق',
@@ -1174,11 +1212,11 @@
         reader.readAsText(file, 'UTF-8');
     }
 
-    // تأكيد رفع ملف CSV وتحديث السحابة بقيم مفصولة وصحيحة
     function confirmImport() {
         if (pendingImportOrders) {
             if (useLocalFallback) {
                 orders = pendingImportOrders;
+                sortOrdersArray(orders);
                 saveData();
                 render();
             } else {
@@ -1211,12 +1249,12 @@
         document.getElementById('confirmImportModal').style.display = 'none';
     }
 
-    // حفظ أوردر يدوي بأمان سحابي أو محلي وتجنب التكرار
     function save() {
         const idx = parseInt(document.getElementById('editIndex').value);
         const data = {
             orderNum: document.getElementById('f-orderNum').value.trim(),
             id: document.getElementById('f-id').value.trim(),
+            brand: document.getElementById('f-brand').value.trim(), // سحب البراند
             model: document.getElementById('f-model').value.trim(),
             qty: document.getElementById('f-qty').value,
             color: document.getElementById('f-color').value.trim(),
@@ -1236,11 +1274,12 @@
         if (useLocalFallback) {
             if(idx === -1) {
                 if(orders.some(o => o.orderNum === data.orderNum)) return alert("رقم الأوردر مكرر!");
-                orders.unshift(data);
+                orders.push(data); // Push instead of unshift to rely on sortOrdersArray
             } else {
                 data.selected = orders[idx].selected || false;
                 orders[idx] = data;
             }
+            sortOrdersArray(orders); // فرز وتثبيت الأماكن
             saveData();
             render();
             renderPersons();
@@ -1264,7 +1303,6 @@
         }
     }
 
-    // الحذف السحابي الفردي باستعمال docId
     function remove(i) { 
         if(confirm("حذف هذا الأوردر؟")) { 
             if (useLocalFallback) {
@@ -1282,7 +1320,6 @@
         } 
     }
     
-    // حذف جماعي للعناصر المحددة باستعمال docId
     function removeSelected() { 
         if(confirm("حذف المختار؟")) { 
             if (useLocalFallback) {
@@ -1303,20 +1340,13 @@
         } 
     }
     
-    function toggleSelect(i) { 
-        orders[i].selected = !orders[i].selected; 
-        render(); 
-    }
-    
-    function toggleSelectAll(checked) { 
-        orders.forEach(o => o.selected = checked); 
-        render(); 
-    }
+    function toggleSelect(i) { orders[i].selected = !orders[i].selected; render(); }
+    function toggleSelectAll(checked) { orders.forEach(o => o.selected = checked); render(); }
     
     function openModal() {
         document.getElementById('modalTitle').innerText = "إضافة أوردر جديد";
         document.getElementById('editIndex').value="-1";
-        ['f-orderNum', 'f-id', 'f-model', 'f-color', 'f-person', 'f-notes', 'f-orderDate', 'f-prepDate', 'f-receiveDate'].forEach(id => {
+        ['f-orderNum', 'f-id', 'f-brand', 'f-model', 'f-color', 'f-person', 'f-notes', 'f-orderDate', 'f-prepDate', 'f-receiveDate'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value="";
         });
@@ -1332,6 +1362,7 @@
         document.getElementById('editIndex').value = i;
         document.getElementById('f-orderNum').value = o.orderNum || "";
         document.getElementById('f-id').value = o.id || ""; 
+        document.getElementById('f-brand').value = o.brand || ""; // وضع البراند للتحرير
         document.getElementById('f-model').value = o.model || "";
         document.getElementById('f-qty').value = o.qty || ""; 
         document.getElementById('f-color').value = o.color || "";
@@ -1340,9 +1371,7 @@
         
         const personVal = o.person || "";
         const personSelect = document.getElementById('f-person');
-        if (personSelect) {
-            personSelect.value = personVal;
-        }
+        if (personSelect) personSelect.value = personVal;
 
         document.getElementById('f-notes').value = o.notes || "";
         document.getElementById('f-orderDate').value = formatDateToYYYYMMDD(o.orderDate);
@@ -1352,13 +1381,13 @@
     }
 
     function exportToCSV() {
-        let csv = "\uFEFFرقم الأوردر;رقم التحويلة;الموديل;العدد;اللون;الحالة;التصنيف;المسئول;الملاحظات;تاريخ الطلب;تاريخ التحضير;تاريخ الاستلام\n";
+        let csv = "\uFEFFرقم الأوردر;رقم التحويلة;البراند;الموديل;العدد;اللون;الحالة;التصنيف;المسئول;الملاحظات;تاريخ الطلب;تاريخ التحضير;تاريخ الاستلام\n";
         orders.forEach(o => {
             const esc = (val) => {
                 if (val === null || val === undefined) return '';
                 return val.toString().replace(/"/g, '""');
             };
-            csv += `"${esc(o.orderNum)}";"${esc(o.id)}";"${esc(o.model)}";"${esc(o.qty)}";"${esc(o.color)}";"${esc(o.status || 'معلق')}";"${esc(o.type)}";"${esc(o.person)}";"${esc(o.notes)}";"${esc(o.orderDate)}";"${esc(o.prepDate)}";"${esc(o.receiveDate)}"\n`;
+            csv += `"${esc(o.orderNum)}";"${esc(o.id)}";"${esc(o.brand)}";"${esc(o.model)}";"${esc(o.qty)}";"${esc(o.color)}";"${esc(o.status || 'معلق')}";"${esc(o.type)}";"${esc(o.person)}";"${esc(o.notes)}";"${esc(o.orderDate)}";"${esc(o.prepDate)}";"${esc(o.receiveDate)}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
