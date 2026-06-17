@@ -86,12 +86,12 @@
 
         // الإعدادات الافتراضية المباشرة (مطابقة للمشروع الخاص بك لمنع مشاكل الأوفلاين)
         const customFirebaseConfig = {
-            apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
-            authDomain: "order-system-26c71.firebaseapp.com",
-            projectId: "order-system-26c71",
-            storageBucket: "order-system-26c71.firebasestorage.app",
-            messagingSenderId: "974299124203",
-            appId: "1:974299124203:web:821e75330a0b434addc9ae"
+            apiKey: "", 
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
         };
 
         // محاولة جلب الإعدادات من البيئة أو الذاكرة المشتركة مع الصفحة الرئيسية
@@ -175,8 +175,7 @@
                     storageBucket: "order-system-26c71.firebasestorage.app",
                     messagingSenderId:"974299124203",
                     appId: "1:974299124203:web:821e75330a0b434addc9ae",
-                    measurementId: "G-VRB1XY8PVE"
-                };
+                     };
                 localStorage.setItem('shared_firebase_config', JSON.stringify(newConfig));
                 showToast("تم حفظ الإعدادات! يرجى إعادة تحميل التطبيق للمزامنة.", "success");
                 setShowConfigModal(false);
