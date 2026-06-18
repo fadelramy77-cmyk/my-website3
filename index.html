@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الأوردرات الذكي - نسخة الملاحظات والطباعة</title>
+    <title>نظام إدارة الأوردرات والتوالف الذكي - لوحة التحكم السحابية</title>
+    
+    <!-- خطوط جوجل (Cairo) لمطابقة تصميم الصورة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- مكتبة Tailwind CSS للتصميم العصري المساعد -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2c3e50',
+                        accent: '#3498db',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- مكتبات Firebase السحابية متوافقة مع الويب -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -20,19 +43,73 @@
             --accent: #3498db;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1600px; margin: 0 auto; }
+        body { font-family: 'Cairo', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #333; overflow-x: hidden; }
+        
+        /* تصميم الهيكل العام مع القائمة الجانبية */
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        /* ================= القائمة الجانبية المطابقة للصورة ================= */
+        .sidebar {
+            width: 250px;
+            background: #ffffff;
+            border-left: 1px solid #e5e7eb; /* حد رمادي خفيف */
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            z-index: 50;
+        }
+        .sidebar.collapsed {
+            width: 0px;
+            overflow: hidden;
+            border-left: none;
+        }
+        
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; margin-top: 10px; }
+        .sidebar-item { border-bottom: 1px solid #e5e7eb; }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #4b5563; /* لون نص رمادي داكن */
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .sidebar-link i {
+            color: #6b7280; /* لون الأيقونات */
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar-link:hover { background: #f9fafb; color: #111827; }
+        
+        /* حالة التحديد المطابقة للصورة (خلفية رمادية) */
+        .sidebar-item.active { background-color: #e5e7eb; }
+        .sidebar-item.active .sidebar-link { color: #111827; font-weight: 700; }
+        .sidebar-item.active i { color: #374151; }
+        /* ==================================================================== */
+        
+        /* منطقة المحتوى الرئيسية */
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+        .top-navbar {
+            background: #ffffff;
+            height: 70px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+        }
 
-        /* Navigation Tabs */
-        .tabs-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        .tab-btn { background: #e0e0e0; color: #555; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
-        .tab-btn:hover:not(.active) { background: #d5d5d5; }
+        .container-fluid { padding: 25px; max-width: 100%; margin: 0 auto; }
 
-        /* Dashboard */
+        /* Dashboard Cards */
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.699); text-align: center; border-top: 6px solid #dee2e6; }
-        .card h3 { margin: 0; font-size: 13px; color: #6c757d; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); text-align: center; border-top: 6px solid #dee2e6; }
+        .card h3 { margin: 0; font-size: 13px; color: #6c757d; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .card .value { font-size: 26px; font-weight: bold; margin-top: 8px; }
         
         .card.wait { border-color: #ffc107; color: #856404; }
@@ -56,14 +133,14 @@
         .multi-select-option { font-size: 12px; display: flex; align-items: center; gap: 5px; padding: 2px 5px; cursor: pointer; }
         .multi-select-option:hover { background: #edf2f7; }
 
-        .search-bar { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; width: 250px; }
+        .search-bar { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; width: 250px; font-family: inherit;}
         
-        /* -------------- تحديث ستايل الأزرار لتطابق الصورة المرفقة -------------- */
+        /*Buttons style */
         .main-btns { display: flex; gap: 10px; align-items: center; }
         .btn { 
-            padding: 8px 18px; 
+            padding: 6px 14px; 
             border: none; 
-            border-radius: 8px; 
+            border-radius: 50px; 
             cursor: pointer; 
             font-weight: bold; 
             transition: opacity 0.2s; 
@@ -71,26 +148,26 @@
             align-items: center; 
             justify-content: center;
             gap: 6px; 
-            font-size: 14px;
+            font-size: 12.5px;
             font-family: inherit;
         }
         .btn:hover { opacity: 0.85; }
-        .btn-add { background: #e3242b; color: white; } /* أحمر مثل الصورة */
-        .btn-import { background: #1c2229; color: white; } /* رمادي غامق مثل الصورة */
+        .btn-add { background: #e3242b; color: white; }
+        .btn-import { background: #1c2229; color: white; }
         .btn-export { background: #27ae60; color: white; }
         .btn-delete { background: #c0392b; color: white; }
         .btn-secondary { background: #7f8c8d; color: white; }
 
-        /* Table */
-        .table-container { background: #fffffffa; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 10px rgb(0, 0, 0); }
-        table { width: 100%; border-collapse: collapse; min-width: 1500px; }
+        /* Tables */
+        .table-container { background: #fffffffa; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); border: 1px solid #edf2f7; }
+        table { width: 100%; border-collapse: collapse; min-width: 1300px; }
         th { background: var(--primary); color: white; padding: 15px; position: sticky; top: 0; text-align: center; font-size: 13px; vertical-align: top; }
         td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
         tr:hover { background-color: #f8fbff; }
         
         /* Column Search Inputs */
         .col-search {
-            width: 90%;
+            width: 95%;
             margin-top: 8px;
             padding: 4px 6px;
             border: 1px solid #ffffff66;
@@ -106,41 +183,31 @@
         .col-search:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 4px rgba(52, 152, 219, 0.5); }
         
         /* Date Range Filters CSS */
-        .date-filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            align-items: center;
-            margin-top: 8px;
-        }
-        .date-search {
-            margin-top: 0 !important;
-            width: 95% !important;
-            padding: 2px 4px !important;
-            color: #555;
-            cursor: pointer;
-        }
+        .date-filter-group { display: flex; flex-direction: column; gap: 4px; align-items: center; margin-top: 8px; }
+        .date-search { margin-top: 0 !important; width: 95% !important; padding: 2px 4px !important; color: #555; cursor: pointer; }
 
         /* Badges */
-        .badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 11px; min-width: 90px; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-weight: bold; font-size: 11.5px; min-width: 80px; text-align: center;}
         .s-received { background: var(--received-bg); color: var(--received-text); }
         .s-prep-done { background: #3498db33; color: #1f4e79; }
         .s-preparing { background: var(--preparing-bg); color: var(--preparing-text); }
         .s-waiting { background: var(--waiting-bg); color: var(--waiting-text); }
         .s-none { background: #eee; color: #777; }
 
-        /* -------------- تصميم شارة البراند لمطابقة صورة "FUTURE" -------------- */
+        /* تصميم شارة البراند لمطابقة حجم شارة الحالة */
         .brand-badge {
-            background-color: #060707; /* لون خلفية غامق */
-            color: #f7f6f4; /* لون نص مائل للأصفر/الذهبي أو الأبيض */
-            padding: 4px 10px;
-            border-radius: 6px;
+            background-color: #060707;
+            color: #f7f6f4;
+            padding: 4px 12px; 
+            border-radius: 50px; 
             font-weight: 900;
             font-size: 11px;
             letter-spacing: 0.8px;
             display: inline-block;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            border: 2px solid #080808;
+            min-width: 80px; 
+            text-align: center;
+            font-family: 'Segoe UI', 'Cairo', Arial, sans-serif;
+            border: 1px solid #080808;
             text-transform: uppercase;
         }
 
@@ -169,11 +236,10 @@
         /* مؤشر حالة الاتصال بالسحابة */
         #db-status-badge {
             font-size: 11px;
-            padding: 4px 8px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-weight: bold;
             display: inline-block;
-            margin-right: 10px;
         }
         .db-cloud { background: #d1e7dd; color: #0f5132; }
         .db-local { background: #fff3cd; color: #856404; }
@@ -192,151 +258,235 @@
 </head>
 <body>
 
-<div class="container">
+<div class="app-layout">
     
-    <!-- التبويبات للتنقل بين إدارة الأوردرات وإدارة حسابات المسئولين -->
-    <div class="tabs-nav no-print">
-        <button class="tab-btn active" id="tabOrdersBtn" onclick="switchTab('orders')">
-            📦 إدارة الأوردرات والطلبيات
-        </button>
-        <button class="tab-btn" id="tabPersonsBtn" onclick="switchTab('persons')">
-            👥 إدارة حسابات وصلاحيات المسئولين
-        </button>
-        <div style="margin-right: auto; display: flex; align-items: center;">
-            <span id="db-status-badge" class="db-local">جاري التحقق من السحابة...</span>
-        </div>
-    </div>
+    <!-- القائمة الجانبية المستوحاة من الصورة (Sidebar) -->
+    <aside class="sidebar no-print" id="sidebar">
+        <!-- القائمة المطابقة للتصميم المطلوب -->
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active" id="sideTabOrders">
+                <a class="sidebar-link" onclick="switchSidebarTab('orders')">
+                    <i class="fa-solid fa-box-open"></i>
+                    <span>إدارة الأوردرات</span>
+                </a>
+            </li>
+            <li class="sidebar-item" id="sideTabTawalef">
+                <a class="sidebar-link" onclick="switchSidebarTab('tawalef')">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>إدارة التوالف</span>
+                </a>
+            </li>
+            <li class="sidebar-item" id="sideTabPersons">
+                <a class="sidebar-link" onclick="switchSidebarTab('persons')">
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>إدارة المسئولين</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
 
-    <!-- ==================== قسم إدارة الأوردرات ==================== -->
-    <div id="ordersSection">
-        <header class="header-box">
-            <div class="top-row">
-                <div style="display:flex; align-items:center; gap:15px">
-                    <h2 style="margin:0;">📦 نظام إدارة الأوردرات الذكي</h2>
-                    <input type="text" id="searchInput" class="search-bar" placeholder="بحث شامل..." oninput="render()">
-                </div>
-                <div class="main-btns">
-                    <button class="btn btn-delete" id="bulkDeleteBtn" style="display:none" onclick="removeSelected()">حذف المختار</button>
-                    <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(this)">
-                    <button class="btn btn-export" onclick="exportToCSV()">تصدير Excel</button>
-                    <!-- الأزرار بالتصميم الجديد -->
-                    <button class="btn btn-import" onclick="document.getElementById('importFile').click()">رفع CSV</button>
-                    <button class="btn btn-add" onclick="openModal()">+ أوردر جديد</button>
-                </div>
+    <!-- المحتوى الرئيسي للمنصة -->
+    <div class="main-wrapper">
+        
+        <!-- شريط علوي جديد (Header Bar) -->
+        <header class="top-navbar no-print">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-lg text-slate-700 transition-all" title="إظهار/إخفاء القائمة">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h1 class="font-bold text-lg text-[#2c3e50] hidden sm:block">نظام إدارة العمليات اللحظي</h1>
             </div>
-
-            <div class="filter-section">
-                <div class="filter-item"><label>الحالة:</label><div class="multi-select-box" id="statusFilters"></div></div>
-                <div class="filter-item"><label>التصنيف:</label><div class="multi-select-box" id="typeFilters"></div></div>
-                <div class="filter-item"><label>الموديل:</label><div class="multi-select-box" id="modelFilters"></div></div>
+            <div>
+                <span id="db-status-badge" class="db-local">جاري التحقق من السحابة...</span>
             </div>
         </header>
 
-        <div class="dashboard">
-            <div class="card total"><h3>إجمالي النتائج</h3><div id="d-total" class="value">0</div></div>
-            <div class="card wait"><h3>معلق</h3><div id="d-waiting" class="value">0</div></div>
-            <div class="card prep-process"><h3>جاري التحضير</h3><div id="d-preparing" class="value">0</div></div>
-            <div class="card prep-done"><h3>تم التحضير ✅</h3><div id="d-prep-done" class="value">0</div></div>
-            <div class="card received"><h3>تم الاستلام 📥</h3><div id="d-received" class="value">0</div></div>
-        </div>
+        <main class="container-fluid">
+            
+            <!-- ==================== قسم إدارة الأوردرات الأساسية ==================== -->
+            <div id="ordersSection" class="section-content">
+                <header class="header-box">
+                    <div class="top-row">
+                        <div style="display:flex; align-items:center; gap:15px">
+                            <h2 style="margin:0; font-weight: 800;">📦 إدارة الأوردرات</h2>
+                            <input type="text" id="searchInput" class="search-bar" placeholder="بحث شامل..." oninput="render()">
+                        </div>
+                        <div class="main-btns">
+                            <button class="btn btn-delete" id="bulkDeleteBtn" style="display:none" onclick="removeSelected()">حذف المختار</button>
+                            <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(this)">
+                            <button class="btn btn-export" onclick="exportToCSV()">تصدير Excel</button>
+                            <button class="btn btn-import" onclick="document.getElementById('importFile').click()">رفع CSV</button>
+                            <button class="btn btn-add" onclick="openModal()">+ أوردر جديد</button>
+                        </div>
+                    </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"></th>
-                        <th>رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="render()" placeholder="تصفية..."></th>
-                        <th>رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="render()" placeholder="تصفية..."></th>
-                        <!-- تمت إضافة خانة البراند هنا -->
-                        <th>البراند<br><input type="text" class="col-search" id="c-brand" oninput="render()" placeholder="تصفية..."></th>
-                        
-                        <th>الموديل<br><input type="text" class="col-search" id="c-model" oninput="render()" placeholder="تصفية..."></th>
-                        <th>العدد<br><input type="text" class="col-search" id="c-qty" oninput="render()" placeholder="تصفية..."></th>
-                        <th>اللون<br><input type="text" class="col-search" id="c-color" oninput="render()" placeholder="تصفية..."></th>
-                        <th>الحالة<br><input type="text" class="col-search" id="c-status" oninput="render()" placeholder="تصفية..."></th>
-                        <th>التصنيف<br><input type="text" class="col-search" id="c-type" oninput="render()" placeholder="تصفية..."></th>
-                        <th>المسئول<br><input type="text" class="col-search" id="c-person" oninput="render()" placeholder="تصفية..."></th>
-                        <th>الملاحظات<br><input type="text" class="col-search" id="c-notes" oninput="render()" placeholder="تصفية..."></th>
-                        
-                        <!-- فلاتر نطاق التواريخ -->
-                        <th>تاريخ الطلب
-                            <div class="date-filter-group">
-                                <input type="date" class="col-search date-search" id="c-orderDate-from" oninput="render()" title="من تاريخ">
-                                <input type="date" class="col-search date-search" id="c-orderDate-to" oninput="render()" title="إلى تاريخ">
-                            </div>
-                        </th>
-                        <th>تاريخ التحضير
-                            <div class="date-filter-group">
-                                <input type="date" class="col-search date-search" id="c-prepDate-from" oninput="render()" title="من تاريخ">
-                                <input type="date" class="col-search date-search" id="c-prepDate-to" oninput="render()" title="إلى تاريخ">
-                            </div>
-                        </th>
-                        <th>تاريخ الاستلام
-                            <div class="date-filter-group">
-                                <input type="date" class="col-search date-search" id="c-receiveDate-from" oninput="render()" title="من تاريخ">
-                                <input type="date" class="col-search date-search" id="c-receiveDate-to" oninput="render()" title="إلى تاريخ">
-                            </div>
-                        </th>
-                        
-                        <th>إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-    </div>
+                    <div class="filter-section">
+                        <div class="filter-item"><label>الحالة:</label><div class="multi-select-box" id="statusFilters"></div></div>
+                        <div class="filter-item"><label>التصنيف:</label><div class="multi-select-box" id="typeFilters"></div></div>
+                        <div class="filter-item"><label>الموديل:</label><div class="multi-select-box" id="modelFilters"></div></div>
+                    </div>
+                </header>
 
-    <!-- ==================== قسم إدارة حسابات المسئولين الجديد ==================== -->
-    <div id="personsSection" style="display:none;">
-        <header class="header-box">
-            <div class="top-row">
-                <div style="display:flex; align-items:center; gap:15px">
-                    <h2 style="margin:0;">👥 لوحة إدارة صلاحيات وحسابات المسئولين</h2>
+                <div class="dashboard">
+                    <div class="card total"><h3>إجمالي النتائج</h3><div id="d-total" class="value">0</div></div>
+                    <div class="card wait"><h3>معلق</h3><div id="d-waiting" class="value">0</div></div>
+                    <div class="card prep-process"><h3>جاري التحضير</h3><div id="d-preparing" class="value">0</div></div>
+                    <div class="card prep-done"><h3>تم التحضير ✅</h3><div id="d-prep-done" class="value">0</div></div>
+                    <div class="card received"><h3>تم الاستلام 📥</h3><div id="d-received" class="value">0</div></div>
                 </div>
-                <div class="main-btns">
-                    <button class="btn btn-add" onclick="openPersonModal()">➕ إضافة مسئول جديد</button>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="3%"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"></th>
+                                <th width="8%">رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="8%">رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="9%">البراند<br><input type="text" class="col-search" id="c-brand" oninput="render()" placeholder="تصفية..."></th>
+                                <th>الموديل<br><input type="text" class="col-search" id="c-model" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="5%">العدد<br><input type="text" class="col-search" id="c-qty" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="6%">اللون<br><input type="text" class="col-search" id="c-color" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="9%">الحالة<br><input type="text" class="col-search" id="c-status" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="6%">التصنيف<br><input type="text" class="col-search" id="c-type" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="9%">المسئول<br><input type="text" class="col-search" id="c-person" oninput="render()" placeholder="تصفية..."></th>
+                                <th width="10%">الملاحظات<br><input type="text" class="col-search" id="c-notes" oninput="render()" placeholder="تصفية..."></th>
+                                <th>تاريخ الطلب
+                                    <div class="date-filter-group">
+                                        <input type="date" class="col-search date-search" id="c-orderDate-from" oninput="render()" title="من تاريخ">
+                                        <input type="date" class="col-search date-search" id="c-orderDate-to" oninput="render()" title="إلى تاريخ">
+                                    </div>
+                                </th>
+                                <th>تاريخ التحضير
+                                    <div class="date-filter-group">
+                                        <input type="date" class="col-search date-search" id="c-prepDate-from" oninput="render()" title="من تاريخ">
+                                        <input type="date" class="col-search date-search" id="c-prepDate-to" oninput="render()" title="إلى تاريخ">
+                                    </div>
+                                </th>
+                                <th>تاريخ الاستلام
+                                    <div class="date-filter-group">
+                                        <input type="date" class="col-search date-search" id="c-receiveDate-from" oninput="render()" title="من تاريخ">
+                                        <input type="date" class="col-search date-search" id="c-receiveDate-to" oninput="render()" title="إلى تاريخ">
+                                    </div>
+                                </th>
+                                <th width="7%">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
                 </div>
             </div>
-            <p style="color: #666; font-size: 14px; margin: 0;">من هنا يمكنك إنشاء حسابات فريقك، تحديد مهامهم (تحضير / تسليم / شامل)، إعادة تعيين الأرقام السرية الخاصة بهم، ومتابعة إحصائيات الأداء حياً.</p>
-        </header>
 
-        <div class="dashboard">
-            <div class="card total"><h3>إجمالي المسئولين</h3><div id="dp-total" class="value">0</div></div>
-            <div class="card prep-process"><h3>مسئولي التحضير</h3><div id="dp-prep" class="value">0</div></div>
-            <div class="card wait"><h3>مسئولي التسليم</h3><div id="dp-delivery" class="value">0</div></div>
-            <div class="card total" style="border-color: #9b59b6; color: #8e44ad;"><h3>مسئولين شاملين</h3><div id="dp-all" class="value">0</div></div>
-        </div>
+            <!-- ==================== قسم إدارة التوالف ==================== -->
+            <div id="tawalefSection" class="section-content hidden">
+                <header class="header-box">
+                    <div class="top-row">
+                        <div style="display:flex; align-items:center; gap:15px">
+                            <h2 style="margin:0; font-weight: 800;">⚠️ إدارة التوالف</h2>
+                            <input type="text" id="tawalefSearchInput" class="search-bar" placeholder="بحث برقم التالف..." oninput="renderTawalef()">
+                        </div>
+                        <div class="main-btns">
+                            <button class="btn btn-delete" id="tawalefBulkDeleteBtn" style="display:none" onclick="removeSelectedTawalef()">حذف المختار</button>
+                            <button class="btn btn-export" onclick="exportTawalefToCSV()">تصدير التوالف</button>
+                            <button class="btn btn-add" onclick="openTawalefModal()">➕ إضافة تالف جديد</button>
+                        </div>
+                    </div>
+                </header>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr style="background: var(--primary); color: white;">
-                        <th style="padding: 15px;">اسم المسئول</th>
-                        <th>الدور / المهمة الموكلة</th>
-                        <th>الرمز السري (PIN)</th>
-                        <th>أوردرات موجهة (قيد التحضير/معلق)</th>
-                        <th>أوردرات مستلمة (مكتملة)</th>
-                        <th>تاريخ الإنشاء</th>
-                        <th>إجراءات الحساب</th>
-                    </tr>
-                </thead>
-                <tbody id="personsTableBody"></tbody>
-            </table>
-        </div>
+                <div class="dashboard">
+                    <div class="card total" style="border-color: #2c3e50;">
+                        <h3>إجمالي التوالف</h3>
+                        <div id="dt-total" class="value">0</div>
+                    </div>
+                    <div class="card prep-process" style="border-color: #0af3e796;">
+                        <h3>جاري التحضير</h3>
+                        <div id="dt-pending" class="value">0</div>
+                    </div>
+                    <div class="card received" style="border-color: #27ae60;">
+                        <h3>تم التسليم</h3>
+                        <div id="dt-solved" class="value">0</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr style="background: var(--primary); color: white;">
+                                <th width="5%"><input type="checkbox" id="selectAllTawalef" onchange="toggleSelectAllTawalef(this.checked)"></th>
+                                <th width="20%">رقم الأوردر<br><input type="text" class="col-search" id="ct-orderNum" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="20%">الحالة<br><input type="text" class="col-search" id="ct-status" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="20%">تاريخ الطلب
+                                    <div class="date-filter-group">
+                                        <input type="date" class="col-search date-search" id="ct-orderDate-from" oninput="renderTawalef()">
+                                        <input type="date" class="col-search date-search" id="ct-orderDate-to" oninput="renderTawalef()">
+                                    </div>
+                                </th>
+                                <th width="20%">تاريخ التسليم
+                                    <div class="date-filter-group">
+                                        <input type="date" class="col-search date-search" id="ct-receiveDate-from" oninput="renderTawalef()">
+                                        <input type="date" class="col-search date-search" id="ct-receiveDate-to" oninput="renderTawalef()">
+                                    </div>
+                                </th>
+                                <th width="15%">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tawalefTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== قسم إدارة المسئولين ==================== -->
+            <div id="personsSection" class="section-content hidden">
+                <header class="header-box">
+                    <div class="top-row">
+                        <div style="display:flex; align-items:center; gap:15px">
+                            <h2 style="margin:0; font-weight: 800;">👥 إدارة المسئولين</h2>
+                        </div>
+                        <div class="main-btns">
+                            <button class="btn btn-add" onclick="openPersonModal()">➕ إضافة مسئول جديد</button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="dashboard">
+                    <div class="card total"><h3>إجمالي المسئولين</h3><div id="dp-total" class="value">0</div></div>
+                    <div class="card prep-process"><h3>مسئولي التحضير</h3><div id="dp-prep" class="value">0</div></div>
+                    <div class="card wait"><h3>مسئولي التسليم</h3><div id="dp-delivery" class="value">0</div></div>
+                    <div class="card total" style="border-color: #9b59b6; color: #8e44ad;"><h3>مسئولين شاملين</h3><div id="dp-all" class="value">0</div></div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr style="background: var(--primary); color: white;">
+                                <th style="padding: 15px;">اسم المسئول</th>
+                                <th>الدور / المهمة الموكلة</th>
+                                <th>الرمز السري (PIN)</th>
+                                <th>أوردرات موجهة (قيد التحضير/معلق)</th>
+                                <th>أوردرات مستلمة (مكتملة)</th>
+                                <th>تاريخ الإنشاء</th>
+                                <th>إجراءات الحساب</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
     </div>
-
 </div>
+
+<!-- ==================== Modals (النوافذ المنبثقة) ==================== -->
 
 <!-- Modal الأوردرات (الإضافة والتعديل) -->
 <div class="modal-overlay" id="modal">
     <div class="modal-content">
-        <h2 id="modalTitle">بيانات الأوردر</h2>
+        <h2 id="modalTitle" class="font-black text-lg text-slate-800 mb-4">بيانات الأوردر</h2>
         <input type="hidden" id="editIndex" value="-1">
         
         <div style="display:flex; gap:10px">
             <div class="form-group" style="flex:1"><label>رقم الأوردر</label><input type="text" id="f-orderNum"></div>
             <div class="form-group" style="flex:1"><label>رقم التحويلة</label><input type="text" id="f-id"></div>
-            <!-- إضافة البراند للنافذة -->
             <div class="form-group" style="flex:1"><label>البراند</label><input type="text" id="f-brand" placeholder="مثل: FUTURE"></div>
         </div>
 
@@ -364,12 +514,9 @@
             <div class="form-group" style="flex:1"><label>تاريخ الاستلام</label><input type="date" id="f-receiveDate"></div>
         </div>
 
-        <!-- حقل المسئول الموجه إليه -->
         <div class="form-group">
             <label>المسئول الموجه إليه</label>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <select id="f-person" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;"></select>
-            </div>
+            <select id="f-person" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"></select>
         </div>
 
         <div class="form-group"><label>الملاحظات</label><textarea id="f-notes" placeholder="أي ملاحظات إضافية..."></textarea></div>
@@ -380,10 +527,46 @@
     </div>
 </div>
 
-<!-- Modal الجديد لإدارة حسابات المسئولين وصلاحياتهم -->
+<!-- Modal التوالف (تم التعديل لتقتصر الحالات والتواريخ الافتراضية) -->
+<div class="modal-overlay" id="tawalefModal">
+    <div class="modal-content" style="width: 450px;">
+        <h2 id="tawalefModalTitle" class="font-black text-lg text-red-600 mb-4">إضافة / تعديل تالف</h2>
+        <input type="hidden" id="editTawalefIndex" value="-1">
+        
+        <div class="form-group">
+            <label>رقم الأوردر المعني</label>
+            <input type="text" id="ft-orderNum" placeholder="أدخل رقم الأوردر المتضرر">
+        </div>
+
+        <div class="form-group">
+            <label>الحالة</label>
+            <select id="ft-status">
+                <option value="جاري التحضير">جاري التحضير</option>
+                <option value="تم التسليم">تم التسليم</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>تاريخ الطلب</label>
+            <input type="date" id="ft-orderDate">
+        </div>
+
+        <div class="form-group">
+            <label>تاريخ التسليم</label>
+            <input type="date" id="ft-receiveDate">
+        </div>
+
+        <div style="text-align:left; margin-top:25px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button onclick="closeTawalefModal()" class="btn btn-secondary">إلغاء</button>
+            <button class="btn btn-add" style="background:#e74c3c" onclick="saveTawalef()">حفظ التالف</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إدارة حسابات المسئولين -->
 <div class="modal-overlay" id="personModal">
     <div class="modal-content" style="width: 450px;">
-        <h2 id="personModalTitle" style="color: var(--primary); margin-top:0;">بيانات حساب المسئول</h2>
+        <h2 id="personModalTitle" style="color: var(--primary); margin-top:0;" class="font-bold text-lg">بيانات حساب المسئول</h2>
         <input type="hidden" id="editPersonIndex" value="-1">
         
         <div class="form-group">
@@ -412,11 +595,11 @@
     </div>
 </div>
 
-<!-- Modal نافذة الطباعة المنبثقة -->
+<!-- Modal نافذة طباعة الأوردرات -->
 <div class="modal-overlay" id="printModal">
     <div class="modal-content" id="printModalContent" style="width: 650px;">
         <div class="print-header no-print">
-            <h2 style="margin:0; color:#2c3e50">تفاصيل الأوردر</h2>
+            <h2 style="margin:0; color:#2c3e50" class="font-bold">تفاصيل الأوردر للطباعة</h2>
             <button onclick="closePrintModal()" style="background:none; border:none; font-size:24px; cursor:pointer">&times;</button>
         </div>
         
@@ -432,11 +615,10 @@
                 </div>
             </div>
             
-            <!-- إضافة البراند للطباعة -->
             <div class="print-row-3">
                 <div class="print-field">
                     <div class="print-label">البراند</div>
-                    <div id="p-brand" class="print-value" style="color:#121312;"></div>
+                    <div id="p-brand" class="print-value print-brand" style="color:#121312;"></div>
                 </div>
                 <div class="print-field">
                     <div class="print-label">الموديل</div>
@@ -499,12 +681,10 @@
 <!-- Modal تأكيد رفع CSV -->
 <div class="modal-overlay" id="confirmImportModal">
     <div class="modal-content" style="width: 400px; text-align: center;">
-        <h2 style="color: var(--primary); margin-top: 0;">⚠️ تأكيد رفع البيانات</h2>
+        <h2 style="color: var(--primary); margin-top: 0;" class="font-bold">⚠️ تأكيد رفع البيانات</h2>
         <p style="color: #666; font-size: 14px;">تم تحليل الملف بنجاح، يرجى مراجعة التغييرات قبل الحفظ النهائي.</p>
         
-        <div id="importSummary" style="margin: 20px 0; font-size: 16px; line-height: 1.6;">
-            <!-- سيتم حقن تفاصيل التغييرات هنا من الجافاسكريبت -->
-        </div>
+        <div id="importSummary" style="margin: 20px 0; font-size: 16px; line-height: 1.6;"></div>
         
         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
             <button onclick="confirmImport()" class="btn btn-export" style="flex: 1;">✅ موافقة وحفظ</button>
@@ -513,10 +693,8 @@
     </div>
 </div>
 
+<!-- ==================== البرمجة وجافا سكريبت ==================== -->
 <script>
-    // ==========================================
-    // إعدادات مشروع Firebase 
-    // ==========================================
     const customFirebaseConfig = {
         apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
         authDomain: "order-system-26c71.firebaseapp.com",
@@ -544,69 +722,42 @@
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'smart-orders-app';
     
     let orders = [];
+    let tawalef = [];
     let activeFilters = { status: [], type: [], model: [] };
     let savedPersons = []; 
     let pendingImportOrders = null; 
     let user = null;
     let db = null;
     let auth = null;
-    let useLocalFallback = true; 
+    let useLocalFallback = true;
 
-    function formatDateToYYYYMMDD(dateStr) {
-        if (!dateStr) return "";
-        dateStr = dateStr.toString().trim();
-        if (dateStr === "-" || dateStr === "") return "";
-        
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-        
-        let parts = dateStr.split(/[\/\-\.]/);
-        if (parts.length === 3) {
-            let p0 = parts[0].trim();
-            let p1 = parts[1].trim();
-            let p2 = parts[2].trim();
-            
-            if (p0.length === 4) {
-                return `${p0}-${p1.padStart(2, '0')}-${p2.padStart(2, '0')}`;
-            }
-            if (p2.length === 4) {
-                let day = p0;
-                let month = p1;
-                if (parseInt(p1) > 12) {
-                    day = p1;
-                    month = p0;
-                }
-                return `${p2}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-            }
-        }
-        
-        try {
-            let d = new Date(dateStr);
-            if (!isNaN(d.getTime())) {
-                let y = d.getFullYear();
-                let m = String(d.getMonth() + 1).padStart(2, '0');
-                let day = String(d.getDate()).padStart(2, '0');
-                return `${y}-${m}-${day}`;
-            }
-        } catch(e) {}
-        
-        return "";
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
     }
 
-    // دالة ترتيب الأوردرات برمجياً لضمان ثبات الترتيب بتاريخ الطلب
-    function sortOrdersArray(ordersList) {
-        return ordersList.sort((a, b) => {
-            let dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
-            if(isNaN(dateA)) dateA = 0;
-            
-            let dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
-            if(isNaN(dateB)) dateB = 0;
+    function switchSidebarTab(tabId) {
+        document.getElementById('sideTabOrders').classList.remove('active');
+        document.getElementById('sideTabTawalef').classList.remove('active');
+        document.getElementById('sideTabPersons').classList.remove('active');
 
-            if (dateB !== dateA) {
-                return dateB - dateA; // الأحدث بتاريخ الطلب أولاً
-            }
-            // إذا تطابق تاريخ الطلب (أو كان فارغاً)، نرتب بناءً على وقت الإضافة لعدم تغير الترتيب عشوائياً
-            return (b.timestamp || 0) - (a.timestamp || 0);
-        });
+        document.getElementById('ordersSection').classList.add('hidden');
+        document.getElementById('tawalefSection').classList.add('hidden');
+        document.getElementById('personsSection').classList.add('hidden');
+
+        if (tabId === 'orders') {
+            document.getElementById('sideTabOrders').classList.add('active');
+            document.getElementById('ordersSection').classList.remove('hidden');
+            render();
+        } else if (tabId === 'tawalef') {
+            document.getElementById('sideTabTawalef').classList.add('active');
+            document.getElementById('tawalefSection').classList.remove('hidden');
+            renderTawalef();
+        } else if (tabId === 'persons') {
+            document.getElementById('sideTabPersons').classList.add('active');
+            document.getElementById('personsSection').classList.remove('hidden');
+            renderPersons();
+        }
     }
 
     const statusBadge = document.getElementById('db-status-badge');
@@ -617,11 +768,11 @@
             db = firebase.firestore();
             useLocalFallback = false;
             if (statusBadge) {
-                statusBadge.innerText = "جاري الاتصال السحابي... 🌐";
-                statusBadge.className = "db-local";
+                statusBadge.innerText = "سحابي متصل اللّحظة ☁️";
+                statusBadge.className = "db-cloud";
             }
         } catch(e) {
-            console.error("Firebase initialisation failed, falling back to local storage:", e);
+            console.error("Firebase init failed, fallback to local storage:", e);
             useLocalFallback = true;
             fallbackUIStatus();
         }
@@ -632,29 +783,8 @@
 
     function fallbackUIStatus() {
         if (statusBadge) {
-            statusBadge.innerText = "يعمل محلياً (الجهاز الحالي فقط) 💻";
+            statusBadge.innerText = "يعمل محلياً في وضع الطوارئ 💻";
             statusBadge.className = "db-local";
-        }
-    }
-
-    function switchTab(tabId) {
-        const ordersSection = document.getElementById('ordersSection');
-        const personsSection = document.getElementById('personsSection');
-        const tabOrdersBtn = document.getElementById('tabOrdersBtn');
-        const tabPersonsBtn = document.getElementById('tabPersonsBtn');
-
-        if (tabId === 'orders') {
-            ordersSection.style.display = 'block';
-            personsSection.style.display = 'none';
-            tabOrdersBtn.classList.add('active');
-            tabPersonsBtn.classList.remove('active');
-            render();
-        } else {
-            ordersSection.style.display = 'none';
-            personsSection.style.display = 'block';
-            tabOrdersBtn.classList.remove('active');
-            tabPersonsBtn.classList.add('active');
-            renderPersons();
         }
     }
 
@@ -705,6 +835,7 @@
 
     function loadLocalData() {
         orders = JSON.parse(localStorage.getItem('smartOrderData_v4')) || [];
+        tawalef = JSON.parse(localStorage.getItem('smartTawalefData_v4')) || [];
         savedPersons = JSON.parse(localStorage.getItem('smartOrderPersonsList')) || [];
         
         savedPersons = savedPersons.map(p => {
@@ -718,6 +849,7 @@
         updatePersonDropdown();
         updateFilterUIs();
         render();
+        renderTawalef();
         renderPersons();
     }
 
@@ -730,16 +862,23 @@
                 snapshot.forEach((doc) => {
                     orders.push({ docId: doc.id, ...doc.data() });
                 });
-                
-                // تطبيق الترتيب الصحيح بتاريخ الطلب بعد جلب البيانات
                 sortOrdersArray(orders);
-                
                 updateFilterUIs();
                 render();
-                renderPersons(); 
             }, (error) => {
                 console.error("Orders sync error:", error);
                 enableLocalFallback();
+            });
+
+        db.collection('artifacts').doc(appId).collection('public').doc('data').collection('tawalef')
+            .onSnapshot((snapshot) => {
+                tawalef = [];
+                snapshot.forEach((doc) => {
+                    tawalef.push({ docId: doc.id, ...doc.data() });
+                });
+                renderTawalef();
+            }, (error) => {
+                console.error("Tawalef sync error:", error);
             });
 
         db.collection('artifacts').doc(appId).collection('public').doc('data').collection('persons')
@@ -755,6 +894,33 @@
             });
     }
 
+    function formatDateToYYYYMMDD(dateStr) {
+        if (!dateStr) return "";
+        dateStr = dateStr.toString().trim();
+        if (dateStr === "-" || dateStr === "") return "";
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+        
+        try {
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+                let y = d.getFullYear();
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+        } catch(e) {}
+        return "";
+    }
+
+    function sortOrdersArray(ordersList) {
+        return ordersList.sort((a, b) => {
+            let dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
+            let dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
+            if (dateB !== dateA) return dateB - dateA;
+            return (b.timestamp || 0) - (a.timestamp || 0);
+        });
+    }
+
     function updatePersonDropdown() {
         const select = document.getElementById('f-person');
         if (!select) return;
@@ -767,10 +933,196 @@
     function saveData() {
         if (useLocalFallback) {
             localStorage.setItem('smartOrderData_v4', JSON.stringify(orders));
+            localStorage.setItem('smartTawalefData_v4', JSON.stringify(tawalef));
             localStorage.setItem('smartOrderPersonsList', JSON.stringify(savedPersons));
         }
     }
 
+    // ==================== برمجة إدارة التوالف والهوالك ====================
+    function renderTawalef() {
+        const tbody = document.getElementById('tawalefTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const searchQuery = document.getElementById('tawalefSearchInput').value.toLowerCase();
+        const colFilters = {
+            orderNum: document.getElementById('ct-orderNum').value.toLowerCase(),
+            status: document.getElementById('ct-status').value.toLowerCase()
+        };
+
+        const dateFilters = {
+            orderFrom: document.getElementById('ct-orderDate-from').value,
+            orderTo: document.getElementById('ct-orderDate-to').value,
+            receiveFrom: document.getElementById('ct-receiveDate-from').value,
+            receiveTo: document.getElementById('ct-receiveDate-to').value
+        };
+
+        let total = 0, pending = 0, solved = 0;
+
+        tawalef.forEach((t, i) => {
+            const matchesSearch = !searchQuery || (t.orderNum && t.orderNum.toLowerCase().includes(searchQuery));
+            const matchesColFilters = checkColMatch(t.orderNum, colFilters.orderNum) &&
+                                      checkColMatch(t.status, colFilters.status) &&
+                                      checkDateRangeMatch(t.orderDate, dateFilters.orderFrom, dateFilters.orderTo) &&
+                                      checkDateRangeMatch(t.receiveDate, dateFilters.receiveFrom, dateFilters.receiveTo);
+
+            if (matchesSearch && matchesColFilters) {
+                total++;
+                if (t.status === 'تم التسليم') solved++;
+                else pending++;
+
+                let sClass = "s-waiting"; // Default
+                if (t.status === 'تم التسليم') sClass = "s-received"; // Green
+                else if (t.status === 'جاري التحضير') sClass = "s-preparing"; // Cyan
+
+                const tr = document.createElement('tr');
+                if (t.selected) tr.className = 'selected-row';
+
+                tr.innerHTML = `
+                    <td><input type="checkbox" ${t.selected ? 'checked' : ''} onchange="toggleSelectTawalef(${i})"></td>
+                    <td class="font-bold text-slate-800 text-center">${t.orderNum || '-'}</td>
+                    <td><span class="badge ${sClass}">${t.status || 'جاري التحضير'}</span></td>
+                    <td class="text-slate-600 font-bold">${t.orderDate || '-'}</td>
+                    <td class="text-slate-600 font-bold">${t.receiveDate || '-'}</td>
+                    <td>
+                        <div class="flex justify-center gap-2">
+                            <button class="btn-icon" onclick="editTawalef(${i})" title="تعديل">✏️</button>
+                            <button class="btn-icon" onclick="removeTawalef(${i})" title="حذف">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+
+        document.getElementById('dt-total').innerText = total;
+        document.getElementById('dt-pending').innerText = pending;
+        document.getElementById('dt-solved').innerText = solved;
+
+        const selCount = tawalef.filter(t => t.selected).length;
+        document.getElementById('tawalefBulkDeleteBtn').style.display = selCount > 0 ? 'block' : 'none';
+        document.getElementById('tawalefBulkDeleteBtn').innerText = `حذف المختار (${selCount})`;
+    }
+
+    function openTawalefModal() {
+        document.getElementById('tawalefModalTitle').innerText = "إضافة تالف جديد";
+        document.getElementById('editTawalefIndex').value = "-1";
+        document.getElementById('ft-orderNum').value = "";
+        
+        // تعيين الحالة الافتراضية والتاريخ التلقائي لليوم
+        document.getElementById('ft-status').value = "جاري التحضير";
+        document.getElementById('ft-orderDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('ft-receiveDate').value = "";
+        
+        document.getElementById('tawalefModal').style.display = 'flex';
+    }
+
+    function closeTawalefModal() {
+        document.getElementById('tawalefModal').style.display = 'none';
+    }
+
+    function saveTawalef() {
+        const idx = parseInt(document.getElementById('editTawalefIndex').value);
+        const orderNum = document.getElementById('ft-orderNum').value.trim();
+        const status = document.getElementById('ft-status').value;
+        const orderDate = formatDateToYYYYMMDD(document.getElementById('ft-orderDate').value);
+        const receiveDate = formatDateToYYYYMMDD(document.getElementById('ft-receiveDate').value);
+
+        if (!orderNum) return alert("يرجى إدخال رقم الأوردر المتضرر!");
+
+        const data = {
+            orderNum, status, orderDate, receiveDate,
+            timestamp: idx === -1 ? Date.now() : (tawalef[idx].timestamp || Date.now())
+        };
+
+        if (useLocalFallback) {
+            if (idx === -1) {
+                tawalef.push(data);
+            } else {
+                tawalef[idx] = data;
+            }
+            saveData();
+            renderTawalef();
+            closeTawalefModal();
+        } else {
+            if (!user || !db) return alert("انتظر حتى يتم الاتصال بالسحابة...");
+            if (idx === -1) {
+                db.collection('artifacts').doc(appId).collection('public').doc('data').collection('tawalef')
+                    .add(data)
+                    .then(() => closeTawalefModal())
+                    .catch(err => console.error(err));
+            } else {
+                const docId = tawalef[idx].docId;
+                db.collection('artifacts').doc(appId).collection('public').doc('data').collection('tawalef').doc(docId)
+                    .set(data, { merge: true })
+                    .then(() => closeTawalefModal())
+                    .catch(err => console.error(err));
+            }
+        }
+    }
+
+    function editTawalef(i) {
+        const t = tawalef[i];
+        document.getElementById('tawalefModalTitle').innerText = "تعديل بيانات التالف";
+        document.getElementById('editTawalefIndex').value = i;
+        document.getElementById('ft-orderNum').value = t.orderNum || "";
+        document.getElementById('ft-status').value = t.status || "جاري التحضير";
+        document.getElementById('ft-orderDate').value = formatDateToYYYYMMDD(t.orderDate);
+        document.getElementById('ft-receiveDate').value = formatDateToYYYYMMDD(t.receiveDate);
+        document.getElementById('tawalefModal').style.display = 'flex';
+    }
+
+    function removeTawalef(i) {
+        if (confirm("هل تريد حذف هذا التالف نهائياً؟")) {
+            if (useLocalFallback) {
+                tawalef.splice(i, 1);
+                saveData();
+                renderTawalef();
+            } else {
+                if (!user || !db) return;
+                db.collection('artifacts').doc(appId).collection('public').doc('data').collection('tawalef').doc(tawalef[i].docId)
+                    .delete()
+                    .catch(err => console.error(err));
+            }
+        }
+    }
+
+    function toggleSelectTawalef(i) { tawalef[i].selected = !tawalef[i].selected; renderTawalef(); }
+    function toggleSelectAllTawalef(checked) { tawalef.forEach(t => t.selected = checked); renderTawalef(); }
+
+    function removeSelectedTawalef() {
+        if (confirm("هل أنت متأكد من حذف المختار من التوالف؟")) {
+            if (useLocalFallback) {
+                tawalef = tawalef.filter(t => !t.selected);
+                saveData();
+                renderTawalef();
+            } else {
+                if (!user || !db) return;
+                tawalef.forEach(t => {
+                    if (t.selected) {
+                        db.collection('artifacts').doc(appId).collection('public').doc('data').collection('tawalef').doc(t.docId)
+                            .delete();
+                    }
+                });
+            }
+        }
+    }
+
+    function exportTawalefToCSV() {
+        let csv = "\uFEFFرقم الأوردر;الحالة;تاريخ الطلب;تاريخ الاستلام/التسليم\n";
+        tawalef.forEach(t => {
+            csv += `"${t.orderNum || '-'}";"${t.status || ''}";"${t.orderDate || ''}";"${t.receiveDate || ''}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `tawalef_report_${new Date().getTime()}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // ==================== برمجة إدارة الأوردرات والمسئولين ====================
     function renderPersons() {
         const tbody = document.getElementById('personsTableBody');
         if (!tbody) return;
@@ -919,8 +1271,7 @@
                 renderPersons();
             } else {
                 if (!user || !db) return;
-                const docId = p.docId; 
-                db.collection('artifacts').doc(appId).collection('public').doc('data').collection('persons').doc(docId)
+                db.collection('artifacts').doc(appId).collection('public').doc('data').collection('persons').doc(p.docId)
                     .delete()
                     .catch(err => console.error(err));
             }
@@ -995,7 +1346,7 @@
         const colFilters = {
             orderNum: document.getElementById('c-orderNum').value.toLowerCase(),
             id: document.getElementById('c-id').value.toLowerCase(),
-            brand: document.getElementById('c-brand').value.toLowerCase(), // فلتر البراند
+            brand: document.getElementById('c-brand').value.toLowerCase(),
             model: document.getElementById('c-model').value.toLowerCase(),
             qty: document.getElementById('c-qty').value.toLowerCase(),
             color: document.getElementById('c-color').value.toLowerCase(),
@@ -1058,7 +1409,6 @@
                 else if (statusStr === "جاري التحضير") { sClass = "s-preparing"; c.prep++; }
                 else if (statusStr === "معلق") { sClass = "s-waiting"; c.wait++; }
 
-                // تجهيز عنصر البراند
                 let brandDisplay = o.brand && o.brand.trim() !== '' 
                     ? `<span class="brand-badge">${o.brand}</span>` 
                     : '-';
@@ -1108,7 +1458,7 @@
         const o = orders[i];
         document.getElementById('p-orderNum').innerText = o.orderNum || '-';
         document.getElementById('p-id').innerText = o.id || '-';
-        document.getElementById('p-brand').innerText = o.brand || '-'; // عرض البراند
+        document.getElementById('p-brand').innerText = o.brand || '-';
         document.getElementById('p-model').innerText = o.model;
         document.getElementById('p-qty').innerText = o.qty;
         document.getElementById('p-color').innerText = o.color || '-';
@@ -1142,7 +1492,7 @@
             const map = {
                 orderNum: headers.findIndex(h => h.includes('الأوردر') || h.includes('الاوردر')),
                 id: headers.findIndex(h => h.includes('التحويل') || h.toLowerCase().includes('id')),
-                brand: headers.findIndex(h => h.includes('البراند') || h.toLowerCase().includes('brand')), // تعيين البراند
+                brand: headers.findIndex(h => h.includes('البراند') || h.toLowerCase().includes('brand')),
                 model: headers.findIndex(h => h.includes('الموديل') || h.toLowerCase().includes('model')),
                 qty: headers.findIndex(h => h.includes('العدد') || h.toLowerCase().includes('qty')),
                 color: headers.findIndex(h => h.includes('اللون') || h.toLowerCase().includes('color')),
@@ -1170,7 +1520,7 @@
                     let newOrder = {
                         orderNum: orderNumValue,
                         id: map.id !== -1 ? (cols[map.id] || '') : '',
-                        brand: map.brand !== -1 ? (cols[map.brand] || '') : '', // حفظ البراند
+                        brand: map.brand !== -1 ? (cols[map.brand] || '') : '',
                         model: map.model !== -1 ? (cols[map.model] || 'غير محدد') : 'غير محدد',
                         qty: map.qty !== -1 ? (cols[map.qty] || 0) : 0,
                         color: map.color !== -1 ? (cols[map.color] || '') : '',
@@ -1254,7 +1604,7 @@
         const data = {
             orderNum: document.getElementById('f-orderNum').value.trim(),
             id: document.getElementById('f-id').value.trim(),
-            brand: document.getElementById('f-brand').value.trim(), // سحب البراند
+            brand: document.getElementById('f-brand').value.trim(),
             model: document.getElementById('f-model').value.trim(),
             qty: document.getElementById('f-qty').value,
             color: document.getElementById('f-color').value.trim(),
@@ -1274,12 +1624,12 @@
         if (useLocalFallback) {
             if(idx === -1) {
                 if(orders.some(o => o.orderNum === data.orderNum)) return alert("رقم الأوردر مكرر!");
-                orders.push(data); // Push instead of unshift to rely on sortOrdersArray
+                orders.push(data);
             } else {
                 data.selected = orders[idx].selected || false;
                 orders[idx] = data;
             }
-            sortOrdersArray(orders); // فرز وتثبيت الأماكن
+            sortOrdersArray(orders);
             saveData();
             render();
             renderPersons();
@@ -1362,7 +1712,7 @@
         document.getElementById('editIndex').value = i;
         document.getElementById('f-orderNum').value = o.orderNum || "";
         document.getElementById('f-id').value = o.id || ""; 
-        document.getElementById('f-brand').value = o.brand || ""; // وضع البراند للتحرير
+        document.getElementById('f-brand').value = o.brand || "";
         document.getElementById('f-model').value = o.model || "";
         document.getElementById('f-qty').value = o.qty || ""; 
         document.getElementById('f-color').value = o.color || "";
@@ -1393,7 +1743,6 @@
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `orders_full_data_${new Date().getTime()}.csv`;
-        
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1405,6 +1754,7 @@
             closePrintModal();
             closeConfirmImportModal();
             closePersonModal();
+            closeTawalefModal();
         }
     }
 </script>
