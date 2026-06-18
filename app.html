@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق المسئولين الذكي - هاتف</title>
+    <title>تطبيق المسئولين الذكي - سحابي</title>
     
     <!-- مكتبة Tailwind CSS للتصميم العصري -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,15 +26,10 @@
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- مكتبات Firebase -->
+    <!-- مكتبات Firebase السحابية متوافقة مع الويب -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-    <!-- مكتبات React و Babel -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -53,39 +48,155 @@
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
             }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            
+            /* فرض الخط العريض في الطباعة */
+            * {
+                color: #000 !important;
+            }
+            .print-bold {
+                font-weight: 900 !important;
+                font-size: 110% !important;
+            }
         }
+        
+        /* مؤشر التحميل */
+        .loader {
+            border: 3px solid #f3f3f3; border-top: 3px solid #3498db;
+            border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-[#f8f9fa] antialiased font-sans">
+<body class="bg-[#f8f9fa] antialiased font-sans relative">
 
-    <div id="root"></div>
+    <!-- حاوية التنبيهات -->
+    <div id="toast-container" class="fixed top-4 left-4 right-4 z-[9999] space-y-2 pointer-events-none max-w-sm mx-auto no-print"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+    <!-- شاشة التحميل الأولية -->
+    <div id="loading-screen" class="min-h-screen flex flex-col items-center justify-center z-50 bg-[#f8f9fa] absolute inset-0">
+        <div class="loader mb-4"></div>
+        <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة...</p>
+    </div>
 
-        // دالة تنظيف الكاش والبيانات القديمة غير المطابقة للمنظومة الجديدة
-        const clearOldStaticData = () => {
-            try {
-                const cachedPersons = localStorage.getItem('local_cached_persons') || localStorage.getItem('smartOrderPersonsList');
-                if (cachedPersons) {
-                    const parsed = JSON.parse(cachedPersons);
-                    // إذا وجدنا مصفوفة نصوص قديمة بدلاً من الكائنات التي تحتوي على PIN، نقوم بتطهير الكاش
-                    if (parsed.length > 0 && (typeof parsed[0] === 'string' || !parsed[0].pin)) {
-                        console.log("تطهير البيانات القديمة غير المتوافقة...");
-                        localStorage.removeItem('local_cached_persons');
-                        localStorage.removeItem('smartOrderPersonsList');
-                        localStorage.removeItem('local_cached_orders');
-                        localStorage.removeItem('smartOrderData_v4');
-                    }
-                }
-            } catch(e) {
-                console.error("خطأ أثناء تنظيف البيانات القديمة:", e);
+    <!-- شاشة تسجيل الدخول -->
+    <div id="login-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md border-t-8 border-[#2c3e50]">
+            <div class="bg-[#2c3e50] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md relative">
+                <i class="fa-solid fa-cloud text-white text-2xl"></i>
+                <div class="absolute bottom-1 right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#2c3e50]"></div>
+            </div>
+            <h1 class="text-2xl font-black text-center text-[#2c3e50] mb-2">تسجيل الدخول للمسئولين</h1>
+            
+            <p class="text-center text-xs text-emerald-600 mb-6 bg-emerald-50 p-2 rounded-lg border border-emerald-100 font-bold">
+                <i class="fa-solid fa-wifi mr-1"></i> متصل بالسحابة اللحظية
+            </p>
+
+            <div class="space-y-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-slate-500">اختر اسمك</label>
+                    <select id="loginUserSelect" class="w-full p-3 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#3498db] bg-white font-bold text-slate-700">
+                        <option value="">-- جاري جلب المسئولين... --</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-slate-500">الرقم السري (PIN)</label>
+                    <input type="password" id="loginPinInput" pattern="[0-9]*" inputmode="numeric" placeholder="••••" maxlength="6" class="w-full p-3 border border-slate-200 rounded-xl text-center text-lg tracking-widest outline-none focus:border-[#3498db] font-bold">
+                </div>
+                <button onclick="handleLogin()" class="w-full py-3.5 bg-[#2c3e50] text-white rounded-xl font-bold text-sm hover:bg-[#1a252f] transition-all flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> تأكيد الدخول
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة التطبيق الرئيسية -->
+    <div id="main-app" class="min-h-screen bg-[#f8f9fa] pb-20 print:bg-white print:pb-0 hidden">
+        <header class="bg-[#2c3e50] text-white p-4 shadow-md sticky top-0 z-10 no-print">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 relative">
+                        <i class="fa-solid fa-user-shield text-white"></i>
+                        <div id="sync-indicator" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#2c3e50] transition-all"></div>
+                    </div>
+                    <div>
+                        <h2 id="header-role" class="text-[10px] text-slate-300 font-bold mb-0.5">صفحة (دور)</h2>
+                        <h1 id="header-name" class="font-bold text-sm text-white">اسم المستخدم</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="handleLogout()" class="text-white/70 hover:text-white transition-all text-xl bg-white/5 w-8 h-8 rounded-full flex items-center justify-center" title="خروج آمن">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="بحث برقم الأوردر أو الموديل..." class="w-full bg-white/10 border border-white/20 text-white placeholder-slate-300 rounded-lg py-2.5 px-10 text-sm outline-none focus:bg-white/20 transition-all text-right font-bold" dir="rtl">
+                <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-300 text-sm"></i>
+            </div>
+        </header>
+
+        <div id="orders-container" class="p-4 space-y-4 no-print">
+            <!-- سيتم إضافة الأوردرات هنا بواسطة الجافاسكريبت -->
+        </div>
+    </div>
+
+    <!-- نافذة الطباعة المعدلة والمحسنة -->
+    <div id="print-modal" class="fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 overflow-y-auto print:static print:bg-white print:p-0 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-5 print:shadow-none print:w-full print:max-w-none print:p-0">
+            <div class="border-b-2 border-slate-200 pb-3 mb-4 flex justify-between items-center no-print">
+                <h2 class="font-bold text-[#2c3e50] text-base">نافذة الطباعة التفصيلية</h2>
+                <button onclick="closePrintModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <div id="printAreaMobile" class="text-right p-4 border-2 border-slate-800 rounded-xl bg-white print:border-none print:bg-white print:p-0 print:m-0" dir="rtl">
+                <!-- تفاصيل الطباعة سيتم حقنها هنا -->
+            </div>
+
+            <div class="mt-4 flex gap-3 no-print">
+                <button onclick="window.print()" class="flex-1 py-3 bg-black text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg">
+                    <i class="fa-solid fa-print text-lg"></i> طباعة الآن
+                </button>
+                <button onclick="closePrintModal()" class="flex-1 py-3 bg-slate-200 text-slate-800 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all">
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- حماية التطبيق من الانهيار (Crash Protection) ---
+        window.addEventListener('error', function(e) {
+            console.error("Global error caught:", e.error);
+            showFallbackError("عذراً، حدث خطأ مفاجئ أثناء معالجة البيانات.");
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error("Unhandled promise rejection:", e.reason);
+            showFallbackError("تعذر الاتصال بقاعدة البيانات السحابية، تأكد من اتصال الإنترنت.");
+        });
+
+        function showFallbackError(msg) {
+            // إخفاء مؤشر التحميل إن وجد
+            document.getElementById('loading-screen').style.display = 'none';
+            // عرض رسالة الخطأ للمستخدم
+            if (!document.getElementById('crash-overlay')) {
+                const crashHtml = `
+                    <div id="crash-overlay" class="fixed inset-0 bg-white/95 backdrop-blur-sm z-[10000] flex flex-col items-center justify-center p-6 text-center">
+                        <i class="fa-solid fa-triangle-exclamation text-5xl text-red-500 mb-4 animate-bounce"></i>
+                        <h2 class="text-xl font-black text-slate-800 mb-2">تنبيه النظام</h2>
+                        <p class="text-slate-600 mb-6 font-bold text-sm">${msg}</p>
+                        <button onclick="window.location.reload()" class="px-8 py-3 bg-[#2c3e50] shadow-lg text-white rounded-xl font-bold">تحديث الصفحة</button>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', crashHtml);
             }
-        };
-        clearOldStaticData();
+        }
 
-        // الإعدادات الافتراضية المباشرة (مطابقة للمشروع الخاص بك لمنع مشاكل الأوفلاين)
-        const customFirebaseConfig = {
+        // --- 1. إعدادات Firebase ---
+        const firebaseConfig = {
             apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
             authDomain: "order-system-26c71.firebaseapp.com",
             projectId: "order-system-26c71",
@@ -93,605 +204,510 @@
             messagingSenderId: "974299124203",
             appId: "1:974299124203:web:821e75330a0b434addc9ae"
         };
-
-        // محاولة جلب الإعدادات من البيئة أو الذاكرة المشتركة مع الصفحة الرئيسية
-        let firebaseConfig = {};
-        try {
-            if (customFirebaseConfig && customFirebaseConfig.apiKey) {
-                firebaseConfig = customFirebaseConfig;
-            } else {
-                firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            }
-            
-            // قراءة الإعدادات المشتركة التي حفظتها الصفحة الرئيسية بالمتصفح كاحتياطي
-            if (!firebaseConfig.apiKey) {
-                const sharedConfig = localStorage.getItem('shared_firebase_config');
-                if (sharedConfig) {
-                    firebaseConfig = JSON.parse(sharedConfig);
-                }
-            }
-        } catch (e) {
-            console.error("Firebase config parsing error:", e);
-        }
+        const appIdentifier = typeof __app_id !== 'undefined' ? __app_id : 'smart-orders-app';
         
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'smart-orders-app';
+        let db, auth;
+        let isFirebaseInitialized = false;
 
-        let app, auth, db;
-        let isFirebaseAvailable = false;
+        // --- 2. البيانات والحالة (State) ---
+        let currentUser = null;
+        let userRole = null;
+        let searchQuery = '';
+        let activePrintOrder = null;
 
-        const initializeFirebaseApp = (config) => {
-            if (config && config.apiKey) {
-                try {
-                    app = firebase.apps.length === 0 ? firebase.initializeApp(config) : firebase.app();
-                    auth = firebase.auth();
-                    db = firebase.firestore();
-                    isFirebaseAvailable = true;
-                    return true;
-                } catch (e) {
-                    console.error("Firebase initialization failed:", e);
-                }
-            }
-            return false;
-        };
+        let availablePersons = [];
+        let allOrders = [];
 
-        initializeFirebaseApp(firebaseConfig);
-
-        function MobileApp() {
-            const [user, setUser] = useState(null);
-            const [allOrders, setAllOrders] = useState([]);
-            const [selectedPerson, setSelectedPerson] = useState(localStorage.getItem('mobile_app_person') || '');
-            const [personRole, setPersonRole] = useState(localStorage.getItem('mobile_app_role') || 'تحضير');
-            const [searchQuery, setSearchQuery] = useState('');
-            const [availablePersons, setAvailablePersons] = useState([]);
-            const [isOnline, setIsOnline] = useState(isFirebaseAvailable);
-            const [toasts, setToasts] = useState([]); 
-            const [showPrintModal, setShowPrintModal] = useState(false);
-            const [activePrintOrder, setActivePrintOrder] = useState(null);
-            const [loginPin, setLoginPin] = useState('');
+        // --- 3. دوال مساعدة (Helpers) ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
             
-            // نافذة تعديل إعدادات الاتصال يدوياً في حال تعذر الربط التلقائي
-            const [showConfigModal, setShowConfigModal] = useState(false);
-            const [tempApiKey, setTempApiKey] = useState(firebaseConfig.apiKey || '');
-            const [tempProjectId, setTempProjectId] = useState(firebaseConfig.projectId || '');
+            let styleClass = '';
+            if (type === 'success') styleClass = 'bg-[#e2f0d9] text-[#385723] border-[#c3e6cb]';
+            else if (type === 'warning') styleClass = 'bg-[#fff3cd] text-[#856404] border-[#ffeeba]';
+            else if (type === 'danger') styleClass = 'bg-red-100 text-red-800 border-red-200';
+            else styleClass = 'bg-[#cff4fc] text-[#055160] border-[#b6effb]';
 
-            const showToast = (message, type = 'success') => {
-                const id = Date.now();
-                setToasts(prev => [...prev, { id, message, type }]);
-                setTimeout(() => {
-                    setToasts(prev => prev.filter(t => t.id !== id));
-                }, 3500);
-            };
+            toast.className = `p-4 rounded-xl shadow-lg border text-sm font-bold flex items-center gap-2 transform transition-all duration-300 ${styleClass} animate-[pulse-slow_0.5s_ease-out]`;
+            toast.innerHTML = `<span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
 
-            // مراقبة وحفظ إعدادات الربط اليدوية
-            const saveCustomConfig = () => {
-                if (!tempApiKey.trim() || !tempProjectId.trim()) {
-                    showToast("يرجى إدخال البيانات المطلوبة للربط!", "warning");
-                    return;
-                }
-                const newConfig = {
-                    apiKey: tempApiKey.trim(),
-                    authDomain: `${tempProjectId.trim()}.firebaseapp.com`,
-                    projectId: tempProjectId.trim(),
-                    storageBucket: `${tempProjectId.trim()}.appspot.com`,
-                    messagingSenderId: "123456789",
-                    appId: `1:123456789:web:123456abc`
-                };
-                localStorage.setItem('shared_firebase_config', JSON.stringify(newConfig));
-                showToast("تم حفظ الإعدادات! يرجى إعادة تحميل التطبيق للمزامنة.", "success");
-                setShowConfigModal(false);
-                setTimeout(() => window.location.reload(), 1000);
-            };
+        function getStatusStyles(status) {
+            switch(status) {
+                case 'تم الاستلام': return 'bg-[#e2f0d9] text-[#385723] border border-[#c3e6cb]';
+                case 'تم التحضير': return 'bg-[#d1e7dd] text-[#0f5132] border border-[#badbcc] shadow-md';
+                case 'جاري التحضير': return 'bg-[#cff4fc] text-[#055160] border border-[#b6effb]';
+                default: return 'bg-[#fff3cd] text-[#856404] border border-[#ffeeba]';
+            }
+        }
 
-            useEffect(() => {
-                if (!isFirebaseAvailable || !auth) {
-                    setIsOnline(false);
-                    loadLocalData();
-                    return;
-                }
+        // --- 4. التهيئة والاتصال بالسحابة ---
+        function initApp() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                isFirebaseInitialized = true;
 
-                const initAuth = async () => {
+                auth.signInAnonymously().then(() => {
+                    setupCloudListeners();
+                }).catch(err => {
+                    console.error("Auth error:", err);
+                    showFallbackError("حدث خطأ في المصادقة السحابية.");
+                });
+            } catch(e) {
+                console.error("Firebase init failed:", e);
+                showFallbackError("فشل التهيئة الأساسية للخدمات السحابية.");
+            }
+
+            // مستمع للبحث بحماية من الأخطاء
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
                     try {
-                        const isCustomConfigUsed = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !isCustomConfigUsed) {
-                            await auth.signInWithCustomToken(__initial_auth_token);
-                        } else {
-                            await auth.signInAnonymously();
-                        }
-                        setIsOnline(true);
-                    } catch (error) {
-                        console.error("Auth Error, trying fallback:", error);
-                        try {
-                            await auth.signInAnonymously();
-                            setIsOnline(true);
-                        } catch (fallbackError) {
-                            console.error("Fallback Auth failed, switching to local mode:", fallbackError);
-                            setIsOnline(false);
-                            loadLocalData();
-                        }
-                    }
-                };
-                initAuth();
-                
-                const unsubscribe = auth.onAuthStateChanged((u) => {
-                    setUser(u);
-                    if (!u) {
-                        setIsOnline(false);
-                        loadLocalData();
+                        searchQuery = e.target.value;
+                        renderOrders();
+                    } catch(err) {
+                        console.error("Search error", err);
                     }
                 });
-                return () => unsubscribe();
-            }, []);
+            }
+        }
 
-            useEffect(() => {
-                if (!isOnline || !user || !db) {
-                    loadLocalData();
-                    return;
-                }
+        function setupCloudListeners() {
+            const personsRef = db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('persons');
+            const ordersRef = db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders');
 
-                // مزامنة الأوردرات حية من السحابة بـ docId لضمان التوافق المطلق
-                const unsubscribeOrders = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('orders')
-                    .onSnapshot((snapshot) => {
-                        const fetchedOrders = [];
-                        snapshot.forEach((doc) => {
-                            fetchedOrders.push({ docId: doc.id, ...doc.data() });
-                        });
-                        fetchedOrders.sort((a, b) => (b.timestamp || b.createdAt || 0) - (a.timestamp || a.createdAt || 0));
-                        setAllOrders(fetchedOrders);
-                        localStorage.setItem('local_cached_orders', JSON.stringify(fetchedOrders));
-                    }, (error) => {
-                        console.error("Orders load failed, fallback to local:", error);
-                        setIsOnline(false);
-                        loadLocalData();
+            // 1. الاستماع للمسئولين
+            personsRef.onSnapshot((snapshot) => {
+                try {
+                    availablePersons = [];
+                    snapshot.forEach(doc => {
+                        availablePersons.push({ docId: doc.id, ...doc.data() });
                     });
+                    updateLoginSelect();
+                    checkSession();
+                } catch(e) {
+                    console.error("Error processing persons data:", e);
+                }
+            }, err => {
+                console.error("Persons sync error:", err);
+                showFallbackError("انقطع الاتصال بقاعدة بيانات المسئولين.");
+            });
 
-                // مزامنة قائمة المسئولين حية من السحابة (المضافة من الصفحة الرئيسية) بـ docId لضمان التوافق المطلق
-                const unsubscribePersons = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('persons')
-                    .onSnapshot((snapshot) => {
-                        const fetchedPersons = [];
-                        snapshot.forEach((doc) => {
-                            fetchedPersons.push({ docId: doc.id, ...doc.data() });
-                        });
-                        setAvailablePersons(fetchedPersons);
-                        localStorage.setItem('local_cached_persons', JSON.stringify(fetchedPersons));
-                    }, (error) => {
-                        console.error("Persons load failed:", error);
+            // 2. الاستماع للأوردرات
+            ordersRef.onSnapshot((snapshot) => {
+                try {
+                    allOrders = [];
+                    snapshot.forEach(doc => {
+                        allOrders.push({ docId: doc.id, ...doc.data() });
                     });
+                    
+                    const indicator = document.getElementById('sync-indicator');
+                    if(indicator) {
+                        indicator.classList.add('bg-yellow-400');
+                        setTimeout(() => indicator.classList.remove('bg-yellow-400'), 500);
+                    }
 
-                return () => {
-                    unsubscribeOrders();
-                    unsubscribePersons();
-                };
-            }, [user, isOnline]);
+                    if (currentUser) renderOrders();
+                } catch(e) {
+                    console.error("Error processing orders data:", e);
+                }
+            }, err => {
+                console.error("Orders sync error:", err);
+                showToast("تأخر في مزامنة الأوردرات", "warning");
+            });
+        }
 
-            const loadLocalData = () => {
-                const cachedOrders = JSON.parse(localStorage.getItem('local_cached_orders')) || 
-                                     JSON.parse(localStorage.getItem('smartOrderData_v4')) || [];
-                
-                const cachedPersons = JSON.parse(localStorage.getItem('local_cached_persons')) || 
-                                      JSON.parse(localStorage.getItem('smartOrderPersonsList')) || [];
-                
-                setAllOrders(cachedOrders);
-                setAvailablePersons(cachedPersons);
-            };
+        function checkSession() {
+            const loader = document.getElementById('loading-screen');
+            if(loader) loader.style.display = 'none';
+            
+            const savedUser = localStorage.getItem('cloud_app_person');
+            const savedRole = localStorage.getItem('cloud_app_role');
 
-            const handleLogin = (personName) => {
-                if (!personName) {
-                    showToast("يرجى اختيار اسم المسئول!", "warning");
+            if (savedUser && availablePersons.some(p => p.name === savedUser)) {
+                currentUser = savedUser;
+                userRole = savedRole;
+                showMainApp();
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        // --- 5. المنطق والواجهة ---
+        function updateLoginSelect() {
+            const select = document.getElementById('loginUserSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- اختر اسمك للبدء --</option>';
+            availablePersons.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.textContent = `${p.name} (${p.role || 'تحضير'})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function showLoginScreen() {
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('login-screen').classList.add('flex');
+        }
+
+        function showMainApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('flex');
+            document.getElementById('main-app').classList.remove('hidden');
+            
+            document.getElementById('header-name').textContent = currentUser;
+            document.getElementById('header-role').textContent = `صفحة (${userRole})`;
+            
+            renderOrders();
+        }
+
+        function handleLogin() {
+            const selectedName = document.getElementById('loginUserSelect').value;
+            const pinInput = document.getElementById('loginPinInput').value;
+
+            if (!selectedName) {
+                showToast("يرجى اختيار اسم المسئول!", "warning");
+                return;
+            }
+
+            const person = availablePersons.find(p => p.name === selectedName);
+            
+            if (person.pin && person.pin.toString() !== pinInput) {
+                showToast("الرقم السري (PIN) غير صحيح!", "danger");
+                return;
+            }
+
+            currentUser = person.name;
+            userRole = person.role || 'تحضير';
+            localStorage.setItem('cloud_app_person', currentUser);
+            localStorage.setItem('cloud_app_role', userRole);
+            
+            document.getElementById('loginPinInput').value = '';
+            showToast(`مرحباً بك ${currentUser}`, "success");
+            showMainApp();
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            userRole = null;
+            localStorage.removeItem('cloud_app_person');
+            localStorage.removeItem('cloud_app_role');
+            showToast("تم تسجيل خروجك بنجاح", "info");
+            showLoginScreen();
+        }
+
+        // رسم الأوردرات وترتيبها
+        function renderOrders() {
+            try {
+                const container = document.getElementById('orders-container');
+                if (!container) return;
+                container.innerHTML = '';
+
+                let myOrders = allOrders.filter(o => {
+                    const showAll = userRole === 'تسليم' || userRole === 'شامل';
+                    const isMyOrder = showAll || (o.person && o.person === currentUser);
+                    
+                    const safeOrderNum = o.orderNum ? o.orderNum.toString().toLowerCase() : '';
+                    const safeModel = o.model ? o.model.toLowerCase() : '';
+                    const query = (searchQuery || '').trim().toLowerCase();
+                    
+                    const matchesSearch = query === '' || 
+                                          safeOrderNum.includes(query) || 
+                                          safeModel.includes(query);
+                    return isMyOrder && matchesSearch;
+                });
+
+                // تعديل خوارزمية الترتيب: الأولوية لـ "جاري التحضير" ثم "تم التحضير"
+                myOrders.sort((a, b) => {
+                    const statusPriority = {
+                        'جاري التحضير': 1, // الأولوية الأولى
+                        'تم التحضير': 2,
+                        'معلق': 3,
+                        'تم الاستلام': 4
+                    };
+                    
+                    const rankA = statusPriority[a.status] || 5;
+                    const rankB = statusPriority[b.status] || 5;
+                    
+                    if (rankA !== rankB) {
+                        return rankA - rankB; 
+                    }
+                    
+                    // الترتيب حسب وقت الإضافة
+                    return (b.timestamp || 0) - (a.timestamp || 0);
+                });
+
+                if (myOrders.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4">
+                            <i class="fa-solid fa-folder-open text-slate-300 text-4xl mb-4"></i>
+                            <h3 class="text-sm font-bold text-slate-600">لا توجد أوردرات مطابقة للبحث</h3>
+                        </div>
+                    `;
                     return;
                 }
-                const person = availablePersons.find(p => p.name.trim() === personName.trim());
-                if (!person) {
-                    showToast("لم يتم العثور على حسابك! يرجى مراجعة صفحة الإدارة.", "warning");
-                    return;
-                }
 
-                if (person.pin && person.pin.toString().trim() !== loginPin.trim()) {
-                    showToast("الرقم السري (PIN) غير صحيح! يرجى المحاولة مجدداً", "danger");
-                    return;
-                }
+                myOrders.forEach(order => {
+                    const isLocked = order.status === 'تم الاستلام';
+                    const statusStyle = getStatusStyles(order.status || 'معلق');
+                    
+                    // تاج التحضير
+                    const highlightBadge = order.status === 'تم التحضير' ? 
+                        `<div class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow border-2 border-white z-10 animate-bounce">مستعد للتسليم!</div>` : '';
 
-                setSelectedPerson(person.name);
-                setPersonRole(person.role || 'تحضير');
-                localStorage.setItem('mobile_app_person', person.name);
-                localStorage.setItem('mobile_app_role', person.role || 'تحضير');
-                setLoginPin('');
-                showToast(`مرحباً بك ${person.name} كـ (مسئول ${person.role || 'تحضير'})`, "success");
-            };
+                    let buttonsHtml = '';
+                    if (!isLocked) {
+                        buttonsHtml += '<div class="mt-4"><div class="flex gap-2">';
+                        if (userRole === 'تحضير' || userRole === 'شامل') {
+                            const prepActive = order.status === 'جاري التحضير' ? 'bg-[#cff4fc] text-[#055160] border-[#b6effb] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
+                            const doneActive = order.status === 'تم التحضير' ? 'bg-[#d1e7dd] text-[#0f5132] border-[#badbcc] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
+                            buttonsHtml += `
+                                <button onclick="updateStatus('${order.docId}', 'جاري التحضير')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${prepActive}">جاري التحضير</button>
+                                <button onclick="updateStatus('${order.docId}', 'تم التحضير')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${doneActive}">تم التحضير</button>
+                            `;
+                        }
+                        if (userRole === 'تسليم' || userRole === 'شامل') {
+                            buttonsHtml += `
+                                <button onclick="updateStatus('${order.docId}', 'تم الاستلام')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700">تم الاستلام النهائي</button>
+                            `;
+                        }
+                        buttonsHtml += '</div></div>';
+                    } else {
+                        buttonsHtml = `
+                            <div class="mt-3 bg-red-50 border border-red-200 rounded-lg p-2 text-xs text-red-700 flex items-center justify-center gap-2 font-bold">
+                                <i class="fa-solid fa-lock"></i><span>مغلق ومحمي من التعديل</span>
+                            </div>
+                        `;
+                    }
 
-            const handleLogout = () => {
-                showToast("تم تسجيل خروجك بنجاح", "info");
-                setSelectedPerson('');
-                localStorage.removeItem('mobile_app_person');
-                localStorage.removeItem('mobile_app_role');
-            };
+                    const safeBrand = order.brand ? order.brand.trim() : '';
+                    const brandHtml = safeBrand !== '' ? 
+                        `<span class="bg-black text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider">${safeBrand}</span>` : '';
 
-            // تعديل دالة تحديث الحالة لحفظ التواريخ الصحيحة المتوافقة مع لوحة التحكم
-            const updateStatus = async (docId, newStatus) => {
+                    const notesHtml = order.notes ? `
+                        <div class="mt-2 bg-[#f8f9fa] border border-slate-200 rounded-lg p-2 text-xs">
+                            <span class="font-bold text-slate-500 block mb-1">الملاحظات:</span> 
+                            <span class="text-slate-800 font-bold">${order.notes}</span>
+                        </div>
+                    ` : '';
+
+                    const borderClass = order.status === 'تم التحضير' ? 'border-[#3498db] border-2 shadow-lg' : 'border-slate-200 shadow-md border';
+
+                    // عرض التصنيف في القائمة
+                    const typeDisplay = order.type ? order.type : '-';
+
+                    const orderHtml = `
+                        <div class="bg-white rounded-xl ${borderClass} overflow-hidden relative mb-4 transition-all">
+                            ${highlightBadge}
+                            <div class="bg-[#2c3e50] p-3 text-white flex justify-between items-center">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-slate-300 font-bold">رقم الأوردر</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-black text-sm tracking-wide text-white">${order.orderNum || '-'}</span>
+                                        ${brandHtml}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="triggerPrint('${order.docId}')" class="bg-white/10 p-1.5 rounded-md hover:bg-white/25 text-white transition-all text-xs" title="طباعة الأوردر">
+                                        <i class="fa-solid fa-print"></i>
+                                    </button>
+                                    <div class="px-3 py-1 rounded-md text-[11px] font-bold ${statusStyle}">
+                                        ${order.status || 'معلق'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-3">
+                                <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm border-b border-slate-100 pb-3">
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] text-slate-400 font-bold mb-0.5">الموديل</span>
+                                        <span class="font-black text-slate-800">${order.model || '-'}</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] text-slate-400 font-bold mb-0.5">العدد واللون</span>
+                                        <div class="flex items-center gap-1">
+                                            <span class="font-black text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-xs">${order.qty || '-'}</span>
+                                            <span class="font-bold text-slate-700 text-xs">${order.color || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-[11px] border-b border-slate-100 py-2.5 text-slate-500">
+                                    <div>رقم التحويلة: <span class="font-black text-slate-800">${order.id || '-'}</span></div>
+                                    <div>التصنيف: <span class="font-black text-[#3498db] bg-[#3498db15] px-1 rounded">${typeDisplay}</span></div>
+                                    <div class="col-span-2">تاريخ الطلب: <span class="font-bold text-slate-700">${order.orderDate || '-'}</span></div>
+                                    <div class="col-span-2">المسئول الحالي: <span class="font-bold text-slate-800">${order.person || 'غير محدد'}</span></div>
+                                </div>
+
+                                ${notesHtml}
+                                ${buttonsHtml}
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.innerHTML += orderHtml;
+                });
+            } catch (error) {
+                console.error("Error rendering orders:", error);
+                showToast("حدث خطأ في عرض البيانات، يرجى التحديث", "danger");
+            }
+        }
+
+        // تحديث حالة الأوردر (يتم رفعه للسحابة مباشرة)
+        function updateStatus(docId, newStatus) {
+            try {
+                if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
+
                 const order = allOrders.find(o => o.docId === docId);
-                if (order && order.status === 'تم الاستلام') {
-                    showToast("⚠️ هذا الأوردر مستلم نهائياً ومقفل، التعديل متاح فقط للإدارة!", "warning");
+                if (!order) return;
+
+                if (order.status === 'تم الاستلام') {
+                    showToast("⚠️ هذا الأوردر مستلم نهائياً ومقفل!", "warning");
                     return;
                 }
 
                 const now = new Date();
-                const y = now.getFullYear();
-                const m = String(now.getMonth() + 1).padStart(2, '0');
-                const d = String(now.getDate()).padStart(2, '0');
-                const todayYYYYMMDD = `${y}-${m}-${d}`; // تاريخ اليوم بتنسيق YYYY-MM-DD المطابق لقاعدة البيانات
+                const todayYYYYMMDD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                 
-                const timeString = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
-
-                // تجهيز الحقول التي سيتم تحديثها فقط دون تغيير باقي محتوى الطلب
-                const updateFields = {
-                    status: newStatus,
-                    updatedAt: Date.now(),
-                    actionTime: timeString
-                };
-
-                // إذا كانت الحالة تحولت لتم الاستلام، نغير تاريخ الاستلام فقط ليطابق لوحة تحكم الإدارة
-                if (newStatus === 'تم الاستلام') {
-                    updateFields.receiveDate = todayYYYYMMDD;
-                } else if (newStatus === 'تم التحضير') {
-                    updateFields.prepDate = todayYYYYMMDD;
-                }
-
-                const updated = allOrders.map(o => {
-                    if (o.docId === docId) {
-                        return { 
-                            ...o, 
-                            ...updateFields
-                        };
-                    }
-                    return o;
-                });
+                const updates = { status: newStatus };
                 
-                setAllOrders(updated);
-                showToast(`تم تحديث الحالة إلى "${newStatus}"`, "success");
+                if (newStatus === 'تم الاستلام') updates.receiveDate = todayYYYYMMDD;
+                else if (newStatus === 'تم التحضير') updates.prepDate = todayYYYYMMDD;
 
-                // تحديث الذاكرة المحلية أولاً لضمان التزامن الفوري
-                updateLocalOrder(docId, updateFields, updated);
+                showToast(`جاري التحديث إلى "${newStatus}"...`, "info");
 
-                if (isOnline && user && db) {
-                    try {
-                        const orderRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('orders').doc(docId);
-                        await orderRef.update(updateFields);
-                    } catch (error) {
-                        console.error("Cloud update failed, saved locally:", error);
-                    }
-                }
-            };
-
-            const updateLocalOrder = (docId, updateFields, updatedList) => {
-                localStorage.setItem('smartOrderData_v4', JSON.stringify(updatedList));
-                
-                // تنبيه التبويبات المجاورة بالتغيير
-                window.dispatchEvent(new Event('storage'));
-
-                const currentLocalOrders = JSON.parse(localStorage.getItem('local_cached_orders')) || [];
-                const cIdx = currentLocalOrders.findIndex(o => o.docId === docId);
-                if(cIdx !== -1) {
-                    currentLocalOrders[cIdx] = {
-                        ...currentLocalOrders[cIdx],
-                        ...updateFields
-                    };
-                    localStorage.setItem('local_cached_orders', JSON.stringify(currentLocalOrders));
-                }
-            };
-
-            // تحديث منطق تصفية الأوردرات ليعرض كافة الأوردرات لمسئولي التسليم والشامل
-            const myOrders = allOrders.filter(o => {
-                const showAll = personRole === 'تسليم' || personRole === 'شامل';
-                const isMyOrder = showAll || (o.person && o.person.trim() === selectedPerson.trim());
-                
-                const query = searchQuery.trim().toLowerCase();
-                const matchesSearch = query === '' || 
-                                      (o.orderNum && o.orderNum.toString().toLowerCase().includes(query)) || 
-                                      (o.model && o.model.toLowerCase().includes(query));
-                return isMyOrder && matchesSearch;
-            });
-
-            const getStatusStyles = (status) => {
-                switch(status) {
-                    case 'تم الاستلام': return 'bg-[#e2f0d9] text-[#385723] border border-[#c3e6cb]';
-                    case 'تم التحضير': return 'bg-[#d1e7dd] text-[#0f5132] border border-[#badbcc]';
-                    case 'جاري التحضير': return 'bg-[#cff4fc] text-[#055160] border border-[#b6effb]';
-                    default: return 'bg-[#fff3cd] text-[#856404] border border-[#ffeeba]';
-                }
-            };
-
-            const triggerPrint = (order) => {
-                setActivePrintOrder(order);
-                setShowPrintModal(true);
-                setTimeout(() => {
-                    window.print();
-                }, 300);
-            };
-
-            // ------------------ شاشة الدخول فقط ------------------
-            if (!selectedPerson) {
-                return (
-                    <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4 relative">
-                        {/* زر الإعدادات اليدوية السريعة */}
-                        <button onClick={() => setShowConfigModal(true)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-all text-xl" title="ضبط إعدادات الربط">
-                            <i className="fa-solid fa-gear"></i>
-                        </button>
-
-                        <div className="fixed top-4 left-4 right-4 z-50 space-y-2 pointer-events-none max-w-sm mx-auto">
-                            {toasts.map(t => (
-                                <div key={t.id} className={`p-4 rounded-xl shadow-lg border text-sm font-bold flex items-center gap-2 transition-all ${t.type === 'danger' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-[#fff3cd] text-[#856404] border-[#ffeeba]'}`}>
-                                    <span>{t.message}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md border-t-8 border-[#2c3e50]">
-                            <div className="bg-[#2c3e50] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-                                <i className="fa-solid fa-lock text-white text-2xl"></i>
-                            </div>
-                            <h1 className="text-2xl font-black text-center text-[#2c3e50] mb-2">تسجيل الدخول</h1>
-                            
-                            <p className="text-center text-xs text-slate-500 mb-6 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                يتم إنشاء حسابات المسئولين وصلاحياتهم وتعديلها من خلال لوحة تحكم (الصفحة الرئيسية) فقط.
-                            </p>
-
-                            <div className="space-y-4">
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs font-bold text-slate-500">اختر اسمك</label>
-                                    <select id="loginUserSelect" className="w-full p-3 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#3498db] bg-white">
-                                        <option value="">-- اختر اسمك للبدء --</option>
-                                        {availablePersons.map(p => (
-                                            <option key={p.docId || p.id} value={p.name}>{p.name} ({p.role || 'تحضير'})</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs font-bold text-slate-500">الرقم السري (PIN)</label>
-                                    <input type="password" pattern="[0-9]*" inputMode="numeric" placeholder="••••" maxLength="6" value={loginPin} onChange={(e) => setLoginPin(e.target.value)} className="w-full p-3 border border-slate-200 rounded-xl text-center text-lg tracking-widest outline-none focus:border-[#3498db]"/>
-                                </div>
-                                <button onClick={() => handleLogin(document.getElementById('loginUserSelect').value)} className="w-full py-3.5 bg-[#2c3e50] text-white rounded-xl font-bold text-sm hover:bg-[#1a252f] transition-all flex items-center justify-center gap-2 mt-2">
-                                    <i className="fa-solid fa-right-to-bracket"></i> تأكيد الدخول
-                                </button>
-                            </div>
-
-                            {/* مؤشر المزامنة السحابية */}
-                            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                                <span>حالة الاتصال بالسحابة:</span>
-                                <span className={`font-bold flex items-center gap-1 ${isOnline ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                    <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></span>
-                                    {isOnline ? 'متصل ومزامن لحّظياً ☁️' : 'أوفلاين (محلي) 💻'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* نافذة ضبط إعدادات الـ Firebase يدوياً */}
-                        {showConfigModal && (
-                            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                                <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
-                                    <h3 className="font-black text-lg text-slate-800 mb-2">⚙️ إعدادات ربط السحابة</h3>
-                                    <p className="text-xs text-slate-500 mb-4">انسخ الـ apiKey والـ projectId من لوحة تحكم الصفحة الرئيسية لإتمام المزامنة.</p>
-                                    
-                                    <div className="space-y-3">
-                                        <div className="flex flex-col gap-1">
-                                            <label className="text-[10px] font-bold text-slate-400">API Key</label>
-                                            <input type="text" placeholder="AIzaSy..." value={tempApiKey} onChange={(e) => setTempApiKey(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-mono outline-none" />
-                                        </div>
-                                        <div className="flex flex-col gap-1">
-                                            <label className="text-[10px] font-bold text-slate-400">Project ID</label>
-                                            <input type="text" placeholder="my-app-123" value={tempProjectId} onChange={(e) => setTempProjectId(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-mono outline-none" />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-2 mt-5">
-                                        <button onClick={saveCustomConfig} className="flex-1 py-2 bg-[#2c3e50] text-white rounded-lg text-xs font-bold">ربط وحفظ</button>
-                                        <button onClick={() => setShowConfigModal(false)} className="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold">إلغاء</button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                );
+                db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders').doc(docId)
+                    .update(updates)
+                    .then(() => {
+                        showToast(`تم تحديث الحالة بنجاح`, "success");
+                    })
+                    .catch(err => {
+                        console.error("Update error:", err);
+                        showToast("فشل في تحديث الحالة، تحقق من الإنترنت", "danger");
+                    });
+            } catch(e) {
+                console.error("Error in update status:", e);
             }
-
-            // ------------------ واجهة التطبيق الرئيسية للمسئول المسجل ------------------
-            return (
-                <div className="min-h-screen bg-[#f8f9fa] pb-20 print:bg-white print:pb-0">
-                    
-                    <div className="fixed top-4 left-4 right-4 z-50 space-y-2 pointer-events-none max-w-sm mx-auto print:hidden">
-                        {toasts.map(t => (
-                            <div key={t.id} className={`p-4 rounded-xl shadow-lg border text-sm font-bold flex items-center gap-2 transform transition-all duration-300 ${t.type === 'success' ? 'bg-[#e2f0d9] text-[#385723] border-[#c3e6cb]' : t.type === 'warning' ? 'bg-[#fff3cd] text-[#856404] border-[#ffeeba]' : 'bg-[#cff4fc] text-[#055160] border-[#b6effb]'}`}>
-                                <span>{t.message}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="print:hidden">
-                        <header className="bg-[#2c3e50] text-white p-4 shadow-md sticky top-0 z-10">
-                            <div className="flex justify-between items-center mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center border border-white/20">
-                                        <i className="fa-solid fa-user-shield text-white"></i>
-                                    </div>
-                                    <div>
-                                        <h2 className="text-[10px] text-slate-300 font-bold mb-0.5">صفحة ({personRole})</h2>
-                                        <h1 className="font-bold text-sm text-white">{selectedPerson}</h1>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className={`w-3 h-3 rounded-full ${isOnline ? 'bg-[#27ae60]' : 'bg-[#f39c12]'} shadow-sm`} title={isOnline ? 'متصل' : 'أوفلاين'}></span>
-                                    <button onClick={handleLogout} className="text-white/70 hover:text-white transition-all text-xl" title="خروج آمن">
-                                        <i className="fa-solid fa-right-from-bracket"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="relative">
-                                <input type="text" placeholder="بحث برقم الأوردر أو الموديل..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-white/10 border border-white/20 text-white placeholder-slate-300 rounded-lg py-2.5 px-10 text-sm outline-none focus:bg-white/20 transition-all text-right" dir="rtl" />
-                                <i className="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-300 text-sm"></i>
-                            </div>
-                        </header>
-
-                        <div className="p-4 space-y-4">
-                            {myOrders.length === 0 ? (
-                                <div className="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4">
-                                    <i className="fa-solid fa-folder-open text-slate-300 text-4xl mb-4"></i>
-                                    <h3 className="text-sm font-bold text-slate-600">لا توجد أوردرات مسجلة لك حالياً</h3>
-                                </div>
-                            ) : (
-                                myOrders.map(order => {
-                                    const isLocked = order.status === 'تم الاستلام';
-                                    return (
-                                        <div key={order.docId || order.id || order.orderNum} className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden relative">
-                                            <div className="bg-[#2c3e50] p-3 text-white flex justify-between items-center">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] text-slate-300">رقم الأوردر</span>
-                                                    <span className="font-bold text-sm tracking-wide">{order.orderNum}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button onClick={() => triggerPrint(order)} className="bg-white/10 p-1.5 rounded-md hover:bg-white/25 text-white transition-all text-xs" title="طباعة الأوردر">
-                                                        <i className="fa-solid fa-print"></i>
-                                                    </button>
-                                                    <div className={`px-3 py-1 rounded-md text-[11px] font-bold ${getStatusStyles(order.status || 'معلق')}`}>
-                                                        {order.status || 'معلق'}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="p-3">
-                                                <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-sm border-b border-slate-100 pb-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] text-slate-400 font-bold mb-0.5">الموديل</span>
-                                                        <span className="font-bold text-slate-800">{order.model}</span>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] text-slate-400 font-bold mb-0.5">العدد واللون</span>
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-xs">{order.qty}</span>
-                                                            <span className="font-bold text-slate-600 text-xs">{order.color || '-'}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 py-2.5 text-slate-500">
-                                                    <div>تاريخ الطلب: <span className="font-bold text-slate-700">{order.orderDate || '-'}</span></div>
-                                                    <div>تاريخ التحضير: <span className="font-bold text-slate-700">{order.prepDate || '-'}</span></div>
-                                                    <div className="col-span-2">تاريخ التسليم: <span className="font-bold text-emerald-700">{order.receiveDate || '-'}</span></div>
-                                                    <div className="col-span-2">المسئول الحالي: <span className="font-bold text-slate-700">{order.person || 'غير محدد'}</span></div>
-                                                </div>
-
-                                                {order.notes && (
-                                                    <div className="mt-2 bg-[#f8f9fa] border border-slate-200 rounded-lg p-2 text-xs">
-                                                        <span className="font-bold text-slate-500 block mb-1">الملاحظات:</span> 
-                                                        <span className="text-slate-700">{order.notes}</span>
-                                                    </div>
-                                                )}
-
-                                                {isLocked ? (
-                                                    <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-2 text-xs text-red-700 flex items-center justify-center gap-2">
-                                                        <i className="fa-solid fa-lock"></i><span>مغلق ومحمي من التعديل</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="mt-4">
-                                                        <div className="flex gap-2">
-                                                            {(personRole === 'تحضير' || personRole === 'شامل') && (
-                                                                <React.Fragment>
-                                                                    <button onClick={() => updateStatus(order.docId, 'جاري التحضير')} className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${order.status === 'جاري التحضير' ? 'bg-[#cff4fc] text-[#055160] border-[#b6effb] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>جاري التحضير</button>
-                                                                    <button onClick={() => updateStatus(order.docId, 'تم التحضير')} className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${order.status === 'تم التحضير' ? 'bg-[#d1e7dd] text-[#0f5132] border-[#badbcc] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>تم التحضير</button>
-                                                                </React.Fragment>
-                                                            )}
-                                                            {(personRole === 'تسليم' || personRole === 'شامل') && (
-                                                                <button onClick={() => updateStatus(order.docId, 'تم الاستلام')} className="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700">تم الاستلام النهائي</button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </div>
-
-                    {showPrintModal && activePrintOrder && (
-                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto print:static print:bg-white print:p-0 print:block">
-                            <div className="bg-white rounded-2xl w-full max-w-lg p-5 print:shadow-none print:w-full print:max-w-none print:p-0">
-                                
-                                <div className="border-b-2 border-slate-200 pb-3 mb-4 flex justify-between items-center print:hidden">
-                                    <h2 className="font-bold text-[#2c3e50] text-base">نافذة تجهيز الطباعة</h2>
-                                    <button onClick={() => setShowPrintModal(false)} className="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
-                                </div>
-
-                                <div id="printAreaMobile" className="text-right p-4 border border-slate-100 rounded-xl bg-slate-50 print:border-none print:bg-white print:p-0 print:m-0" dir="rtl">
-                                    <div className="border-b-2 border-[#2c3e50] pb-2 mb-4 flex justify-between items-center">
-                                        <h3 className="font-bold text-lg text-[#2c3e50]">تفاصيل الأوردر</h3>
-                                        <span className="text-xs text-slate-500">نظام الملاحظات والطباعة</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <div className="text-xs text-slate-400 font-bold mb-1">رقم الأوردر</div>
-                                            <div className="p-2.5 bg-white border border-slate-200 rounded-lg font-bold text-sm text-slate-800">{activePrintOrder.orderNum || '-'}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-xs text-slate-400 font-bold mb-1">رقم التحويلة</div>
-                                            <div className="p-2.5 bg-white border border-slate-200 rounded-lg font-bold text-sm text-slate-800">{activePrintOrder.id || '-'}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-2 mb-4">
-                                        <div>
-                                            <div className="text-[10px] text-slate-400 font-bold mb-1">الموديل</div>
-                                            <div className="p-2 bg-white border border-slate-200 rounded-lg font-bold text-xs text-slate-800 truncate">{activePrintOrder.model || '-'}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] text-slate-400 font-bold mb-1">العدد</div>
-                                            <div className="p-2 bg-white border border-slate-200 rounded-lg font-bold text-xs text-slate-800">{activePrintOrder.qty || '-'}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] text-slate-400 font-bold mb-1">اللون</div>
-                                            <div className="p-2 bg-white border border-slate-200 rounded-lg font-bold text-xs text-slate-800 truncate">{activePrintOrder.color || '-'}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <div className="text-xs text-slate-400 font-bold mb-1">التصنيف</div>
-                                            <div className="p-2.5 bg-white border border-slate-200 rounded-lg font-bold text-sm text-slate-800">{activePrintOrder.type || '-'}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-xs text-slate-400 font-bold mb-1">الحالة</div>
-                                            <div className="p-2.5 bg-[#e8f4fd] border border-[#3498db66] rounded-lg font-bold text-sm text-[#2980b9]">{activePrintOrder.status || 'معلق'}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <div className="text-xs text-slate-400 font-bold mb-1">المسئول الموجه إليه</div>
-                                        <div className="p-2.5 bg-white border border-slate-200 rounded-lg font-bold text-sm text-slate-800">{activePrintOrder.person || '-'}</div>
-                                    </div>
-
-                                    <div>
-                                        <div className="text-xs text-slate-400 font-bold mb-1">الملاحظات</div>
-                                        <div className="p-3 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 min-h-[50px]">{activePrintOrder.notes || '-'}</div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-4 flex gap-3 print:hidden">
-                                    <button onClick={() => window.print()} className="flex-1 py-3 bg-[#2c3e50] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#1a252f] transition-all">
-                                        <i className="fa-solid fa-print"></i> طباعة الآن
-                                    </button>
-                                    <button onClick={() => setShowPrintModal(false)} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-200 transition-all">
-                                        إغلاق النافذة
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<MobileApp />);
+        // --- 6. الطباعة المحسنة بكافة البيانات ---
+        function triggerPrint(docId) {
+            try {
+                activePrintOrder = allOrders.find(o => o.docId === docId);
+                if (!activePrintOrder) return;
+
+                const printContainer = document.getElementById('printAreaMobile');
+                
+                const brandHtml = activePrintOrder.brand ? 
+                    `<span class="bg-black text-white px-2 py-1 rounded-md text-xs font-black tracking-widest print:border print:border-black">${activePrintOrder.brand}</span>` : '';
+
+                // تجهيز كافة التفاصيل بخطوط بارزة وتنسيق طباعة مميز
+                printContainer.innerHTML = `
+                    <div class="border-b-4 border-black pb-3 mb-4 flex justify-between items-center text-black">
+                        <h3 class="font-black text-2xl">بيانات الأوردر التفصيلية</h3>
+                        ${brandHtml}
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4 text-black">
+                        <div class="border-2 border-slate-300 p-3 rounded-lg">
+                            <div class="text-[11px] font-bold text-slate-600 mb-1">رقم الأوردر</div>
+                            <div class="font-black text-xl">${activePrintOrder.orderNum || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-3 rounded-lg">
+                            <div class="text-[11px] font-bold text-slate-600 mb-1">رقم التحويلة</div>
+                            <div class="font-black text-xl">${activePrintOrder.id || '-'}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-slate-300 p-3 rounded-lg mb-4 text-black">
+                        <div class="text-[11px] font-bold text-slate-600 mb-1">الموديل (المنتج)</div>
+                        <div class="font-black text-xl">${activePrintOrder.model || '-'}</div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 mb-4 text-black">
+                        <div class="border-2 border-slate-300 p-2 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">العدد</div>
+                            <div class="font-black text-lg">${activePrintOrder.qty || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">اللون</div>
+                            <div class="font-black text-lg">${activePrintOrder.color || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">التصنيف</div>
+                            <div class="font-black text-lg">${activePrintOrder.type || '-'}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-slate-300 p-3 rounded-lg mb-4 text-black">
+                        <div class="text-[11px] font-bold text-slate-600 mb-1">الحالة الحالية</div>
+                        <div class="font-black text-lg bg-slate-100 p-1 rounded text-center border border-slate-400">${activePrintOrder.status || 'معلق'}</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4 text-black">
+                        <div class="border-2 border-slate-300 p-2 rounded-lg">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">تاريخ الطلب</div>
+                            <div class="font-black text-sm">${activePrintOrder.orderDate || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">تاريخ التحضير</div>
+                            <div class="font-black text-sm">${activePrintOrder.prepDate || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg col-span-2">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">المسئول الموجه إليه</div>
+                            <div class="font-black text-base">${activePrintOrder.person || '-'}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-slate-300 p-3 rounded-lg text-black">
+                        <div class="text-[11px] font-bold text-slate-600 mb-1">الملاحظات</div>
+                        <div class="font-black text-base leading-relaxed min-h-[60px]">${activePrintOrder.notes || 'لا توجد ملاحظات إضافية'}</div>
+                    </div>
+                    
+                    <div class="text-center mt-6 text-[10px] font-bold text-slate-400 no-print">
+                        نظام إدارة الأوردرات السحابي - ${new Date().toLocaleDateString('ar-EG')}
+                    </div>
+                `;
+
+                document.getElementById('print-modal').classList.remove('hidden');
+                document.getElementById('print-modal').classList.add('flex');
+                
+                // تأخير لضمان عرض الشاشة بالكامل قبل استدعاء نافذة الطباعة من المتصفح
+                setTimeout(() => { window.print(); }, 400);
+            } catch(e) {
+                console.error("Error in print setup:", e);
+                showToast("تعذر تجهيز واجهة الطباعة", "danger");
+            }
+        }
+
+        function closePrintModal() {
+            document.getElementById('print-modal').classList.add('hidden');
+            document.getElementById('print-modal').classList.remove('flex');
+            activePrintOrder = null;
+        }
+
+        // تشغيل التطبيق بحماية
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                initApp();
+            } catch(e) {
+                console.error("Startup error:", e);
+                showFallbackError("لم نتمكن من تشغيل التطبيق بشكل صحيح، حاول التحديث.");
+            }
+        });
+
     </script>
 </body>
 </html>
