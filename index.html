@@ -156,13 +156,20 @@
         .btn-import { background: #1c2229; color: white; }
         .btn-export { background: #27ae60; color: white; }
         .btn-delete { background: #c0392b; color: white; }
-        .btn-secondary { background: #729da0; color: white; }
+        .btn-secondary { background: #7f8c8d; color: white; }
 
         /* Tables */
-        .table-container { background: #fffffffa; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); border: 1px solid #edf2f7; }
+        .table-container { background: #fffffffa; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); border: 1px solid #edf2f7; width: 100%; }
+        
+        /* تخصيص شريط التمرير للجدول ليكون واضحاً أسفل الأعمدة الأولى */
+        .table-container::-webkit-scrollbar { height: 10px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         table { width: 100%; border-collapse: collapse; min-width: 1300px; }
-        th { background: var(--primary); color: white; padding: 15px; position: sticky; top: 0; text-align: center; font-size: 11px; vertical-align: top; }
-        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 12px; vertical-align: middle; }
+        th { background: var(--primary); color: white; padding: 15px; position: sticky; top: 0; text-align: center; font-size: 13px; vertical-align: top; }
+        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
         tr:hover { background-color: #f8fbff; }
         
         /* Column Search Inputs */
@@ -172,7 +179,7 @@
             padding: 4px 6px;
             border: 1px solid #ffffff66;
             border-radius: 4px;
-            font-size: 10px;
+            font-size: 11px;
             background: rgba(255, 255, 255, 0.9);
             color: #333;
             outline: none;
@@ -187,7 +194,7 @@
         .date-search { margin-top: 0 !important; width: 95% !important; padding: 2px 4px !important; color: #555; cursor: pointer; }
 
         /* Badges */
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 50px; font-weight: 900; font-size: 10px; min-width: 80px; text-align: center;}
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-weight: bold; font-size: 11.5px; min-width: 80px; text-align: center;}
         .s-received { background: var(--received-bg); color: var(--received-text); }
         .s-prep-done { background: #3498db33; color: #1f4e79; }
         .s-preparing { background: var(--preparing-bg); color: var(--preparing-text); }
@@ -198,10 +205,10 @@
         .brand-badge {
             background-color: #060707;
             color: #f7f6f4;
-            padding: 2px 9px; 
+            padding: 4px 12px; 
             border-radius: 50px; 
             font-weight: 900;
-            font-size: 10px;
+            font-size: 11px;
             letter-spacing: 0.8px;
             display: inline-block;
             min-width: 80px; 
@@ -235,8 +242,8 @@
 
         /* مؤشر حالة الاتصال بالسحابة */
         #db-status-badge {
-            font-size: 10px;
-            padding: 2px 9px;
+            font-size: 11px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-weight: bold;
             display: inline-block;
@@ -260,8 +267,8 @@
 
 <div class="app-layout">
     
-    <!-- القائمة الجانبية المستوحاة من الصورة (Sidebar) -->
-    <aside class="sidebar no-print" id="sidebar">
+    <!-- القائمة الجانبية (مخفية افتراضياً بإضافة كلاس collapsed) -->
+    <aside class="sidebar collapsed no-print" id="sidebar">
         <!-- القائمة المطابقة للتصميم المطلوب -->
         <ul class="sidebar-menu">
             <li class="sidebar-item active" id="sideTabOrders">
@@ -412,15 +419,16 @@
                         <thead>
                             <tr style="background: var(--primary); color: white;">
                                 <th width="5%"><input type="checkbox" id="selectAllTawalef" onchange="toggleSelectAllTawalef(this.checked)"></th>
-                                <th width="20%">رقم الأوردر<br><input type="text" class="col-search" id="ct-orderNum" oninput="renderTawalef()" placeholder="تصفية..."></th>
-                                <th width="20%">الحالة<br><input type="text" class="col-search" id="ct-status" oninput="renderTawalef()" placeholder="تصفية..."></th>
-                                <th width="20%">تاريخ الطلب
+                                <th width="15%">رقم الأوردر<br><input type="text" class="col-search" id="ct-orderNum" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="15%">الحالة<br><input type="text" class="col-search" id="ct-status" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="15%">المسئول<br><input type="text" class="col-search" id="ct-person" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="15%">تاريخ الطلب
                                     <div class="date-filter-group">
                                         <input type="date" class="col-search date-search" id="ct-orderDate-from" oninput="renderTawalef()">
                                         <input type="date" class="col-search date-search" id="ct-orderDate-to" oninput="renderTawalef()">
                                     </div>
                                 </th>
-                                <th width="20%">تاريخ التسليم
+                                <th width="15%">تاريخ التسليم
                                     <div class="date-filter-group">
                                         <input type="date" class="col-search date-search" id="ct-receiveDate-from" oninput="renderTawalef()">
                                         <input type="date" class="col-search date-search" id="ct-receiveDate-to" oninput="renderTawalef()">
@@ -947,7 +955,8 @@
         const searchQuery = document.getElementById('tawalefSearchInput').value.toLowerCase();
         const colFilters = {
             orderNum: document.getElementById('ct-orderNum').value.toLowerCase(),
-            status: document.getElementById('ct-status').value.toLowerCase()
+            status: document.getElementById('ct-status').value.toLowerCase(),
+            person: document.getElementById('ct-person').value.toLowerCase()
         };
 
         const dateFilters = {
@@ -960,9 +969,11 @@
         let total = 0, pending = 0, solved = 0;
 
         tawalef.forEach((t, i) => {
+            const deliveredBy = t.deliveredBy || '-';
             const matchesSearch = !searchQuery || (t.orderNum && t.orderNum.toLowerCase().includes(searchQuery));
             const matchesColFilters = checkColMatch(t.orderNum, colFilters.orderNum) &&
                                       checkColMatch(t.status, colFilters.status) &&
+                                      checkColMatch(deliveredBy, colFilters.person) &&
                                       checkDateRangeMatch(t.orderDate, dateFilters.orderFrom, dateFilters.orderTo) &&
                                       checkDateRangeMatch(t.receiveDate, dateFilters.receiveFrom, dateFilters.receiveTo);
 
@@ -982,6 +993,7 @@
                     <td><input type="checkbox" ${t.selected ? 'checked' : ''} onchange="toggleSelectTawalef(${i})"></td>
                     <td class="font-bold text-slate-800 text-center">${t.orderNum || '-'}</td>
                     <td><span class="badge ${sClass}">${t.status || 'جاري التحضير'}</span></td>
+                    <td class="font-bold text-[#3498db]">${deliveredBy}</td>
                     <td class="text-slate-600 font-bold">${t.orderDate || '-'}</td>
                     <td class="text-slate-600 font-bold">${t.receiveDate || '-'}</td>
                     <td>
