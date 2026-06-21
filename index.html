@@ -405,7 +405,7 @@
                         <div id="dt-total" class="value">0</div>
                     </div>
                     <div class="card prep-process" style="border-color: #0af3e796;">
-                        <h3>جاري التحضير</h3>
+                        <h3>جاري التحضير / معلق</h3>
                         <div id="dt-pending" class="value">0</div>
                     </div>
                     <div class="card received" style="border-color: #27ae60;">
@@ -549,6 +549,7 @@
         <div class="form-group">
             <label>الحالة</label>
             <select id="ft-status">
+                <option value="معلق">معلق</option>
                 <option value="جاري التحضير">جاري التحضير</option>
                 <option value="تم التسليم">تم التسليم</option>
             </select>
@@ -969,7 +970,7 @@
         let total = 0, pending = 0, solved = 0;
 
         tawalef.forEach((t, i) => {
-            const deliveredBy = t.deliveredBy || '-';
+            const deliveredBy = t.person || t.deliveredBy || '-'; // عرض اسم المسئول الذي قام بالفعل
             const matchesSearch = !searchQuery || (t.orderNum && t.orderNum.toLowerCase().includes(searchQuery));
             const matchesColFilters = checkColMatch(t.orderNum, colFilters.orderNum) &&
                                       checkColMatch(t.status, colFilters.status) &&
@@ -982,9 +983,12 @@
                 if (t.status === 'تم التسليم') solved++;
                 else pending++;
 
-                let sClass = "s-waiting"; // Default
+                let sClass = "s-waiting"; // Default for معلق
                 if (t.status === 'تم التسليم') sClass = "s-received"; // Green
                 else if (t.status === 'جاري التحضير') sClass = "s-preparing"; // Cyan
+
+                // عرض الوقت إذا وجد
+                const actionTimeHtml = t.actionTime ? `<br><small style="font-size: 10px; color: #7f8c8d;">${t.actionTime}</small>` : '';
 
                 const tr = document.createElement('tr');
                 if (t.selected) tr.className = 'selected-row';
@@ -992,8 +996,8 @@
                 tr.innerHTML = `
                     <td><input type="checkbox" ${t.selected ? 'checked' : ''} onchange="toggleSelectTawalef(${i})"></td>
                     <td class="font-bold text-slate-800 text-center">${t.orderNum || '-'}</td>
-                    <td><span class="badge ${sClass}">${t.status || 'جاري التحضير'}</span></td>
-                    <td class="font-bold text-[#3498db]">${deliveredBy}</td>
+                    <td><span class="badge ${sClass}">${t.status || 'معلق'}</span></td>
+                    <td class="font-bold text-[#3498db]">${deliveredBy} ${actionTimeHtml}</td>
                     <td class="text-slate-600 font-bold">${t.orderDate || '-'}</td>
                     <td class="text-slate-600 font-bold">${t.receiveDate || '-'}</td>
                     <td>
@@ -1021,8 +1025,8 @@
         document.getElementById('editTawalefIndex').value = "-1";
         document.getElementById('ft-orderNum').value = "";
         
-        // تعيين الحالة الافتراضية والتاريخ التلقائي لليوم
-        document.getElementById('ft-status').value = "جاري التحضير";
+        // تعيين الحالة الافتراضية إلى معلق والتاريخ التلقائي لليوم
+        document.getElementById('ft-status').value = "معلق";
         document.getElementById('ft-orderDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('ft-receiveDate').value = "";
         
@@ -1051,7 +1055,7 @@
             if (idx === -1) {
                 tawalef.push(data);
             } else {
-                tawalef[idx] = data;
+                tawalef[idx] = Object.assign(tawalef[idx], data); // تحديث بدون مسح القيم القديمة كالوقت والمسئول
             }
             saveData();
             renderTawalef();
@@ -1078,7 +1082,7 @@
         document.getElementById('tawalefModalTitle').innerText = "تعديل بيانات التالف";
         document.getElementById('editTawalefIndex').value = i;
         document.getElementById('ft-orderNum').value = t.orderNum || "";
-        document.getElementById('ft-status').value = t.status || "جاري التحضير";
+        document.getElementById('ft-status').value = t.status || "معلق";
         document.getElementById('ft-orderDate').value = formatDateToYYYYMMDD(t.orderDate);
         document.getElementById('ft-receiveDate').value = formatDateToYYYYMMDD(t.receiveDate);
         document.getElementById('tawalefModal').style.display = 'flex';
@@ -1121,9 +1125,9 @@
     }
 
     function exportTawalefToCSV() {
-        let csv = "\uFEFFرقم الأوردر;الحالة;تاريخ الطلب;تاريخ الاستلام/التسليم\n";
+        let csv = "\uFEFFرقم الأوردر;الحالة;المسئول;تاريخ الطلب;تاريخ الاستلام/التسليم\n";
         tawalef.forEach(t => {
-            csv += `"${t.orderNum || '-'}";"${t.status || ''}";"${t.orderDate || ''}";"${t.receiveDate || ''}"\n`;
+            csv += `"${t.orderNum || '-'}";"${t.status || 'معلق'}";"${t.person || t.deliveredBy || '-'}";"${t.orderDate || ''}";"${t.receiveDate || ''}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
