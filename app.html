@@ -75,6 +75,13 @@
             border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* بطاقات اختيار المهام */
+        .mode-card {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .mode-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="bg-[#f8f9fa] antialiased font-sans relative">
@@ -119,13 +126,52 @@
         </div>
     </div>
 
+    <!-- شاشة اختيار المهام (جديدة) -->
+    <div id="mode-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-black text-[#2c3e50] mb-2">مرحباً <span id="welcome-name" class="text-[#3498db]"></span></h1>
+                <p class="text-slate-500 font-bold text-sm">اختر قسم العمل الحالي للبدء</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div onclick="selectMode('orders')" class="mode-card bg-white p-6 rounded-2xl border-2 border-[#3498db] shadow-md flex items-center justify-between">
+                    <div>
+                        <h2 class="font-black text-[#2c3e50] text-lg">تحضير الأوردرات</h2>
+                        <p class="text-xs font-bold text-slate-400 mt-1">الطلبيات الجديدة واليومية</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-[#e8f4fd] flex items-center justify-center text-[#3498db] text-xl">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                </div>
+
+                <div onclick="selectMode('tawalef')" class="mode-card bg-white p-6 rounded-2xl border-2 border-red-400 shadow-md flex items-center justify-between">
+                    <div>
+                        <h2 class="font-black text-[#2c3e50] text-lg">تحضير التوالف</h2>
+                        <p class="text-xs font-bold text-slate-400 mt-1">الهوالك والأوردرات المرتجعة</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="handleLogout()" class="mt-8 w-full py-3 bg-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all">
+                تسجيل الخروج
+            </button>
+        </div>
+    </div>
+
     <!-- شاشة التطبيق الرئيسية -->
     <div id="main-app" class="min-h-screen bg-[#f8f9fa] pb-20 print:bg-white print:pb-0 hidden">
         <header class="bg-[#2c3e50] text-white p-4 shadow-md sticky top-0 z-10 no-print">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
+                    <button onclick="goBackToModes()" class="text-white hover:text-slate-200 transition-all text-xl ml-2">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                     <div class="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 relative">
-                        <i class="fa-solid fa-user-shield text-white"></i>
+                        <i class="fa-solid fa-user-shield text-white" id="header-icon"></i>
                         <div id="sync-indicator" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#2c3e50] transition-all"></div>
                     </div>
                     <div>
@@ -220,9 +266,11 @@
         let userRole = null;
         let searchQuery = '';
         let activePrintOrder = null;
+        let currentMode = 'orders'; // 'orders' or 'tawalef'
 
         let availablePersons = [];
         let allOrders = [];
+        let allTawalef = []; // مصفوفة التوالف
 
         // --- 3. دوال مساعدة (Helpers) ---
         function showToast(message, type = 'success') {
@@ -279,7 +327,7 @@
                 searchInput.addEventListener('input', (e) => {
                     try {
                         searchQuery = e.target.value;
-                        renderOrders();
+                        renderContent();
                     } catch(err) {
                         console.error("Search error", err);
                     }
@@ -290,6 +338,7 @@
         function setupCloudListeners() {
             const personsRef = db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('persons');
             const ordersRef = db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders');
+            const tawalefRef = db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef');
 
             // 1. الاستماع للمسئولين
             personsRef.onSnapshot((snapshot) => {
@@ -322,13 +371,28 @@
                         setTimeout(() => indicator.classList.remove('bg-yellow-400'), 500);
                     }
 
-                    if (currentUser) renderOrders();
+                    if (currentUser && currentMode === 'orders') renderContent();
                 } catch(e) {
                     console.error("Error processing orders data:", e);
                 }
             }, err => {
                 console.error("Orders sync error:", err);
                 showToast("تأخر في مزامنة الأوردرات", "warning");
+            });
+
+            // 3. الاستماع للتوالف
+            tawalefRef.onSnapshot((snapshot) => {
+                try {
+                    allTawalef = [];
+                    snapshot.forEach(doc => {
+                        allTawalef.push({ docId: doc.id, ...doc.data() });
+                    });
+                    if (currentUser && currentMode === 'tawalef') renderContent();
+                } catch(e) {
+                    console.error("Error processing tawalef data:", e);
+                }
+            }, err => {
+                console.error("Tawalef sync error:", err);
             });
         }
 
@@ -342,7 +406,7 @@
             if (savedUser && availablePersons.some(p => p.name === savedUser)) {
                 currentUser = savedUser;
                 userRole = savedRole;
-                showMainApp();
+                showModeScreen(); // الذهاب لاختيار المهام بدلاً من التطبيق مباشرة
             } else {
                 showLoginScreen();
             }
@@ -363,19 +427,45 @@
 
         function showLoginScreen() {
             document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('mode-screen').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('login-screen').classList.add('flex');
         }
 
-        function showMainApp() {
+        function showModeScreen() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('flex');
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('mode-screen').classList.remove('hidden');
+            document.getElementById('mode-screen').classList.add('flex');
+            document.getElementById('welcome-name').innerText = currentUser;
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            document.getElementById('mode-screen').classList.add('hidden');
+            document.getElementById('mode-screen').classList.remove('flex');
             document.getElementById('main-app').classList.remove('hidden');
             
             document.getElementById('header-name').textContent = currentUser;
-            document.getElementById('header-role').textContent = `صفحة (${userRole})`;
             
-            renderOrders();
+            if(mode === 'orders') {
+                document.getElementById('header-role').textContent = `أوردرات (${userRole})`;
+                document.getElementById('header-icon').className = "fa-solid fa-box-open text-white";
+                document.getElementById('searchInput').placeholder = "بحث برقم الأوردر أو الموديل...";
+            } else {
+                document.getElementById('header-role').textContent = `التوالف (شامل)`;
+                document.getElementById('header-icon').className = "fa-solid fa-triangle-exclamation text-white";
+                document.getElementById('searchInput').placeholder = "بحث برقم أوردر التالف...";
+            }
+            
+            renderContent();
+        }
+
+        function goBackToModes() {
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            showModeScreen();
         }
 
         function handleLogin() {
@@ -401,7 +491,7 @@
             
             document.getElementById('loginPinInput').value = '';
             showToast(`مرحباً بك ${currentUser}`, "success");
-            showMainApp();
+            showModeScreen(); // بعد الدخول نذهب لشاشة المهام
         }
 
         function handleLogout() {
@@ -413,7 +503,15 @@
             showLoginScreen();
         }
 
-        // رسم الأوردرات وترتيبها وتصفيتها
+        // رسم المحتوى (أوردرات أو توالف)
+        function renderContent() {
+            if (currentMode === 'orders') {
+                renderOrders();
+            } else {
+                renderTawalef();
+            }
+        }
+
         function renderOrders() {
             try {
                 const container = document.getElementById('orders-container');
@@ -563,7 +661,70 @@
             }
         }
 
-        // تحديث حالة الأوردر (يتم رفعه للسحابة مباشرة)
+        function renderTawalef() {
+            try {
+                const container = document.getElementById('orders-container');
+                if (!container) return;
+                container.innerHTML = '';
+
+                // تظهر التوالف لجميع المسئولين إذا كانت جاري التحضير
+                let myTawalef = allTawalef.filter(t => {
+                    if (t.status === 'تم التسليم') return false; // إخفاء المكتملة
+                    
+                    const query = (searchQuery || '').trim().toLowerCase();
+                    const matchesSearch = query === '' || (t.orderNum && t.orderNum.toString().toLowerCase().includes(query));
+                    return matchesSearch;
+                });
+
+                // ترتيب زمني
+                myTawalef.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                if (myTawalef.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4">
+                            <i class="fa-solid fa-clipboard-check text-slate-300 text-4xl mb-4"></i>
+                            <h3 class="text-sm font-bold text-slate-600">لا توجد توالف قيد التحضير</h3>
+                        </div>
+                    `;
+                    return;
+                }
+
+                myTawalef.forEach(t => {
+                    const orderHtml = `
+                        <div class="bg-white rounded-xl border border-red-200 shadow-md overflow-hidden relative mb-4 transition-all">
+                            <div class="bg-red-500 p-3 text-white flex justify-between items-center">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-white/80 font-bold">رقم أوردر التالف</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-black text-lg tracking-wide text-white">${t.orderNum || '-'}</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 py-1 rounded-md text-[11px] font-bold bg-white text-red-600">
+                                    ${t.status || 'جاري التحضير'}
+                                </div>
+                            </div>
+
+                            <div class="p-4">
+                                <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 pb-3 text-slate-500">
+                                    <div>تاريخ الطلب: <span class="font-bold text-slate-800">${t.orderDate || '-'}</span></div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <button onclick="updateTawalefStatus('${t.docId}')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-check-circle"></i> تم التسليم والتسوية
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += orderHtml;
+                });
+            } catch (error) {
+                console.error("Error rendering tawalef:", error);
+            }
+        }
+
+        // تحديث حالة الأوردر العادي
         function updateStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
@@ -597,6 +758,39 @@
                     });
             } catch(e) {
                 console.error("Error in update status:", e);
+            }
+        }
+
+        // تحديث حالة التالف
+        function updateTawalefStatus(docId) {
+            try {
+                if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
+
+                const t = allTawalef.find(x => x.docId === docId);
+                if (!t) return;
+
+                const now = new Date();
+                const todayYYYYMMDD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                
+                const updates = { 
+                    status: 'تم التسليم',
+                    receiveDate: todayYYYYMMDD,
+                    deliveredBy: currentUser // تسجيل اسم المسئول الذي قام بالتسليم
+                };
+
+                showToast(`جاري التحديث...`, "info");
+
+                db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef').doc(docId)
+                    .update(updates)
+                    .then(() => {
+                        showToast("تم تسليم التالف بنجاح", "success");
+                    })
+                    .catch(err => {
+                        console.error("Update error:", err);
+                        showToast("فشل في التحديث، تحقق من الإنترنت", "danger");
+                    });
+            } catch(e) {
+                console.error("Error in update tawalef:", e);
             }
         }
 
