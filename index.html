@@ -535,7 +535,7 @@
     </div>
 </div>
 
-<!-- Modal التوالف (تم التعديل لتقتصر الحالات والتواريخ الافتراضية) -->
+<!-- Modal التوالف -->
 <div class="modal-overlay" id="tawalefModal">
     <div class="modal-content" style="width: 450px;">
         <h2 id="tawalefModalTitle" class="font-black text-lg text-red-600 mb-4">إضافة / تعديل تالف</h2>
@@ -855,6 +855,7 @@
         });
 
         sortOrdersArray(orders);
+        tawalef = sortTawalefData(tawalef); // ترتيب التوالف
         updatePersonDropdown();
         updateFilterUIs();
         render();
@@ -885,6 +886,7 @@
                 snapshot.forEach((doc) => {
                     tawalef.push({ docId: doc.id, ...doc.data() });
                 });
+                tawalef = sortTawalefData(tawalef); // ترتيب التوالف السحابية
                 renderTawalef();
             }, (error) => {
                 console.error("Tawalef sync error:", error);
@@ -903,12 +905,50 @@
             });
     }
 
+    // دالة ترتيب التوالف برقم الأوردر من الأكبر للأصغر
+    function sortTawalefData(data) {
+        return data.sort((a, b) => {
+            let numA = parseInt(a.orderNum) || 0;
+            let numB = parseInt(b.orderNum) || 0;
+            if (numA !== numB) return numB - numA; // ترتيب تنازلي (الأكبر للأصغر)
+            return (b.timestamp || 0) - (a.timestamp || 0); // ترتيب بالوقت كبديل
+        });
+    }
+
+    // دالة معالجة التواريخ المحدثة لتشمل التواريخ بصيغة DD/MM/YYYY
     function formatDateToYYYYMMDD(dateStr) {
         if (!dateStr) return "";
         dateStr = dateStr.toString().trim();
         if (dateStr === "-" || dateStr === "") return "";
+        
+        // إذا كان التاريخ بالفعل بصيغة YYYY-MM-DD
         if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
         
+        // معالجة التواريخ التي تأتي من الإكسيل بصيغة فيها سلاش /
+        if (dateStr.includes('/')) {
+            let parts = dateStr.split('/');
+            if (parts.length === 3) {
+                let p1 = parseInt(parts[0]); // غالباً اليوم
+                let p2 = parseInt(parts[1]); // غالباً الشهر
+                let p3 = parseInt(parts[2]); // غالباً السنة
+                
+                let y, m, d;
+                
+                // تحديد السنة
+                if (p3 > 1000) { y = p3; m = p2; d = p1; } // DD/MM/YYYY
+                else if (p1 > 1000) { y = p1; m = p2; d = p3; } // YYYY/MM/DD
+                else { y = 2000 + p3; m = p2; d = p1; } // DD/MM/YY (fallback)
+
+                // تبديل بين الشهر واليوم إذا كان هناك خطأ في القراءة
+                if (m > 12 && d <= 12) { let temp = m; m = d; d = temp; }
+
+                if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                }
+            }
+        }
+        
+        // محاولة القراءة الافتراضية
         try {
             let d = new Date(dateStr);
             if (!isNaN(d.getTime())) {
@@ -918,7 +958,9 @@
                 return `${y}-${m}-${day}`;
             }
         } catch(e) {}
-        return "";
+        
+        // إذا فشل كل شيء، قم بإرجاع النص كما هو لعدم ضياع البيانات
+        return dateStr;
     }
 
     function sortOrdersArray(ordersList) {
@@ -995,7 +1037,7 @@
 
                 tr.innerHTML = `
                     <td><input type="checkbox" ${t.selected ? 'checked' : ''} onchange="toggleSelectTawalef(${i})"></td>
-                    <td class="font-bold text-slate-800 text-center">${t.orderNum || '-'}</td>
+                    <td class="font-bold text-slate-800 text-center" style="font-size: 14px;">${t.orderNum || '-'}</td>
                     <td><span class="badge ${sClass}">${t.status || 'معلق'}</span></td>
                     <td class="font-bold text-[#3498db]">${deliveredBy} ${actionTimeHtml}</td>
                     <td class="text-slate-600 font-bold">${t.orderDate || '-'}</td>
@@ -1041,10 +1083,15 @@
         const idx = parseInt(document.getElementById('editTawalefIndex').value);
         const orderNum = document.getElementById('ft-orderNum').value.trim();
         const status = document.getElementById('ft-status').value;
-        const orderDate = formatDateToYYYYMMDD(document.getElementById('ft-orderDate').value);
-        const receiveDate = formatDateToYYYYMMDD(document.getElementById('ft-receiveDate').value);
+        const orderDate = document.getElementById('ft-orderDate').value;
+        const receiveDate = document.getElementById('ft-receiveDate').value;
 
         if (!orderNum) return alert("يرجى إدخال رقم الأوردر المتضرر!");
+
+        // منع إضافة أوردر تالف موجود مسبقاً (في حالة الإضافة الجديدة فقط)
+        if (idx === -1 && tawalef.some(t => String(t.orderNum).trim() === orderNum)) {
+            return alert("رقم الأوردر هذا مسجل مسبقاً في التوالف!");
+        }
 
         const data = {
             orderNum, status, orderDate, receiveDate,
@@ -1057,6 +1104,7 @@
             } else {
                 tawalef[idx] = Object.assign(tawalef[idx], data); // تحديث بدون مسح القيم القديمة كالوقت والمسئول
             }
+            tawalef = sortTawalefData(tawalef); // إعادة ترتيب
             saveData();
             renderTawalef();
             closeTawalefModal();
@@ -1083,8 +1131,9 @@
         document.getElementById('editTawalefIndex').value = i;
         document.getElementById('ft-orderNum').value = t.orderNum || "";
         document.getElementById('ft-status').value = t.status || "معلق";
-        document.getElementById('ft-orderDate').value = formatDateToYYYYMMDD(t.orderDate);
-        document.getElementById('ft-receiveDate').value = formatDateToYYYYMMDD(t.receiveDate);
+        // إذا كان التاريخ عبارة عن نص غريب سيعرضه كما هو
+        document.getElementById('ft-orderDate').value = t.orderDate && t.orderDate.includes('-') ? t.orderDate : "";
+        document.getElementById('ft-receiveDate').value = t.receiveDate && t.receiveDate.includes('-') ? t.receiveDate : "";
         document.getElementById('tawalefModal').style.display = 'flex';
     }
 
@@ -1444,9 +1493,9 @@
                     <td>${o.type}</td>
                     <td><b>${o.person || '-'}</b></td>
                     <td style="font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${o.notes || ''}">${o.notes || '-'}</td>
-                    <td style="white-space: nowrap;">${o.orderDate || '-'}</td>
-                    <td style="white-space: nowrap;">${o.prepDate || '-'}</td>
-                    <td style="white-space: nowrap;">${o.receiveDate || '-'}</td>
+                    <td style="white-space: nowrap; direction: ltr;">${o.orderDate || '-'}</td>
+                    <td style="white-space: nowrap; direction: ltr;">${o.prepDate || '-'}</td>
+                    <td style="white-space: nowrap; direction: ltr;">${o.receiveDate || '-'}</td>
                     <td>
                         <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: nowrap;">
                             <button class="btn-icon" onclick="edit(${i})" title="تعديل">✏️</button>
@@ -1628,9 +1677,9 @@
             status: document.getElementById('f-status').value,
             person: document.getElementById('f-person').value,
             notes: document.getElementById('f-notes').value.trim(),
-            orderDate: formatDateToYYYYMMDD(document.getElementById('f-orderDate').value),
-            prepDate: formatDateToYYYYMMDD(document.getElementById('f-prepDate').value),
-            receiveDate: formatDateToYYYYMMDD(document.getElementById('f-receiveDate').value),
+            orderDate: document.getElementById('f-orderDate').value,
+            prepDate: document.getElementById('f-prepDate').value,
+            receiveDate: document.getElementById('f-receiveDate').value,
             selected: false,
             timestamp: Date.now()
         };
@@ -1740,9 +1789,10 @@
         if (personSelect) personSelect.value = personVal;
 
         document.getElementById('f-notes').value = o.notes || "";
-        document.getElementById('f-orderDate').value = formatDateToYYYYMMDD(o.orderDate);
-        document.getElementById('f-prepDate').value = formatDateToYYYYMMDD(o.prepDate);
-        document.getElementById('f-receiveDate').value = formatDateToYYYYMMDD(o.receiveDate);
+        // تعديل لعرض التاريخ المكتوب حتى وإن لم يكن بصيغة صحيحة (لتفادي اختفائه)
+        document.getElementById('f-orderDate').value = o.orderDate && o.orderDate.includes('-') ? o.orderDate : "";
+        document.getElementById('f-prepDate').value = o.prepDate && o.prepDate.includes('-') ? o.prepDate : "";
+        document.getElementById('f-receiveDate').value = o.receiveDate && o.receiveDate.includes('-') ? o.receiveDate : "";
         document.getElementById('modal').style.display = 'flex';
     }
 
