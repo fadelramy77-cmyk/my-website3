@@ -695,8 +695,11 @@
 
                             <div class="p-4">
                                 <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 pb-3 text-slate-500">
-                                    <div>تاريخ الطلب: <span class="font-bold text-slate-800">${t.orderDate || '-'}</span></div>
-                                    <div>أخر تحديث بواسطة: <span class="font-bold text-slate-800">${t.person || t.deliveredBy || '-'}</span></div>
+                                    <div class="col-span-2">تاريخ اليوم: <span class="font-bold text-slate-800">${t.orderDate || '-'}</span></div>
+                                    <div>وقت الطلب: <span class="font-bold text-slate-800">${t.orderTime || '-'}</span></div>
+                                    <div>وقت التحضير: <span class="font-bold text-blue-600">${t.prepTime || '-'}</span></div>
+                                    <div>وقت التسليم: <span class="font-bold text-emerald-600">${t.receiveTime || '-'}</span></div>
+                                    <div class="col-span-2 mt-1">أخر تحديث بواسطة: <span class="font-bold text-slate-800">${t.person || t.deliveredBy || '-'}</span></div>
                                 </div>
 
                                 <div class="mt-4">
@@ -763,15 +766,18 @@
                 const updates = { 
                     status: newStatus,
                     person: currentUser, // المسئول الذي قام بالتعديل
-                    actionTime: timeStr, // وقت التحديث
+                    actionTime: timeStr, // وقت التحديث العام
                     timestamp: now.getTime()
                 };
 
+                // تحديد وقت وتاريخ كل حالة بشكل منفصل
                 if (newStatus === 'تم التسليم') {
                     updates.receiveDate = todayYYYYMMDD;
-                    updates.deliveredBy = currentUser; // لدعم لوحة التحكم السابقة
+                    updates.receiveTime = timeStr; // التقاط وقت التسليم بالساعة والدقيقة
+                    updates.deliveredBy = currentUser; 
                 } else if (newStatus === 'جاري التحضير') {
-                    updates.prepDate = todayYYYYMMDD;
+                    // تحديث وقت التحضير بالساعة والدقيقة
+                    updates.prepTime = timeStr;
                 }
 
                 showToast(`جاري التحديث...`, "info");
