@@ -86,13 +86,13 @@
 </head>
 <body class="bg-[#f8f9fa] antialiased font-sans relative">
 
-    <!-- حاوية التنبيهات اللحظية والتوستات -->
+    <!-- حاوية التنبيهات -->
     <div id="toast-container" class="fixed top-4 left-4 right-4 z-[9999] space-y-2 pointer-events-none max-w-sm mx-auto no-print"></div>
 
     <!-- شاشة التحميل الأولية -->
     <div id="loading-screen" class="min-h-screen flex flex-col items-center justify-center z-50 bg-[#f8f9fa] absolute inset-0">
         <div class="loader mb-4"></div>
-        <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة الموحدة...</p>
+        <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة...</p>
     </div>
 
     <!-- شاشة تسجيل الدخول -->
@@ -126,7 +126,7 @@
         </div>
     </div>
 
-    <!-- شاشة اختيار المهام والبدء -->
+    <!-- شاشة اختيار المهام -->
     <div id="mode-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
         <div class="w-full max-w-md">
             <div class="text-center mb-8">
@@ -145,7 +145,7 @@
                     </div>
                 </div>
 
-                <!-- كارت التوالف -->
+                <!-- كارت التوالف (سيتم إخفاءه عن مسئول التسليم بالبرمجة) -->
                 <div id="tawalef-card-btn" onclick="selectMode('tawalef')" class="mode-card bg-white p-6 rounded-2xl border-2 border-red-400 shadow-md flex items-center justify-between">
                     <div>
                         <h2 class="font-black text-[#2c3e50] text-lg">قسم التوالف</h2>
@@ -180,13 +180,7 @@
                         <h1 id="header-name" class="font-bold text-sm text-white">اسم المستخدم</h1>
                     </div>
                 </div>
-                
-                <div class="flex items-center gap-2">
-                    <!-- زر إعدادات الإشعارات الجديد والمميز -->
-                    <button onclick="openNotificationModal()" class="relative text-white/80 hover:text-white transition-all text-xl bg-white/5 w-8 h-8 rounded-full flex items-center justify-center" title="إعدادات إشعارات الهاتف">
-                        <i class="fa-solid fa-bell"></i>
-                        <span id="notif-badge" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#2c3e50] hidden animate-pulse"></span>
-                    </button>
+                <div class="flex items-center gap-3">
                     <button onclick="handleLogout()" class="text-white/70 hover:text-white transition-all text-xl bg-white/5 w-8 h-8 rounded-full flex items-center justify-center" title="خروج آمن">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </button>
@@ -222,83 +216,6 @@
                 </button>
                 <button onclick="closePrintModal()" class="flex-1 py-3 bg-slate-200 text-slate-800 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all">
                     إغلاق
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة إعدادات الإشعارات الجديدة (Notification Modal) -->
-    <div id="notification-modal" class="fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl relative">
-            <div class="border-b-2 border-slate-100 pb-3 mb-4 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-bell text-[#3498db] text-xl animate-bounce"></i>
-                    <h2 class="font-black text-[#2c3e50] text-base">إعدادات إشعارات الهاتف الفورية</h2>
-                </div>
-                <button onclick="closeNotificationModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
-            </div>
-
-            <div class="space-y-4 text-slate-700 text-sm">
-                <!-- الميزة الأولى: إشعارات المتصفح -->
-                <div class="bg-blue-50 border border-blue-100 p-3.5 rounded-xl">
-                    <h3 class="font-bold text-[#2c3e50] mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-window-restore text-[#3498db]"></i>
-                        1. إشعارات المتصفح (المباشرة)
-                    </h3>
-                    <p class="text-xs text-slate-500 mb-3 leading-relaxed">يرسل تنبيه فوري وصوت رنين مميز للمسئول عند تصفح النظام.</p>
-                    <div class="flex items-center justify-between">
-                        <span id="browser-permission-status" class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">غير مفعلة</span>
-                        <button onclick="requestBrowserNotifications()" class="px-3 py-1.5 bg-[#3498db] text-white text-xs rounded-lg font-bold hover:bg-[#2980b9] transition-all">
-                            تفعيل التنبيهات
-                        </button>
-                    </div>
-                </div>
-
-                <!-- الميزة الثانية: إشعارات الهاتف الخلفية (NTFY) -->
-                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
-                    <h3 class="font-bold text-emerald-800 mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-                        2. إشعارات شاشة الهاتف المقفل
-                    </h3>
-                    <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">هل تريد استلام تنبيهات فورية كرسالة جوال حتى لو كان التطبيق مغلقاً؟ اتبع هذه الخطوات البسيطة مجاناً:</p>
-                    
-                    <div class="space-y-2 text-xs bg-white/70 p-3 rounded-lg border border-emerald-100 font-bold mb-4 text-slate-700">
-                        <div class="flex gap-2">
-                            <span class="bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">١</span>
-                            <span>حمل تطبيق <a href="https://ntfy.sh/#download" target="_blank" class="text-blue-500 underline">ntfy</a> المجاني للآيفون أو الأندرويد.</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">٢</span>
-                            <span>افتح التطبيق واضغط على زر الاشتراك بالرمز (+)</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">٣</span>
-                            <span>أدخل الكود الخاص بقناتك أدناه لتستلم أوردراتك:</span>
-                        </div>
-                    </div>
-
-                    <!-- كود القناة المخصص للمسئول الحالي -->
-                    <div class="bg-white border border-emerald-200 p-3 rounded-xl flex items-center justify-between mb-4">
-                        <div class="flex flex-col gap-0.5">
-                            <span class="text-[10px] text-slate-400">اسم قناة هاتفك للربط:</span>
-                            <span id="ntfy-topic-id" class="font-mono text-sm font-black text-slate-800 tracking-wider">smart_orders_user</span>
-                        </div>
-                        <button onclick="copyNtfyTopic()" class="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg transition-all" title="نسخ الكود">
-                            <i class="fa-solid fa-copy"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button onclick="testMobilePush()" class="flex-1 py-2 bg-emerald-600 text-white text-xs rounded-lg font-black hover:bg-emerald-700 transition-all flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-paper-plane"></i> إرسال إشعار تجريبي للهاتف
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-5 pt-3 border-t border-slate-100 flex justify-end">
-                <button onclick="closeNotificationModal()" class="px-5 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold text-xs hover:bg-slate-300 transition-all">
-                    تم ومتابعة العمل
                 </button>
             </div>
         </div>
@@ -355,9 +272,6 @@
         let availablePersons = [];
         let allOrders = [];
         let allTawalef = []; 
-
-        // تتبع الأوردرات السابقة لمنع التنبيهات المكررة عند بدء التشغيل
-        let isInitialLoad = true;
 
         // --- 3. دوال مساعدة (Helpers) ---
         function showToast(message, type = 'success') {
@@ -420,9 +334,6 @@
                     }
                 });
             }
-
-            // تحديث حالة إعدادات إشعارات المتصفح في البداية
-            updateBrowserPermissionStatusUI();
         }
 
         function setupCloudListeners() {
@@ -439,42 +350,17 @@
                 } catch(e) {}
             });
 
-            // مراقبة الأوردرات اللحظية بذكاء لإشعار الهاتف بالجديد فقط
             ordersRef.onSnapshot((snapshot) => {
                 try {
-                    let newlyAddedOrders = [];
-                    
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === "added") {
-                            const orderData = change.doc.data();
-                            // نقوم بإضافة التنبيه فقط لو لم يكن التحميل الأول (تحديث حقيقي)
-                            if (!isInitialLoad) {
-                                newlyAddedOrders.push({ docId: change.doc.id, ...orderData });
-                            }
-                        }
-                    });
-
                     allOrders = [];
                     snapshot.forEach(doc => { allOrders.push({ docId: doc.id, ...doc.data() }); });
-                    
                     const indicator = document.getElementById('sync-indicator');
                     if(indicator) {
                         indicator.classList.add('bg-yellow-400');
                         setTimeout(() => indicator.classList.remove('bg-yellow-400'), 500);
                     }
-
-                    // معالجة وإطلاق الإشعارات للأوردرات الجديدة فوراً
-                    if (newlyAddedOrders.length > 0) {
-                        handleNewOrdersNotifications(newlyAddedOrders);
-                    }
-
-                    // انتهاء التحميل الأول بنجاح
-                    isInitialLoad = false;
-
                     if (currentUser && currentMode === 'orders') renderContent();
-                } catch(e) {
-                    console.error("Error inside orders snapshot listener:", e);
-                }
+                } catch(e) {}
             });
 
             tawalefRef.onSnapshot((snapshot) => {
@@ -748,13 +634,14 @@
 
                 // عرض التوالف لمسئولي التحضير والشامل فقط
                 let myTawalef = allTawalef.filter(t => {
-                    if (t.status === 'تم التسليم') return false; 
+                    if (t.status === 'تم التسليم') return false; // إخفاء المكتملة
                     
                     const query = (searchQuery || '').trim().toLowerCase();
                     const matchesSearch = query === '' || (t.orderNum && t.orderNum.toString().toLowerCase().includes(query));
                     return matchesSearch;
                 });
 
+                // ترتيب زمني
                 myTawalef.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
                 if (myTawalef.length === 0) {
@@ -771,10 +658,12 @@
                     const isPending = t.status === 'معلق' || !t.status;
                     const statusLabel = t.status || 'معلق';
                     
+                    // ألوان بناءً على الحالة
                     const headerColor = isPending ? 'bg-amber-500' : 'bg-red-500';
                     const borderColor = isPending ? 'border-amber-200' : 'border-red-200';
                     const textColor = isPending ? 'text-amber-600' : 'text-red-600';
 
+                    // أزرار العمليات
                     let actionBtnHtml = '';
                     if (isPending) {
                         actionBtnHtml = `
@@ -876,16 +765,18 @@
                 
                 const updates = { 
                     status: newStatus,
-                    person: currentUser, 
-                    actionTime: timeStr, 
+                    person: currentUser, // المسئول الذي قام بالتعديل
+                    actionTime: timeStr, // وقت التحديث العام
                     timestamp: now.getTime()
                 };
 
+                // تحديد وقت وتاريخ كل حالة بشكل منفصل
                 if (newStatus === 'تم التسليم') {
                     updates.receiveDate = todayYYYYMMDD;
-                    updates.receiveTime = timeStr; 
+                    updates.receiveTime = timeStr; // التقاط وقت التسليم بالساعة والدقيقة
                     updates.deliveredBy = currentUser; 
                 } else if (newStatus === 'جاري التحضير') {
+                    // تحديث وقت التحضير بالساعة والدقيقة
                     updates.prepTime = timeStr;
                 }
 
@@ -999,228 +890,7 @@
             activePrintOrder = null;
         }
 
-        // --- 7. نظام الإشعارات الذكي (Notification Logic) ---
-
-        // دالة توليد صوت تنبيهي رقمي رائع ومتطور
-        function playNotificationSound() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // النغمة الأولى
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc1.connect(gain1);
-                gain1.connect(audioCtx.destination);
-                osc1.start();
-                osc1.stop(audioCtx.currentTime + 0.3);
-                
-                // نغمة ثنائية متأخرة لجعل الصوت احترافي
-                setTimeout(() => {
-                    const osc2 = audioCtx.createOscillator();
-                    const gain2 = audioCtx.createGain();
-                    osc2.type = 'sine';
-                    osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
-                    gain2.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                    osc2.connect(gain2);
-                    gain2.connect(audioCtx.destination);
-                    osc2.start();
-                    osc2.stop(audioCtx.currentTime + 0.4);
-                }, 120);
-            } catch (e) {
-                console.log("AudioContext blocked or not supported yet", e);
-            }
-        }
-
-        // تحويل اسم المسئول لكود آمن وموحد غير قابل للتلف لتطبيق ntfy
-        function getCleanTopic(username) {
-            if (!username) return 'general';
-            let clean = "";
-            for (let i = 0; i < username.length; i++) {
-                clean += username.charCodeAt(i).toString(16);
-            }
-            return `smart_orders_${appIdentifier}_${clean}`.substring(0, 64);
-        }
-
-        // معالجة وصول الأوردرات الجديدة وإرسال التنبيهات
-        function handleNewOrdersNotifications(newOrders) {
-            if (!currentUser) return; // لا نرسل لو لم يسجل دخوله بعد
-
-            let notifiedCount = 0;
-
-            newOrders.forEach(order => {
-                // فلترة الأوردرات الموجهة لهذا المسئول تحديداً أو للمسئول الشامل
-                const isMyOrder = order.person === currentUser;
-                const isAdminOrAll = userRole === 'شامل' || userRole === 'تسليم';
-
-                if (isMyOrder || isAdminOrAll) {
-                    notifiedCount++;
-
-                    // 1. تشغيل مؤثر الصوت اللحظي المبتكر
-                    playNotificationSound();
-
-                    // 2. إطلاق إشعار المتصفح (لو مفعل)
-                    if (Notification.permission === 'granted') {
-                        try {
-                            const bodyText = `الأوردر: ${order.orderNum || '-'} | الموديل: ${order.model || '-'}\nالعدد: ${order.qty || '-'} | اللون: ${order.color || '-'}`;
-                            const browserNotification = new Notification("أوردر جديد تم إضافته لك! 📥", {
-                                body: bodyText,
-                                dir: 'rtl',
-                                icon: 'https://placehold.co/128x128/2c3e50/ffffff?text=Order'
-                            });
-                            
-                            browserNotification.onclick = function() {
-                                window.focus();
-                                if (document.getElementById('searchInput')) {
-                                    document.getElementById('searchInput').value = order.orderNum || '';
-                                    searchQuery = order.orderNum || '';
-                                    renderContent();
-                                }
-                            };
-                        } catch (err) {
-                            console.error("Browser notification send failed:", err);
-                        }
-                    }
-
-                    // 3. إرسال إشعار فوري للهاتف الخلفي عبر ntfy.sh (أفضل بديل لإرسال الإشعارات بدون سيرفر)
-                    const personalTopic = getCleanTopic(order.person || currentUser);
-                    const titleMessage = `أوردر جديد للمسئول: ${order.person || 'غير محدد'}`;
-                    const bodyMessage = `رقم الأوردر: ${order.orderNum || '-'}\nالموديل: ${order.model || '-'}\nالعدد: ${order.qty || '-'}\nاللون: ${order.color || '-'}\nالتصنيف: ${order.type || '-'}`;
-
-                    fetch(`https://ntfy.sh/${personalTopic}`, {
-                        method: 'POST',
-                        body: bodyMessage,
-                        headers: {
-                            'Title': encodeURIComponent(titleMessage),
-                            'Priority': 'high',
-                            'Tags': 'package,incoming_envelope'
-                        }
-                    }).then(() => {
-                        console.log("Push notification successfully delivered via ntfy to:", personalTopic);
-                    }).catch(err => {
-                        console.error("Failed to push to ntfy.sh", err);
-                    });
-                }
-            });
-
-            if (notifiedCount > 0) {
-                // إظهار شارة النقطة الحمراء بجانب أيقونة التنبيهات
-                const badge = document.getElementById('notif-badge');
-                if (badge) badge.classList.remove('hidden');
-
-                showToast(`تنـبيـه: تم إضافة ${notifiedCount} أوردر(ات) جديدة موجهة إليك! 🔔`, 'warning');
-            }
-        }
-
-        // فتح نافذة إعدادات الإشعارات
-        function openNotificationModal() {
-            const modal = document.getElementById('notification-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            // إخفاء النقطة الحمراء عند الفتح
-            const badge = document.getElementById('notif-badge');
-            if (badge) badge.classList.add('hidden');
-
-            // تحديث كود القناة الخاص بالمسئول الحالي
-            const topicIdSpan = document.getElementById('ntfy-topic-id');
-            if (topicIdSpan && currentUser) {
-                topicIdSpan.textContent = getCleanTopic(currentUser);
-            }
-
-            updateBrowserPermissionStatusUI();
-        }
-
-        function closeNotificationModal() {
-            const modal = document.getElementById('notification-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        // تفعيل وتحديث واجهة إذن إشعارات المتصفح
-        function requestBrowserNotifications() {
-            if (!('Notification' in window)) {
-                showToast("متصفحك لا يدعم إشعارات المتصفح", "danger");
-                return;
-            }
-            Notification.requestPermission().then(permission => {
-                updateBrowserPermissionStatusUI();
-                if (permission === 'granted') {
-                    showToast("تم تفعيل إشعارات المتصفح بنجاح! 🎉", "success");
-                    new Notification("تفعيل ناجح! 🎉", { body: "ستستقبل تنبيهات الأوردرات هنا فوراً." });
-                } else {
-                    showToast("تم رفض الإذن، يرجى تفعيله يدوياً من إعدادات المتصفح.", "warning");
-                }
-            });
-        }
-
-        function updateBrowserPermissionStatusUI() {
-            const label = document.getElementById('browser-permission-status');
-            if (!label) return;
-
-            if (!('Notification' in window)) {
-                label.textContent = "غير مدعوم";
-                label.className = "text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200";
-                return;
-            }
-
-            if (Notification.permission === 'granted') {
-                label.textContent = "مفعّلة ونشطة";
-                label.className = "text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200";
-            } else if (Notification.permission === 'denied') {
-                label.textContent = "محظورة";
-                label.className = "text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200";
-            } else {
-                label.textContent = "بانتظار الإذن";
-                label.className = "text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200";
-            }
-        }
-
-        // نسخ كود القناة
-        function copyNtfyTopic() {
-            if (!currentUser) return;
-            const topic = getCleanTopic(currentUser);
-            
-            const tempInput = document.createElement("input");
-            tempInput.value = topic;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
-            
-            showToast("تم نسخ الكود بنجاح! الصقه في تطبيق ntfy لتفعيل الهاتف 📱", "success");
-        }
-
-        // إرسال إشعار تجريبي فوري لشاشة الهاتف المقفل
-        function testMobilePush() {
-            if (!currentUser) return;
-            const topic = getCleanTopic(currentUser);
-            const testTitle = `اختبار التنبيهات الفورية 🚀`;
-            const testBody = `رائع! تم استقبال هذا الإشعار التجريبي بنجاح على هاتفك للتطبيق.\nالمسئول الحالي: ${currentUser}`;
-
-            showToast("جاري إرسال إشعار تجريبي لهاتفك...", "info");
-
-            fetch(`https://ntfy.sh/${topic}`, {
-                method: 'POST',
-                body: testBody,
-                headers: {
-                    'Title': encodeURIComponent(testTitle),
-                    'Priority': 'high',
-                    'Tags': 'partying_face,iphone,bell'
-                }
-            }).then(() => {
-                showToast("تم إرسال الإشعار التجريبي! تحقق من هاتفك الآن 🔔", "success");
-            }).catch(err => {
-                showToast("فشل الإرسال، تحقق من الإنترنت", "danger");
-            });
-        }
-
-
-        // تشغيل وتثبيت التطبيق
+        // تشغيل التطبيق
         document.addEventListener('DOMContentLoaded', () => {
             try {
                 initApp();
