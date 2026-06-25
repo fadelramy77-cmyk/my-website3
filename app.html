@@ -92,10 +92,10 @@
     <!-- شاشة التحميل الأولية -->
     <div id="loading-screen" class="min-h-screen flex flex-col items-center justify-center z-50 bg-[#f8f9fa] absolute inset-0">
         <div class="loader mb-4"></div>
-        <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة...</p>
+        <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة والتحقق من الإشعارات...</p>
     </div>
 
-    <!-- شاشة تسجيل الدخول -->
+    <!-- شاشة تسجيل الدخول للمسئولين -->
     <div id="login-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md border-t-8 border-[#2c3e50]">
             <div class="bg-[#2c3e50] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md relative">
@@ -105,7 +105,7 @@
             <h1 class="text-2xl font-black text-center text-[#2c3e50] mb-2">تسجيل الدخول للمسئولين</h1>
             
             <p class="text-center text-xs text-emerald-600 mb-6 bg-emerald-50 p-2 rounded-lg border border-emerald-100 font-bold">
-                <i class="fa-solid fa-wifi mr-1"></i> متصل بالسحابة اللحظية
+                <i class="fa-solid fa-wifi mr-1"></i> متصل بالسحابة اللحظية المباشرة
             </p>
 
             <div class="space-y-4">
@@ -119,19 +119,19 @@
                     <label class="text-xs font-bold text-slate-500">الرقم السري (PIN)</label>
                     <input type="password" id="loginPinInput" pattern="[0-9]*" inputmode="numeric" placeholder="••••" maxlength="6" class="w-full p-3 border border-slate-200 rounded-xl text-center text-lg tracking-widest outline-none focus:border-[#3498db] font-bold">
                 </div>
-                <button onclick="handleLogin()" class="w-full py-3.5 bg-[#2c3e50] text-white rounded-xl font-bold text-sm hover:bg-[#1a252f] transition-all flex items-center justify-center gap-2 mt-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> تأكيد الدخول وتفعيل الإشعارات
+                <button onclick="handleLogin()" class="w-full py-3.5 bg-[#2c3e50] text-white rounded-xl font-bold text-sm hover:bg-[#1a252f] transition-all flex items-center justify-center gap-2 mt-2 shadow-lg">
+                    <i class="fa-solid fa-right-to-bracket"></i> تأكيد الدخول وتنشيط جرس الهاتف
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- شاشة اختيار المهام -->
+    <!-- شاشة اختيار المهام والتحكم بالإشعارات -->
     <div id="mode-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
         <div class="w-full max-w-md">
-            <div class="text-center mb-8">
+            <div class="text-center mb-6">
                 <h1 class="text-2xl font-black text-[#2c3e50] mb-2">مرحباً <span id="welcome-name" class="text-[#3498db]"></span></h1>
-                <p class="text-slate-500 font-bold text-sm">اختر قسم العمل الحالي للبدء</p>
+                <p class="text-slate-500 font-bold text-sm">اختر قسم العمل الحالي للبدء بالتحضير</p>
             </div>
             
             <div class="space-y-4">
@@ -157,12 +157,48 @@
                 </div>
             </div>
 
-            <button onclick="requestNotificationPermissionManual()" id="notif-btn" class="mt-4 w-full py-3 bg-amber-100 text-amber-700 border border-amber-300 rounded-xl font-bold text-sm hover:bg-amber-200 transition-all flex items-center justify-center gap-2">
-                <i class="fa-solid fa-bell"></i> تفعيل إشعارات الهاتف
-            </button>
+            <!-- لوحة التحكم في الإشعارات والصوت العالي للهاتف -->
+            <div class="bg-slate-800 text-white p-4 rounded-2xl mt-6 shadow-xl border border-slate-700">
+                <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-[#3498db]"></i> لوحة الإشعارات والصوت القوي للهاتف
+                </h3>
+                
+                <div class="space-y-3">
+                    <!-- نوع الرنين والإنذار -->
+                    <div>
+                        <label class="text-[10px] text-slate-400 font-bold block mb-1">اختر نوع نغمة التنبيه المسموعة:</label>
+                        <select id="alarmToneSelect" class="w-full p-2.5 bg-slate-700 border border-slate-600 rounded-lg text-xs font-bold outline-none focus:border-[#3498db] text-white">
+                            <option value="siren">⚠️ صفارة إنذار طوارئ مكررة (قوي جداً)</option>
+                            <option value="rapidBeeps">🚨 تنبيه متسارع خارق للضوضاء (موصى به)</option>
+                            <option value="classic">🔔 جرس مزدوج عالي الطبقة</option>
+                        </select>
+                    </div>
 
-            <button onclick="handleLogout()" class="mt-4 w-full py-3 bg-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all">
-                تسجيل الخروج
+                    <!-- أزرار التحكم بالتفعيل والاختبار اللحظي -->
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="requestNotificationPermissionManual()" id="notif-btn" class="py-2.5 px-3 bg-amber-500 text-slate-900 rounded-xl font-bold text-xs hover:bg-amber-400 transition-all flex items-center justify-center gap-1.5 shadow-md">
+                            <i class="fa-solid fa-bell"></i> تفعيل إشعارات الهاتف
+                        </button>
+                        <button onclick="testLoudAlarm()" class="py-2.5 px-3 bg-slate-700 hover:bg-slate-600 border border-slate-500 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-volume-high text-emerald-400 animate-pulse"></i> تجربة رنين الهاتف
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- معلومات توافق الهواتف ودليل المساعدة للتفعيل المضمون -->
+            <div class="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3 text-right">
+                <h4 class="text-xs font-black text-blue-900 mb-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info"></i> لضمان وصول التنبيه بهاتفك:
+                </h4>
+                <ul class="text-[10px] text-blue-800 list-disc list-inside space-y-1 font-bold">
+                    <li><strong>الاندرويد:</strong> تأكد من عدم تفعيل وضع الصامت والترخيص للإشعارات.</li>
+                    <li><strong>الآيفون (iOS):</strong> يجب عليك الضغط على زر <i class="fa-solid fa-share-nodes"></i> ثم <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong> لتشغيل نظام الإشعارات.</li>
+                </ul>
+            </div>
+
+            <button onclick="handleLogout()" class="mt-6 w-full py-3 bg-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all">
+                تسجيل الخروج من الحساب
             </button>
         </div>
     </div>
@@ -205,7 +241,7 @@
         </div>
     </div>
 
-    <!-- نافذة الطباعة -->
+    <!-- نافذة الطباعة التفاعلية للموبايل والكمبيوتر -->
     <div id="print-modal" class="fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 overflow-y-auto print:static print:bg-white print:p-0 hidden">
         <div class="bg-white rounded-2xl w-full max-w-lg p-5 print:shadow-none print:w-full print:max-w-none print:p-0">
             <div class="border-b-2 border-slate-200 pb-3 mb-4 flex justify-between items-center no-print">
@@ -255,41 +291,99 @@
             }
         }
 
-        // --- نظام الإشعارات والصوت ---
+        // --- محرك توليد الترددات الصوتية عالية الشدة الخارقة للضوضاء ---
         let audioContext = null;
 
         function initAudio() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
-            if(audioContext.state === 'suspended') {
+            if (audioContext.state === 'suspended') {
                 audioContext.resume();
             }
         }
 
-        // إنشاء نغمة تنبيه
-        function playNotificationSound() {
+        // تشغيل صوت تنبيه عالي جداً وقوي للهاتف بناءً على الترددات الحساسة للأذن البشرية (2000Hz - 3500Hz)
+        function playHighLoudAlarm() {
             try {
                 initAudio();
-                const osc = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
+                const now = audioContext.currentTime;
                 
-                osc.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, audioContext.currentTime); // نوتة A5
-                osc.frequency.exponentialRampToValueAtTime(1760, audioContext.currentTime + 0.1); // تصاعد سريع
-                
-                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.05);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                
-                osc.start(audioContext.currentTime);
-                osc.stop(audioContext.currentTime + 0.3);
+                // جلب نوع الرنين المختار من المستخدم
+                const alarmType = document.getElementById('alarmToneSelect') ? document.getElementById('alarmToneSelect').value : 'siren';
+
+                if (alarmType === 'siren') {
+                    // نغمة صفارة طوارئ مكررة (صعود وهبوط سريع وعالٍ جداً)
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'sawtooth'; // موجة مسننة لإنتاج خشونة وشدة صوت عالية
+                    osc.frequency.setValueAtTime(1500, now);
+                    // صعود وهبوط للتردد (سيرن)
+                    osc.frequency.linearRampToValueAtTime(3200, now + 0.3);
+                    osc.frequency.linearRampToValueAtTime(1500, now + 0.6);
+                    osc.frequency.linearRampToValueAtTime(3200, now + 0.9);
+                    osc.frequency.linearRampToValueAtTime(1500, now + 1.2);
+
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(1.0, now + 0.05); // أقصى حجم صوت متاح بالجهاز
+                    gain.gain.linearRampToValueAtTime(1.0, now + 1.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.3);
+
+                    osc.start(now);
+                    osc.stop(now + 1.3);
+
+                } else if (alarmType === 'rapidBeeps') {
+                    // سلسلة نقرات سريعة متتالية عالية التردد لتنبيه فوري
+                    for (let i = 0; i < 5; i++) {
+                        const timeOffset = i * 0.25;
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        
+                        osc.type = 'triangle'; // صوت قوي ذو اختراق ممتاز
+                        osc.frequency.setValueAtTime(2800, now + timeOffset); // تردد خارق للضوضاء المحيطة
+                        
+                        gain.gain.setValueAtTime(0, now + timeOffset);
+                        gain.gain.linearRampToValueAtTime(1.0, now + timeOffset + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + timeOffset + 0.18);
+                        
+                        osc.start(now + timeOffset);
+                        osc.stop(now + timeOffset + 0.2);
+                    }
+                } else {
+                    // الجرس الكلاسيكي المزدوج المكرر
+                    const playDoubleBeep = (delay) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(2200, now + delay);
+                        gain.gain.setValueAtTime(0, now + delay);
+                        gain.gain.linearRampToValueAtTime(0.8, now + delay + 0.05);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.4);
+                        osc.start(now + delay);
+                        osc.stop(now + delay + 0.42);
+                    };
+
+                    playDoubleBeep(0);
+                    playDoubleBeep(0.45);
+                }
             } catch (e) {
-                console.log("Audio not supported or blocked");
+                console.log("Audio contextual playback blocked or unsupported by browser runtime", e);
             }
+        }
+
+        // تجربة الصوت العالي يدوياً للتأكد من عمل الميكسر الصوتي للهاتف
+        function testLoudAlarm() {
+            initAudio();
+            playHighLoudAlarm();
+            showToast("🔊 جاري تشغيل اختبار الصوت القوي بهاتفك!", "info");
         }
 
         function checkNotificationStatus() {
@@ -297,73 +391,96 @@
             const headerIcon = document.getElementById('header-notif-icon');
             
             if (!("Notification" in window)) {
-                if(btn) btn.style.display = 'none';
+                if (btn) btn.style.display = 'none';
                 return;
             }
 
             if (Notification.permission === "granted") {
-                if(btn) {
-                    btn.classList.replace('bg-amber-100', 'bg-emerald-100');
-                    btn.classList.replace('text-amber-700', 'text-emerald-700');
-                    btn.classList.replace('border-amber-300', 'border-emerald-300');
-                    btn.innerHTML = '<i class="fa-solid fa-bell"></i> الإشعارات مفعلة';
+                if (btn) {
+                    btn.classList.replace('bg-amber-500', 'bg-emerald-500');
+                    btn.classList.replace('hover:bg-amber-400', 'hover:bg-emerald-400');
+                    btn.innerHTML = '<i class="fa-solid fa-bell"></i> الإشعارات وصوت التنبيه فعال';
                 }
-                if(headerIcon) {
+                if (headerIcon) {
                     headerIcon.innerHTML = '<i class="fa-solid fa-bell text-emerald-400"></i>';
                 }
             } else {
-                if(headerIcon) {
+                if (btn) {
+                    btn.classList.replace('bg-emerald-500', 'bg-amber-500');
+                    btn.innerHTML = '<i class="fa-solid fa-bell-slash"></i> تفعيل إشعارات الهاتف';
+                }
+                if (headerIcon) {
                     headerIcon.innerHTML = '<i class="fa-solid fa-bell-slash text-red-400"></i>';
                 }
             }
         }
 
         function requestNotificationPermissionManual() {
-            initAudio(); // تهيئة الصوت عند ضغط المستخدم
+            initAudio(); // فتح المحرك الصوتي عند تفاعل المستخدم مباشرة
             if (!("Notification" in window)) {
-                showToast("متصفحك لا يدعم الإشعارات", "danger");
+                showToast("متصفح الهاتف لا يدعم إشعارات الويب الأساسية", "danger");
                 return;
             }
             
             Notification.requestPermission().then(permission => {
                 checkNotificationStatus();
                 if (permission === "granted") {
-                    showToast("تم تفعيل الإشعارات بنجاح!", "success");
+                    playHighLoudAlarm(); // تفعيل تشغيل تجربة الصوت لتنبيه المستخدم
+                    showToast("تم تفعيل إشعارات الهاتف بنجاح، وتفعيل النغمات الطارئة!", "success");
+                    
+                    // إرسال إشعار ترحيبي فوري بالهاتف
+                    sendPushNotification("تفعيل التنبيه اللحظي 🚀", "نظام الإشعار الصوتي الفوري يعمل الآن بكفاءة عالية.");
                 } else if (permission === "denied") {
-                    showToast("قمت برفض الإشعارات. يرجى تفعيلها من إعدادات المتصفح.", "warning");
+                    showToast("قمت بحظر الإشعارات. يرجى تفعيلها يدوياً من إعدادات موقعك بالمتصفح.", "warning");
                 }
             });
         }
 
+        // إرسال الإشعار الخارجي للهاتف وتشغيل محرك الصوت
         function sendPushNotification(title, body) {
-            playNotificationSound(); // تشغيل الصوت دائماً
+            // تشغيل جرس التنبيه القوي فوراً لتخطي هدوء البيئة
+            playHighLoudAlarm();
 
             if ("Notification" in window && Notification.permission === "granted") {
                 const options = {
                     body: body,
-                    icon: "https://cdn-icons-png.flaticon.com/512/3500/3500833.png", // أيقونة إشعار عامة
-                    vibrate: [200, 100, 200, 100, 200], // اهتزاز للهواتف
-                    requireInteraction: true
+                    icon: "https://cdn-icons-png.flaticon.com/512/3500/3500833.png", // أيقونة إشعارات بارزة
+                    badge: "https://cdn-icons-png.flaticon.com/512/3500/3500833.png",
+                    vibrate: [300, 150, 300, 150, 400], // نمط اهتزاز قوي للهاتف بالجيوب
+                    tag: 'smart-order-alert',
+                    renotify: true, // إعادة التنبيه عند وصول طلب آخر جديد
+                    requireInteraction: true // إبقاء الإشعار ظاهراً في شريط الهاتف لحين سحبه بالمسؤول
                 };
                 
                 try {
-                    // محاولة استخدام Service Worker إن وجد (لأنه الأفضل للموبايل)
-                    navigator.serviceWorker.ready.then(function(registration) {
-                        registration.showNotification(title, options);
-                    }).catch(() => {
-                        // كخيار بديل نستخدم كلاس المتصفح الأساسي
+                    // محاولة استخدام Service Worker إن وجد لضمان استقرار العمل بالخلفية
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.ready.then(function(registration) {
+                            registration.showNotification(title, options);
+                        }).catch(() => {
+                            new Notification(title, options);
+                        });
+                    } else {
                         new Notification(title, options);
-                    });
+                    }
                 } catch(e) {
                     new Notification(title, options);
                 }
             }
             
-            // إظهار تنبيه داخلي أيضاً
+            // إظهار تنبيه داخلي بالصفحة أيضاً كضمان مزدوج
             showToast(`🔔 ${title}: ${body}`, "success");
         }
 
-        // --- 1. إعدادات Firebase ---
+        // دالة مخصصة لعمل إشعار تجريبي بعد ثوانٍ لاختبار إغلاق الهاتف أو الخروج من الصفحة
+        function testDelayedNotification() {
+            showToast("سيصلك إشعار تجريبي بصوت مرتفع بعد 4 ثوانٍ. يمكنك إغلاق شاشة هاتفك الآن للتجربة!", "info");
+            setTimeout(() => {
+                sendPushNotification("اختبار إنذار الهاتف 🚨", "هذا صوت الإنذار العالي للأوردرات الجديدة!");
+            }, 4000);
+        }
+
+        // --- 1. إعدادات Firebase السحابية ---
         const firebaseConfig = {
             apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
             authDomain: "order-system-26c71.firebaseapp.com",
@@ -410,7 +527,7 @@
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
-            }, 5000); // زدنا الوقت قليلاً لتُقرأ بوضوح
+            }, 6000); // زيادة وقت ظهور التنبيه ليتمكن المسؤول من قراءته بوضوح
         }
 
         function getStatusStyles(status) {
@@ -422,7 +539,7 @@
             }
         }
 
-        // --- 4. التهيئة والاتصال بالسحابة ---
+        // --- 4. التهيئة والاتصال بالسحابة المباشرة ---
         function initApp() {
             try {
                 firebase.initializeApp(firebaseConfig);
@@ -434,11 +551,11 @@
                     setupCloudListeners();
                 }).catch(err => {
                     console.error("Auth error:", err);
-                    showFallbackError("حدث خطأ في المصادقة السحابية.");
+                    showFallbackError("حدث خطأ في المصادقة السحابية اللحظية.");
                 });
             } catch(e) {
                 console.error("Firebase init failed:", e);
-                showFallbackError("فشل التهيئة الأساسية للخدمات السحابية.");
+                showFallbackError("فشل تهيئة الخدمات السحابية الأساسية بقاعدة البيانات.");
             }
 
             const searchInput = document.getElementById('searchInput');
@@ -470,50 +587,51 @@
                 } catch(e) {}
             });
 
-            // استماع الأوردرات (مع الإشعارات)
+            // استماع الأوردرات السحابية (مع إطلاق الإشعارات الصوتية الفورية)
             ordersRef.onSnapshot((snapshot) => {
                 try {
                     allOrders = [];
                     
-                    // تحليل التغييرات للإشعارات
+                    // تحليل التغيرات اللحظية في السحابة لتوليد جرس الإنذار
                     snapshot.docChanges().forEach((change) => {
                         const data = change.doc.data();
                         
-                        // تجاهل التنبيهات في أول تحميل للصفحة
+                        // تجاهل إطلاق صفارات الإنذار أثناء التحميل الأول للصفحة
                         if (!isInitialOrdersLoad && currentUser) {
                             let shouldNotify = false;
                             let title = "";
                             let body = "";
 
-                            // حالة 1: أوردر جديد تم إضافته
+                            // الحالة 1: تم إضافة أوردر جديد بقاعدة البيانات وموجه لهذا المسؤول خصيصاً
                             if (change.type === 'added') {
                                 if (data.person === currentUser || userRole === 'شامل') {
                                     shouldNotify = true;
-                                    title = "أوردر جديد 📦";
-                                    body = `تم توجيه أوردر رقم ${data.orderNum} إليك.`;
+                                    title = "📦 أوردر جديد موجه إليك";
+                                    body = `أوردر رقم ${data.orderNum || '-'} بانتظار التحضير بالمستودع.`;
                                 }
                             }
                             
-                            // حالة 2: تعديل حالة أوردر
+                            // الحالة 2: تغيير حالة أوردر من قبل مسؤول التحضير (مفيد لمسئولي التسليم)
                             if (change.type === 'modified') {
-                                // لمسئول التسليم: أوردر أصبح جاهز
                                 if (data.status === 'تم التحضير' && (userRole === 'تسليم' || userRole === 'شامل')) {
                                     shouldNotify = true;
-                                    title = "أوردر جاهز للتسليم ✅";
-                                    body = `الأوردر رقم ${data.orderNum} تم تحضيره وهو جاهز للتسليم.`;
+                                    title = "✅ أوردر جاهز للتسليم الآن";
+                                    body = `أوردر رقم ${data.orderNum || '-'} جاهز للتسليم للعميل بالخارج.`;
                                 }
                             }
 
-                            if (shouldNotify) sendPushNotification(title, body);
+                            if (shouldNotify) {
+                                sendPushNotification(title, body);
+                            }
                         }
                     });
 
-                    // تجميع كل البيانات للعرض
+                    // تجميع كل البيانات وعرضها باللوحة الرئيسية
                     snapshot.forEach(doc => { allOrders.push({ docId: doc.id, ...doc.data() }); });
-                    isInitialOrdersLoad = false; // تم انتهاء التحميل الأول
+                    isInitialOrdersLoad = false; // انتهاء التحميل الأول بنجاح
 
                     const indicator = document.getElementById('sync-indicator');
-                    if(indicator) {
+                    if (indicator) {
                         indicator.classList.add('bg-yellow-400');
                         setTimeout(() => indicator.classList.remove('bg-yellow-400'), 500);
                     }
@@ -521,7 +639,7 @@
                 } catch(e) {}
             });
 
-            // استماع التوالف (مع الإشعارات)
+            // استماع طلبات التوالف السحابية (مع تفعيل أجراس الهواتف للأعطال)
             tawalefRef.onSnapshot((snapshot) => {
                 try {
                     allTawalef = [];
@@ -529,9 +647,10 @@
                     snapshot.docChanges().forEach((change) => {
                         const data = change.doc.data();
                         
+                        // إرسال تنبيه فوري لمسؤولي التحضير في حال إضافة تالف جديد قيد المراجعة
                         if (!isInitialTawalefLoad && currentUser) {
                             if (change.type === 'added' && (userRole === 'تحضير' || userRole === 'شامل')) {
-                                sendPushNotification("تالف جديد ⚠️", `يوجد أوردر تالف جديد رقم ${data.orderNum} يحتاج للمراجعة.`);
+                                sendPushNotification("⚠️ طلب تالف جديد بالمستودع", `أوردر تالف رقم ${data.orderNum || '-'} بانتظار المراجعة والتحضير.`);
                             }
                         }
                     });
@@ -546,7 +665,7 @@
 
         function checkSession() {
             const loader = document.getElementById('loading-screen');
-            if(loader) loader.style.display = 'none';
+            if (loader) loader.style.display = 'none';
             
             const savedUser = localStorage.getItem('cloud_app_person');
             const savedRole = localStorage.getItem('cloud_app_role');
@@ -560,7 +679,7 @@
             }
         }
 
-        // --- 5. المنطق والواجهة ---
+        // --- 5. المنطق والواجهة الرسومية ---
         function updateLoginSelect() {
             const select = document.getElementById('loginUserSelect');
             if (!select) return;
@@ -588,9 +707,9 @@
             document.getElementById('mode-screen').classList.add('flex');
             document.getElementById('welcome-name').innerText = currentUser;
 
-            // إخفاء كارت التوالف بالكامل عن مسئول التسليم
+            // إخفاء التوالف بالكامل عن مسؤول التسليم لراحة العمل
             const tawalefCardBtn = document.getElementById('tawalef-card-btn');
-            if(userRole === 'تسليم') {
+            if (userRole === 'تسليم') {
                 tawalefCardBtn.style.display = 'none';
             } else {
                 tawalefCardBtn.style.display = 'flex';
@@ -607,7 +726,7 @@
             
             document.getElementById('header-name').textContent = currentUser;
             
-            if(mode === 'orders') {
+            if (mode === 'orders') {
                 document.getElementById('header-role').textContent = `أوردرات (${userRole})`;
                 document.getElementById('header-icon').className = "fa-solid fa-box-open text-white";
                 document.getElementById('searchInput').placeholder = "بحث برقم الأوردر أو الموديل...";
@@ -627,7 +746,7 @@
         }
 
         function handleLogin() {
-            // تفعيل الصوت بضغطة المستخدم كشرط لمتصفحات الجوال
+            // تفعيل محرك الأصوات مباشرة عند النقر للتغلب على حماية المتصفح
             initAudio(); 
             
             if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
@@ -638,7 +757,7 @@
             const pinInput = document.getElementById('loginPinInput').value;
 
             if (!selectedName) {
-                showToast("يرجى اختيار اسم المسئول!", "warning");
+                showToast("يرجى اختيار اسم المسئول للتحقق!", "warning");
                 return;
             }
 
@@ -655,7 +774,7 @@
             localStorage.setItem('cloud_app_role', userRole);
             
             document.getElementById('loginPinInput').value = '';
-            showToast(`مرحباً بك ${currentUser}`, "success");
+            showToast(`مرحباً بك ${currentUser} - تم تنشيط النظام السحابي بنجاح`, "success");
             showModeScreen(); 
         }
 
@@ -664,7 +783,7 @@
             userRole = null;
             localStorage.removeItem('cloud_app_person');
             localStorage.removeItem('cloud_app_role');
-            showToast("تم تسجيل خروجك بنجاح", "info");
+            showToast("تم تسجيل خروجك بنجاح من اللوحة السحابية", "info");
             showLoginScreen();
         }
 
@@ -711,7 +830,7 @@
                     container.innerHTML = `
                         <div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4">
                             <i class="fa-solid fa-folder-open text-slate-300 text-4xl mb-4"></i>
-                            <h3 class="text-sm font-bold text-slate-600">لا توجد أوردرات مطابقة للبحث</h3>
+                            <h3 class="text-sm font-bold text-slate-600">لا توجد أوردرات مطابقة للبحث حالياً</h3>
                         </div>
                     `;
                     return;
@@ -734,7 +853,7 @@
                     }
                     if (userRole === 'تسليم' || userRole === 'شامل') {
                         buttonsHtml += `
-                            <button onclick="updateStatus('${order.docId}', 'تم الاستلام')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700">تم الاستلام النهائي</button>
+                            <button onclick="updateStatus('${order.docId}', 'تم الاستلام')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 font-extrabold shadow">تم الاستلام النهائي</button>
                         `;
                     }
                     buttonsHtml += '</div></div>';
@@ -815,14 +934,13 @@
 
                 // عرض التوالف لمسئولي التحضير والشامل فقط
                 let myTawalef = allTawalef.filter(t => {
-                    if (t.status === 'تم التسليم') return false; // إخفاء المكتملة
+                    if (t.status === 'تم التسليم') return false; 
                     
                     const query = (searchQuery || '').trim().toLowerCase();
                     const matchesSearch = query === '' || (t.orderNum && t.orderNum.toString().toLowerCase().includes(query));
                     return matchesSearch;
                 });
 
-                // ترتيب زمني
                 myTawalef.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
                 if (myTawalef.length === 0) {
@@ -839,12 +957,10 @@
                     const isPending = t.status === 'معلق' || !t.status;
                     const statusLabel = t.status || 'معلق';
                     
-                    // ألوان بناءً على الحالة
                     const headerColor = isPending ? 'bg-amber-500' : 'bg-red-500';
                     const borderColor = isPending ? 'border-amber-200' : 'border-red-200';
                     const textColor = isPending ? 'text-amber-600' : 'text-red-600';
 
-                    // أزرار العمليات
                     let actionBtnHtml = '';
                     if (isPending) {
                         actionBtnHtml = `
@@ -854,8 +970,8 @@
                         `;
                     } else if (t.status === 'جاري التحضير') {
                         actionBtnHtml = `
-                            <button onclick="updateTawalefStatus('${t.docId}', 'تم التسليم')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-check-circle"></i> تم التسليم والتسوية
+                            <button onclick="updateTawalefStatus('${t.docId}', 'تم التسليم')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 flex items-center justify-center gap-2 font-black shadow">
+                                <i class="fa-solid fa-check-circle"></i> تم التسليم والتسوية النهائية
                             </button>
                         `;
                     }
@@ -912,20 +1028,20 @@
                 if (newStatus === 'تم الاستلام') updates.receiveDate = todayYYYYMMDD;
                 else if (newStatus === 'تم التحضير') updates.prepDate = todayYYYYMMDD;
 
-                showToast(`جاري التحديث إلى "${newStatus}"...`, "info");
+                showToast(`جاري تحديث الحالة إلى "${newStatus}"...`, "info");
 
                 db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders').doc(docId)
                     .update(updates)
                     .then(() => {
-                        if(newStatus === 'تم الاستلام') {
-                            showToast("تم الاستلام وإزالة الأوردر من القائمة", "success");
+                        if (newStatus === 'تم الاستلام') {
+                            showToast("تم الاستلام النهائي بنجاح وتمت تصفية الطلب", "success");
                         } else {
-                            showToast(`تم تحديث الحالة بنجاح`, "success");
+                            showToast(`تم تحديث حالة الأوردر بنجاح إلى: ${newStatus}`, "success");
                         }
                     })
                     .catch(err => {
                         console.error("Update error:", err);
-                        showToast("فشل في تحديث الحالة، تحقق من الإنترنت", "danger");
+                        showToast("فشل تحديث الحالة بالسحابة، يرجى فحص جودة اتصال الإنترنت", "danger");
                     });
             } catch(e) {
                 console.error("Error in update status:", e);
@@ -946,38 +1062,36 @@
                 
                 const updates = { 
                     status: newStatus,
-                    person: currentUser, // المسئول الذي قام بالتعديل
-                    actionTime: timeStr, // وقت التحديث العام
+                    person: currentUser, 
+                    actionTime: timeStr, 
                     timestamp: now.getTime()
                 };
 
-                // تحديد وقت وتاريخ كل حالة بشكل منفصل
                 if (newStatus === 'تم التسليم') {
                     updates.receiveDate = todayYYYYMMDD;
-                    updates.receiveTime = timeStr; // التقاط وقت التسليم بالساعة والدقيقة
+                    updates.receiveTime = timeStr; 
                     updates.deliveredBy = currentUser; 
                 } else if (newStatus === 'جاري التحضير') {
-                    // تحديث وقت التحضير بالساعة والدقيقة
                     updates.prepTime = timeStr;
                 }
 
-                showToast(`جاري التحديث...`, "info");
+                showToast(`جاري تحديث التالف...`, "info");
 
                 db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef').doc(docId)
                     .update(updates)
                     .then(() => {
-                        showToast(`تم تغيير الحالة إلى ${newStatus}`, "success");
+                        showToast(`تم تغيير الحالة بنجاح إلى: ${newStatus}`, "success");
                     })
                     .catch(err => {
                         console.error("Update error:", err);
-                        showToast("فشل في التحديث، تحقق من الإنترنت", "danger");
+                        showToast("فشل التحديث بالتوالف، يرجى التحقق من اتصال شبكة الإنترنت", "danger");
                     });
             } catch(e) {
                 console.error("Error in update tawalef:", e);
             }
         }
 
-        // --- 6. الطباعة ---
+        // --- 6. الطباعة التفصيلية للمبيعات ---
         function triggerPrint(docId) {
             try {
                 activePrintOrder = allOrders.find(o => o.docId === docId);
@@ -1061,7 +1175,7 @@
                 setTimeout(() => { window.print(); }, 400);
             } catch(e) {
                 console.error("Error in print setup:", e);
-                showToast("تعذر تجهيز واجهة الطباعة", "danger");
+                showToast("تعذر تجهيز واجهة الطباعة للورق", "danger");
             }
         }
 
@@ -1071,13 +1185,45 @@
             activePrintOrder = null;
         }
 
-        // تشغيل التطبيق
+        // تسجيل Service Worker مدمج محلياً لضمان استقبال الإشعارات على الهواتف المقفلة أو بالخلفية
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // نستخدم ملف الـ service worker لتفادي مشاكل الأمان بالهواتف
+                const swCode = `
+                    self.addEventListener('install', (e) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (e) => {
+                        e.waitUntil(self.clients.claim());
+                    });
+                    self.addEventListener('notificationclick', (e) => {
+                        e.notification.close();
+                        e.waitUntil(
+                            self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+                                if (clientList.length > 0) {
+                                    return clientList[0].focus();
+                                }
+                                return self.clients.openWindow('/');
+                            })
+                        );
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(reg => console.log('Loud Alerts Service Worker registered correctly', reg))
+                    .catch(err => console.log('Service Worker registration skipped or restricted: ', err));
+            });
+        }
+
+        // تشغيل التطبيق الأول فور تحميل الصفحة الكاملة
         document.addEventListener('DOMContentLoaded', () => {
             try {
                 initApp();
             } catch(e) {
                 console.error("Startup error:", e);
-                showFallbackError("لم نتمكن من تشغيل التطبيق بشكل صحيح، حاول التحديث.");
+                showFallbackError("لم نتمكن من تشغيل التطبيق بشكل صحيح، حاول تحديث المتصفح.");
             }
         });
 
