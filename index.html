@@ -45,6 +45,76 @@
 
             body { font-family: 'Cairo', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #333; overflow-x: hidden; }
             
+            /* ================= تصميم صفحة تسجيل الدخول ================= */
+            #login-screen {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                display: flex; justify-content: center; align-items: center;
+                z-index: 9999;
+            }
+            .login-bg {
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                /* خلفية المخزن مع تأثير ضبابي */
+                background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop');
+                background-size: cover; background-position: center;
+                filter: blur(6px) brightness(0.7); 
+                transform: scale(1.05); z-index: -1;
+            }
+            .login-container::after {
+                content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+                z-index: -1;
+            }
+            .login-card {
+                background: white; width: 380px; border-radius: 12px;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.5); overflow: hidden;
+            }
+            .login-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white; text-align: center; padding: 35px 20px;
+            }
+            .login-header h2 { margin: 15px 0 5px; font-weight: 800; font-size: 24px; letter-spacing: 1px;}
+            .login-header p { margin: 0; font-size: 14px; opacity: 0.9; }
+            .login-body { padding: 30px; }
+            
+            .login-error {
+                background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+                padding: 10px; border-radius: 6px; margin-bottom: 20px;
+                font-size: 13px; text-align: center; font-weight: bold;
+                display: none;
+            }
+
+            .input-group-login { margin-bottom: 20px; text-align: right; }
+            .input-group-login label {
+                display: block; margin-bottom: 8px; color: #555; font-size: 14px; font-weight: 600;
+            }
+            .input-group-login label i { margin-left: 5px; color: #667eea; }
+            .input-group-login input {
+                width: 100%; padding: 12px 15px; border: 1px solid #ddd;
+                border-radius: 8px; font-family: inherit; font-size: 14px;
+                box-sizing: border-box; outline: none; transition: border 0.3s;
+            }
+            .input-group-login input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+            
+            .login-btn {
+                width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white; border: none; padding: 12px; border-radius: 8px;
+                font-size: 16px; font-weight: bold; cursor: pointer; transition: opacity 0.3s;
+                display: flex; justify-content: center; align-items: center; gap: 8px;
+                font-family: inherit; margin-top: 10px;
+            }
+            .login-btn:hover { opacity: 0.9; }
+            
+            .login-footer {
+                text-align: center; padding: 15px; background: #f9fafb;
+                border-top: 1px solid #eee; font-size: 12px; color: #777;
+            }
+
+            /* ================= نظام الصلاحيات (إخفاء العناصر للـ Viewer) ================= */
+            body.role-viewer .admin-only {
+                display: none !important;
+            }
+            /* ===================================================================== */
+
             /* تصميم الهيكل العام مع القائمة الجانبية */
             .app-layout { display: flex; min-height: 100vh; }
             
@@ -277,11 +347,42 @@
     </head>
     <body>
 
-    <div class="app-layout">
+    <!-- ==================== شاشة تسجيل الدخول ==================== -->
+    <div id="login-screen" class="login-container">
+        <div class="login-bg"></div>
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fa-solid fa-building fa-3x mb-3"></i>
+                <h2>نظام Orders System</h2>
+                <p>إدارة الأوردرات والتوالف</p>
+            </div>
+            <div class="login-body">
+                <div id="login-error" class="login-error">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="input-group-login">
+                        <label><i class="fa-solid fa-user"></i> اسم المستخدم</label>
+                        <input type="text" id="login-username" placeholder="ادخل اسم المستخدم..." required autocomplete="username">
+                    </div>
+                    <div class="input-group-login">
+                        <label><i class="fa-solid fa-lock"></i> كلمة المرور</label>
+                        <input type="password" id="login-password" placeholder="ادخل كلمة المرور..." required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="login-btn">
+                        تسجيل الدخول <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="login-footer">
+                Orders System v1.0 &copy; 2026
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== التطبيق الرئيسي (مخفي قبل الدخول) ==================== -->
+    <div class="app-layout" id="main-app" style="display:none;">
         
-        <!-- القائمة الجانبية (مخفية افتراضياً بإضافة كلاس collapsed) -->
+        <!-- القائمة الجانبية -->
         <aside class="sidebar collapsed no-print" id="sidebar">
-            <!-- القائمة المطابقة للتصميم المطلوب -->
             <ul class="sidebar-menu">
                 <li class="sidebar-item active" id="sideTabOrders">
                     <a class="sidebar-link" onclick="switchSidebarTab('orders')">
@@ -295,7 +396,7 @@
                         <span>إدارة التوالف</span>
                     </a>
                 </li>
-                <li class="sidebar-item" id="sideTabPersons">
+                <li class="sidebar-item admin-only" id="sideTabPersons">
                     <a class="sidebar-link" onclick="switchSidebarTab('persons')">
                         <i class="fa-solid fa-users-gear"></i>
                         <span>إدارة المسئولين</span>
@@ -315,8 +416,18 @@
                     </button>
                     <h1 class="font-bold text-lg text-[#2c3e50] hidden sm:block">نظام إدارة العمليات اللحظي</h1>
                 </div>
-                <div>
+                <div class="flex items-center gap-3">
                     <span id="db-status-badge" class="db-local">جاري التحقق من السحابة...</span>
+                    <!-- معلومات المستخدم وتسجيل الخروج -->
+                    <div class="user-profile flex items-center gap-3 border-r-2 pr-3 border-gray-200 ml-2">
+                        <div class="text-sm">
+                            <div class="font-bold text-gray-700" id="display-username">Admin</div>
+                            <div class="text-xs text-gray-500" id="display-role">مسئول النظام</div>
+                        </div>
+                        <button onclick="logout()" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors flex items-center justify-center" title="تسجيل الخروج">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -331,11 +442,11 @@
                                 <input type="text" id="searchInput" class="search-bar" placeholder="بحث شامل..." oninput="render()">
                             </div>
                             <div class="main-btns">
-                                <button class="btn btn-delete" id="bulkDeleteBtn" style="display:none" onclick="removeSelected()">حذف المختار</button>
+                                <button class="btn btn-delete admin-only" id="bulkDeleteBtn" style="display:none" onclick="removeSelected()">حذف المختار</button>
                                 <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(this)">
                                 <button class="btn btn-export" onclick="exportToCSV()">تصدير Excel</button>
-                                <button class="btn btn-import" onclick="document.getElementById('importFile').click()">رفع CSV</button>
-                                <button class="btn btn-add" onclick="openModal()">+ أوردر جديد</button>
+                                <button class="btn btn-import admin-only" onclick="document.getElementById('importFile').click()">رفع CSV</button>
+                                <button class="btn btn-add admin-only" onclick="openModal()">+ أوردر جديد</button>
                             </div>
                         </div>
 
@@ -363,7 +474,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th width="3%"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"></th>
+                                    <th width="3%" class="admin-only"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"></th>
                                     <th width="8%">رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="render()" placeholder="تصفية..."></th>
                                     <th width="8%">رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="render()" placeholder="تصفية..."></th>
                                     <th width="9%">البراند<br><input type="text" class="col-search" id="c-brand" oninput="render()" placeholder="تصفية..."></th>
@@ -412,9 +523,9 @@
                                 </button>
                             </div>
                             <div class="main-btns">
-                                <button class="btn btn-delete" id="tawalefBulkDeleteBtn" style="display:none" onclick="removeSelectedTawalef()">حذف المختار</button>
+                                <button class="btn btn-delete admin-only" id="tawalefBulkDeleteBtn" style="display:none" onclick="removeSelectedTawalef()">حذف المختار</button>
                                 <button class="btn btn-export" onclick="exportTawalefToCSV()">تصدير التوالف</button>
-                                <button class="btn btn-add" onclick="openTawalefModal()">➕ إضافة تالف جديد</button>
+                                <button class="btn btn-add admin-only" onclick="openTawalefModal()">➕ إضافة تالف جديد</button>
                             </div>
                         </div>
                     </header>
@@ -438,7 +549,7 @@
                         <table>
                             <thead>
                                 <tr style="background: var(--primary); color: white;">
-                                    <th width="3%"><input type="checkbox" id="selectAllTawalef" onchange="toggleSelectAllTawalef(this.checked)"></th>
+                                    <th width="3%" class="admin-only"><input type="checkbox" id="selectAllTawalef" onchange="toggleSelectAllTawalef(this.checked)"></th>
                                     <th width="10%">رقم الأوردر<br><input type="text" class="col-search" id="ct-orderNum" oninput="renderTawalef()" placeholder="تصفية..."></th>
                                     <th width="12%">الحالة<br><input type="text" class="col-search" id="ct-status" oninput="renderTawalef()" placeholder="تصفية..."></th>
                                     <th width="12%">المسئول<br><input type="text" class="col-search" id="ct-person" oninput="renderTawalef()" placeholder="تصفية..."></th>
@@ -451,7 +562,7 @@
                                     <th width="10%">وقت الطلب</th>
                                     <th width="10%">وقت التحضير</th>
                                     <th width="10%">وقت التسليم</th>
-                                    <th width="10%">الإجراءات</th>
+                                    <th width="10%" class="admin-only">الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody id="tawalefTableBody"></tbody>
@@ -459,8 +570,8 @@
                     </div>
                 </div>
 
-                <!-- ==================== قسم إدارة المسئولين ==================== -->
-                <div id="personsSection" class="section-content hidden">
+                <!-- ==================== قسم إدارة المسئولين (للمدير فقط) ==================== -->
+                <div id="personsSection" class="section-content hidden admin-only">
                     <header class="header-box">
                         <div class="top-row">
                             <div style="display:flex; align-items:center; gap:15px">
@@ -502,7 +613,7 @@
     </div>
 
     <!-- ==================== Modals (النوافذ المنبثقة) ==================== -->
-
+    <!-- نفس نوافذ التعديل الموجودة مسبقاً لم تتغير -->
     <!-- Modal الأوردرات (الإضافة والتعديل) -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
@@ -572,7 +683,6 @@
                 </select>
             </div>
 
-            <!-- خانة التاريخ الخاصة باليوم -->
             <div class="form-group">
                 <label>تاريخ اليوم (تاريخ الطلب)</label>
                 <input type="date" id="ft-orderDate">
@@ -732,6 +842,66 @@
 
     <!-- ==================== البرمجة وجافا سكريبت ==================== -->
     <script>
+        // ================= برمجة الدخول والصلاحيات =================
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            const errBox = document.getElementById('login-error');
+
+            if (user === 'Admin' && pass === 'Admin@2026') {
+                localStorage.setItem('os_app_session', JSON.stringify({ user: 'Admin', role: 'admin' }));
+                errBox.style.display = 'none';
+                initAppScreen();
+            } else if (user === 'Viewer' && pass === 'Viewer@2026') {
+                localStorage.setItem('os_app_session', JSON.stringify({ user: 'Viewer', role: 'viewer' }));
+                errBox.style.display = 'none';
+                initAppScreen();
+            } else {
+                errBox.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('os_app_session');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            initAppScreen();
+        }
+
+        function initAppScreen() {
+            const session = JSON.parse(localStorage.getItem('os_app_session'));
+            if (!session) {
+                // إظهار الدخول وإخفاء التطبيق
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-app').style.display = 'none';
+                document.body.classList.remove('role-viewer');
+            } else {
+                // إخفاء الدخول وإظهار التطبيق
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                
+                // تحديث بيانات المستخدم في الهيدر
+                document.getElementById('display-username').innerText = session.user;
+                document.getElementById('display-role').innerText = session.role === 'admin' ? 'مدير النظام' : 'مشاهد فقط';
+
+                // تطبيق الصلاحيات
+                if (session.role === 'viewer') {
+                    document.body.classList.add('role-viewer');
+                    // لو كان في صفحة الإدارة ينتقل للأوردرات تلقائياً
+                    if(document.getElementById('sideTabPersons').classList.contains('active')) {
+                        switchSidebarTab('orders');
+                    }
+                } else {
+                    document.body.classList.remove('role-viewer');
+                }
+            }
+        }
+
+        // تشغيل التحقق فوراً عند فتح الصفحة
+        initAppScreen();
+        // ==========================================================
+
         const customFirebaseConfig = {
             apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
             authDomain: "order-system-26c71.firebaseapp.com",
@@ -883,7 +1053,7 @@
             });
 
             sortOrdersArray(orders);
-            tawalef = sortTawalefData(tawalef); // ترتيب التوالف
+            tawalef = sortTawalefData(tawalef); 
             updatePersonDropdown();
             updateFilterUIs();
             render();
@@ -914,7 +1084,7 @@
                     snapshot.forEach((doc) => {
                         tawalef.push({ docId: doc.id, ...doc.data() });
                     });
-                    tawalef = sortTawalefData(tawalef); // ترتيب التوالف السحابية
+                    tawalef = sortTawalefData(tawalef); 
                     renderTawalef();
                 }, (error) => {
                     console.error("Tawalef sync error:", error);
@@ -933,52 +1103,36 @@
                 });
         }
 
-        // دالة ترتيب التوالف برقم الأوردر من الأكبر للأصغر
         function sortTawalefData(data) {
             return data.sort((a, b) => {
-                // استخراج الأرقام فقط من رقم الأوردر للتأكد من الترتيب الصحيح
                 let numA = parseInt(String(a.orderNum).replace(/\D/g, '')) || 0;
                 let numB = parseInt(String(b.orderNum).replace(/\D/g, '')) || 0;
-                
-                if (numA !== numB) return numB - numA; // ترتيب تنازلي (الأكبر للأصغر)
-                return (b.timestamp || 0) - (a.timestamp || 0); // ترتيب بالوقت كبديل
+                if (numA !== numB) return numB - numA; 
+                return (b.timestamp || 0) - (a.timestamp || 0);
             });
         }
 
-        // دالة معالجة التواريخ المحدثة لتشمل التواريخ بصيغة DD/MM/YYYY
         function formatDateToYYYYMMDD(dateStr) {
             if (!dateStr) return "";
             dateStr = dateStr.toString().trim();
             if (dateStr === "-" || dateStr === "") return "";
-            
-            // إذا كان التاريخ بالفعل بصيغة YYYY-MM-DD
             if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-            
-            // معالجة التواريخ التي تأتي من الإكسيل بصيغة فيها سلاش /
             if (dateStr.includes('/')) {
                 let parts = dateStr.split('/');
                 if (parts.length === 3) {
-                    let p1 = parseInt(parts[0]); // غالباً اليوم
-                    let p2 = parseInt(parts[1]); // غالباً الشهر
-                    let p3 = parseInt(parts[2]); // غالباً السنة
-                    
+                    let p1 = parseInt(parts[0]); 
+                    let p2 = parseInt(parts[1]); 
+                    let p3 = parseInt(parts[2]); 
                     let y, m, d;
-                    
-                    // تحديد السنة
-                    if (p3 > 1000) { y = p3; m = p2; d = p1; } // DD/MM/YYYY
-                    else if (p1 > 1000) { y = p1; m = p2; d = p3; } // YYYY/MM/DD
-                    else { y = 2000 + p3; m = p2; d = p1; } // DD/MM/YY (fallback)
-
-                    // تبديل بين الشهر واليوم إذا كان هناك خطأ في القراءة
+                    if (p3 > 1000) { y = p3; m = p2; d = p1; }
+                    else if (p1 > 1000) { y = p1; m = p2; d = p3; } 
+                    else { y = 2000 + p3; m = p2; d = p1; } 
                     if (m > 12 && d <= 12) { let temp = m; m = d; d = temp; }
-
                     if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
                         return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                     }
                 }
             }
-            
-            // محاولة القراءة الافتراضية
             try {
                 let d = new Date(dateStr);
                 if (!isNaN(d.getTime())) {
@@ -988,25 +1142,17 @@
                     return `${y}-${m}-${day}`;
                 }
             } catch(e) {}
-            
-            // إذا فشل كل شيء، قم بإرجاع النص كما هو لعدم ضياع البيانات
             return dateStr;
         }
 
-        // ترتيب الأوردرات الأساسية برقم الأوردر من الأكبر للأصغر دائماً
         function sortOrdersArray(ordersList) {
             return ordersList.sort((a, b) => {
-                // استخراج الأرقام فقط في حال كان رقم الأوردر يحتوي على نصوص
                 let numA = parseInt(String(a.orderNum).replace(/\D/g, '')) || 0;
                 let numB = parseInt(String(b.orderNum).replace(/\D/g, '')) || 0;
-                
-                if (numB !== numA) return numB - numA; // من الأكبر للأصغر
-                
-                // الترتيب بالتاريخ كبديل إذا تساوت الأرقام
+                if (numB !== numA) return numB - numA;
                 let dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
                 let dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
                 if (dateB !== dateA) return dateB - dateA;
-                
                 return (b.timestamp || 0) - (a.timestamp || 0);
             });
         }
@@ -1028,28 +1174,17 @@
             }
         }
 
-        // دالة مسح جميع الفلاتر
         function clearAllFilters() {
-            // تفريغ الفلاتر العلوية
             activeFilters = { status: [], type: [], model: [] };
-            
-            // تفريغ حقول البحث الرئيسية
             document.getElementById('searchInput').value = '';
             document.getElementById('tawalefSearchInput').value = '';
-            
-            // تفريغ فلاتر أعمدة الجداول والتواريخ
             const colSearches = document.querySelectorAll('.col-search');
             colSearches.forEach(input => input.value = '');
-
-            // تحديث واجهة الفلاتر المربعة لإزالة علامات الاختيار
             updateFilterUIs();
-
-            // إعادة تحميل الجداول بالبيانات كاملة
             render();
             renderTawalef();
         }
 
-        // ==================== برمجة إدارة التوالف والهوالك ====================
         function renderTawalef() {
             const tbody = document.getElementById('tawalefTableBody');
             if (!tbody) return;
@@ -1070,7 +1205,7 @@
             let total = 0, pending = 0, solved = 0;
 
             tawalef.forEach((t, i) => {
-                const deliveredBy = t.person || t.deliveredBy || '-'; // عرض اسم المسئول الذي قام بالفعل
+                const deliveredBy = t.person || t.deliveredBy || '-'; 
                 const matchesSearch = !searchQuery || (t.orderNum && t.orderNum.toLowerCase().includes(searchQuery));
                 const matchesColFilters = checkColMatch(t.orderNum, colFilters.orderNum) &&
                                         checkColMatch(t.status, colFilters.status) &&
@@ -1082,15 +1217,15 @@
                     if (t.status === 'تم التسليم') solved++;
                     else pending++;
 
-                    let sClass = "s-waiting"; // Default for معلق
-                    if (t.status === 'تم التسليم') sClass = "s-received"; // Green
-                    else if (t.status === 'جاري التحضير') sClass = "s-preparing"; // Cyan
+                    let sClass = "s-waiting"; 
+                    if (t.status === 'تم التسليم') sClass = "s-received"; 
+                    else if (t.status === 'جاري التحضير') sClass = "s-preparing"; 
 
                     const tr = document.createElement('tr');
                     if (t.selected) tr.className = 'selected-row';
 
                     tr.innerHTML = `
-                        <td><input type="checkbox" ${t.selected ? 'checked' : ''} onchange="toggleSelectTawalef(${i})"></td>
+                        <td class="admin-only"><input type="checkbox" ${t.selected ? 'checked' : ''} onchange="toggleSelectTawalef(${i})"></td>
                         <td class="font-bold text-slate-800 text-center" style="font-size: 14px;">${t.orderNum || '-'}</td>
                         <td><span class="badge ${sClass}">${t.status || 'معلق'}</span></td>
                         <td class="font-bold text-[#3498db]">${deliveredBy}</td>
@@ -1098,10 +1233,10 @@
                         <td class="text-slate-600">${t.orderTime || '-'}</td>
                         <td class="text-blue-600 font-bold">${t.prepTime || '-'}</td>
                         <td class="text-emerald-600 font-bold">${t.receiveTime || '-'}</td>
-                        <td>
+                        <td class="admin-only">
                             <div class="flex justify-center gap-2">
-                                <button class="btn-icon" onclick="editTawalef(${i})" title="تعديل">✏️</button>
-                                <button class="btn-icon" onclick="removeTawalef(${i})" title="حذف">🗑️</button>
+                                <button class="btn-icon admin-only" onclick="editTawalef(${i})" title="تعديل">✏️</button>
+                                <button class="btn-icon admin-only" onclick="removeTawalef(${i})" title="حذف">🗑️</button>
                             </div>
                         </td>
                     `;
@@ -1122,16 +1257,12 @@
             document.getElementById('tawalefModalTitle').innerText = "إضافة تالف جديد";
             document.getElementById('editTawalefIndex').value = "-1";
             document.getElementById('ft-orderNum').value = "";
-            
-            // تعيين الحالة الافتراضية والوقت التلقائي
             document.getElementById('ft-status').value = "معلق";
-            
             const now = new Date();
             document.getElementById('ft-orderDate').value = now.toISOString().split('T')[0];
             document.getElementById('ft-orderTime').value = now.toLocaleTimeString('ar-EG', { hour12: true, hour: "numeric", minute: "numeric"});
             document.getElementById('ft-prepTime').value = "";
             document.getElementById('ft-receiveTime').value = "";
-            
             document.getElementById('tawalefModal').style.display = 'flex';
         }
 
@@ -1150,7 +1281,6 @@
 
             if (!orderNum) return alert("يرجى إدخال رقم الأوردر المتضرر!");
 
-            // منع إضافة أوردر تالف موجود مسبقاً (في حالة الإضافة الجديدة فقط)
             if (idx === -1 && tawalef.some(t => String(t.orderNum).trim() === orderNum)) {
                 return alert("رقم الأوردر هذا مسجل مسبقاً في التوالف!");
             }
@@ -1164,9 +1294,9 @@
                 if (idx === -1) {
                     tawalef.push(data);
                 } else {
-                    tawalef[idx] = Object.assign(tawalef[idx], data); // تحديث بدون مسح القيم القديمة
+                    tawalef[idx] = Object.assign(tawalef[idx], data); 
                 }
-                tawalef = sortTawalefData(tawalef); // إعادة ترتيب
+                tawalef = sortTawalefData(tawalef); 
                 saveData();
                 renderTawalef();
                 closeTawalefModal();
@@ -1250,7 +1380,6 @@
             document.body.removeChild(link);
         }
 
-        // ==================== برمجة إدارة الأوردرات والمسئولين ====================
         function renderPersons() {
             const tbody = document.getElementById('personsTableBody');
             if (!tbody) return;
@@ -1279,15 +1408,15 @@
                     <td>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <span id="pin-text-${idx}" style="font-family: monospace; letter-spacing: 2px;">••••</span>
-                            <button class="btn-icon" onclick="togglePinVisibility(${idx}, '${p.pin}')" title="عرض/إخفاء الرمز السري">👁️</button>
+                            <button class="btn-icon admin-only" onclick="togglePinVisibility(${idx}, '${p.pin}')" title="عرض/إخفاء الرمز السري">👁️</button>
                         </div>
                     </td>
                     <td style="font-weight: bold; color: #d35400;">${pendingOrdersCount} أوردر معلق</td>
                     <td style="font-weight: bold; color: #27ae60;">${completedOrdersCount} مكتمل ✅</td>
                     <td style="font-size: 11px; color: #7f8c8d;">${dateStr}</td>
-                    <td>
-                        <button class="btn-icon" onclick="editPerson(${idx})" title="تعديل الحساب">✏️</button>
-                        <button class="btn-icon" onclick="deletePerson(${idx})" title="حذف الحساب">🗑️</button>
+                    <td class="admin-only">
+                        <button class="btn-icon admin-only" onclick="editPerson(${idx})" title="تعديل الحساب">✏️</button>
+                        <button class="btn-icon admin-only" onclick="deletePerson(${idx})" title="حذف الحساب">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1545,7 +1674,7 @@
                     if(o.selected) tr.className = 'selected-row';
                     
                     tr.innerHTML = `
-                        <td><input type="checkbox" ${o.selected ? 'checked' : ''} onchange="toggleSelect(${i})"></td>
+                        <td class="admin-only"><input type="checkbox" ${o.selected ? 'checked' : ''} onchange="toggleSelect(${i})"></td>
                         <td style="white-space: nowrap;"><b>${o.orderNum || '-'}</b></td>
                         <td style="white-space: nowrap;"><b>${o.id || '-'}</b></td>
                         <td>${brandDisplay}</td>
@@ -1561,8 +1690,8 @@
                         <td style="white-space: nowrap; direction: ltr;">${o.receiveDate || '-'}</td>
                         <td>
                             <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: nowrap;">
-                                <button class="btn-icon" onclick="edit(${i})" title="تعديل">✏️</button>
-                                <button class="btn-icon" onclick="remove(${i})" title="حذف">🗑️</button>
+                                <button class="btn-icon admin-only" onclick="edit(${i})" title="تعديل">✏️</button>
+                                <button class="btn-icon admin-only" onclick="remove(${i})" title="حذف">🗑️</button>
                                 <button class="btn-icon" onclick="openPrintModal(${i})" title="طباعة">🖨️</button>
                             </div>
                         </td>
@@ -1852,7 +1981,6 @@
             if (personSelect) personSelect.value = personVal;
 
             document.getElementById('f-notes').value = o.notes || "";
-            // تعديل لعرض التاريخ المكتوب حتى وإن لم يكن بصيغة صحيحة (لتفادي اختفائه)
             document.getElementById('f-orderDate').value = o.orderDate && o.orderDate.includes('-') ? o.orderDate : "";
             document.getElementById('f-prepDate').value = o.prepDate && o.prepDate.includes('-') ? o.prepDate : "";
             document.getElementById('f-receiveDate').value = o.receiveDate && o.receiveDate.includes('-') ? o.receiveDate : "";
