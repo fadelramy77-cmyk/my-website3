@@ -414,7 +414,7 @@
                     <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-lg text-slate-700 transition-all" title="إظهار/إخفاء القائمة">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <h1 class="font-bold text-lg text-[#2c3e50] hidden sm:block">Orders System</h1>
+                    <h1 class="font-bold text-lg text-[#2c3e50] hidden sm:block">نظام إدارة العمليات اللحظي</h1>
                 </div>
                 <div class="flex items-center gap-3">
                     <span id="db-status-badge" class="db-local">جاري التحقق من السحابة...</span>
@@ -869,6 +869,27 @@
             initAppScreen();
         }
 
+        // ================= نظام الإغلاق التلقائي عند عدم النشاط =================
+        let inactivityTimeout;
+        const TIMEOUT_DURATION = 30 * 60 * 1000; // 30 دقيقة (بالميللي ثانية)
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimeout);
+            // تفعيل العداد فقط إذا كان المستخدم مسجل الدخول
+            const session = localStorage.getItem('os_app_session');
+            if (session) {
+                inactivityTimeout = setTimeout(() => {
+                    logout(); // تسجيل الخروج التلقائي
+                }, TIMEOUT_DURATION);
+            }
+        }
+
+        // مراقبة نشاط المستخدم لإعادة ضبط العداد
+        ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
+            document.addEventListener(evt, resetInactivityTimer, true);
+        });
+        // ========================================================================
+
         function initAppScreen() {
             const session = JSON.parse(localStorage.getItem('os_app_session'));
             if (!session) {
@@ -896,6 +917,9 @@
                     document.body.classList.remove('role-viewer');
                 }
             }
+            
+            // تشغيل أو إيقاف عداد عدم النشاط بناءً على حالة تسجيل الدخول
+            resetInactivityTimer();
         }
 
         // تشغيل التحقق فوراً عند فتح الصفحة
