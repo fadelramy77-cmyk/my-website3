@@ -275,6 +275,48 @@
             .date-filter-group { display: flex; flex-direction: column; gap: 4px; align-items: center; margin-top: 8px; }
             .date-search { margin-top: 0 !important; width: 95% !important; padding: 2px 4px !important; color: #555; cursor: pointer; }
 
+            /* Pagination CSS */
+            .pagination-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                margin-top: 20px;
+                padding: 10px;
+            }
+            .page-btn {
+                background: #fff;
+                border: 1px solid #cbd5e1;
+                color: #475569;
+                padding: 8px 14px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: bold;
+                transition: all 0.2s;
+                font-family: inherit;
+            }
+            .page-btn:hover:not(.disabled) {
+                background: var(--accent);
+                color: white;
+                border-color: var(--accent);
+            }
+            .page-btn.active {
+                background: var(--primary);
+                color: white;
+                border-color: var(--primary);
+            }
+            .page-btn.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background: #f1f5f9;
+            }
+            .page-dots {
+                padding: 0 5px;
+                color: #64748b;
+                font-weight: bold;
+            }
+
             /* Badges */
             .badge { display: inline-block; padding: 3px 10px; border-radius: 50px; font-weight: bold; font-size: 10.5px; min-width: 80px; text-align: center;}
             .s-received { background: var(--received-bg); color: var(--received-text); }
@@ -414,7 +456,7 @@
                     <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-lg text-slate-700 transition-all" title="إظهار/إخفاء القائمة">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <h1 class="font-bold text-lg text-[#2c3e50] hidden sm:block"> Orders System </h1>
+                    <h1 class="font-bold text-lg text-[#2c3e50] hidden sm:block">Orders System</h1>
                 </div>
                 <div class="flex items-center gap-3">
                     <span id="db-status-badge" class="db-local">جاري التحقق من السحابة...</span>
@@ -439,7 +481,7 @@
                         <div class="top-row">
                             <div style="display:flex; align-items:center; gap:15px">
                                 <h2 style="margin:0; font-weight: 800;">📦 إدارة الأوردرات</h2>
-                                <input type="text" id="searchInput" class="search-bar" placeholder="بحث شامل..." oninput="render()">
+                                <input type="text" id="searchInput" class="search-bar" placeholder="بحث شامل..." oninput="filterChanged()">
                             </div>
                             <div class="main-btns">
                                 <button class="btn btn-delete admin-only" id="bulkDeleteBtn" style="display:none" onclick="removeSelected()">حذف المختار</button>
@@ -475,32 +517,32 @@
                             <thead>
                                 <tr>
                                     <th width="3%" class="admin-only"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"></th>
-                                    <th width="8%">رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="8%">رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="9%">البراند<br><input type="text" class="col-search" id="c-brand" oninput="render()" placeholder="تصفية..."></th>
-                                    <th>الموديل<br><input type="text" class="col-search" id="c-model" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="5%">العدد<br><input type="text" class="col-search" id="c-qty" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="6%">اللون<br><input type="text" class="col-search" id="c-color" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="9%">الحالة<br><input type="text" class="col-search" id="c-status" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="6%">التصنيف<br><input type="text" class="col-search" id="c-type" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="9%">المسئول<br><input type="text" class="col-search" id="c-person" oninput="render()" placeholder="تصفية..."></th>
-                                    <th width="10%">الملاحظات<br><input type="text" class="col-search" id="c-notes" oninput="render()" placeholder="تصفية..."></th>
+                                    <th width="8%">رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="8%">رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="9%">البراند<br><input type="text" class="col-search" id="c-brand" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th>الموديل<br><input type="text" class="col-search" id="c-model" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="5%">العدد<br><input type="text" class="col-search" id="c-qty" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="6%">اللون<br><input type="text" class="col-search" id="c-color" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="9%">الحالة<br><input type="text" class="col-search" id="c-status" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="6%">التصنيف<br><input type="text" class="col-search" id="c-type" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="9%">المسئول<br><input type="text" class="col-search" id="c-person" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                    <th width="10%">الملاحظات<br><input type="text" class="col-search" id="c-notes" oninput="filterChanged()" placeholder="تصفية..."></th>
                                     <th>تاريخ الطلب
                                         <div class="date-filter-group">
-                                            <input type="date" class="col-search date-search" id="c-orderDate-from" oninput="render()" title="من تاريخ">
-                                            <input type="date" class="col-search date-search" id="c-orderDate-to" oninput="render()" title="إلى تاريخ">
+                                            <input type="date" class="col-search date-search" id="c-orderDate-from" oninput="filterChanged()" title="من تاريخ">
+                                            <input type="date" class="col-search date-search" id="c-orderDate-to" oninput="filterChanged()" title="إلى تاريخ">
                                         </div>
                                     </th>
                                     <th>تاريخ التحضير
                                         <div class="date-filter-group">
-                                            <input type="date" class="col-search date-search" id="c-prepDate-from" oninput="render()" title="من تاريخ">
-                                            <input type="date" class="col-search date-search" id="c-prepDate-to" oninput="render()" title="إلى تاريخ">
+                                            <input type="date" class="col-search date-search" id="c-prepDate-from" oninput="filterChanged()" title="من تاريخ">
+                                            <input type="date" class="col-search date-search" id="c-prepDate-to" oninput="filterChanged()" title="إلى تاريخ">
                                         </div>
                                     </th>
                                     <th>تاريخ الاستلام
                                         <div class="date-filter-group">
-                                            <input type="date" class="col-search date-search" id="c-receiveDate-from" oninput="render()" title="من تاريخ">
-                                            <input type="date" class="col-search date-search" id="c-receiveDate-to" oninput="render()" title="إلى تاريخ">
+                                            <input type="date" class="col-search date-search" id="c-receiveDate-from" oninput="filterChanged()" title="من تاريخ">
+                                            <input type="date" class="col-search date-search" id="c-receiveDate-to" oninput="filterChanged()" title="إلى تاريخ">
                                         </div>
                                     </th>
                                     <th width="7%">إجراءات</th>
@@ -509,6 +551,10 @@
                             <tbody id="tableBody"></tbody>
                         </table>
                     </div>
+                    
+                    <!-- حاوية أرقام الصفحات (Pagination) -->
+                    <div id="paginationContainer" class="pagination-container no-print"></div>
+
                 </div>
 
                 <!-- ==================== قسم إدارة التوالف ==================== -->
@@ -613,7 +659,6 @@
     </div>
 
     <!-- ==================== Modals (النوافذ المنبثقة) ==================== -->
-    <!-- نفس نوافذ التعديل الموجودة مسبقاً لم تتغير -->
     <!-- Modal الأوردرات (الإضافة والتعديل) -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
@@ -869,47 +914,38 @@
             initAppScreen();
         }
 
-        // ================= نظام الإغلاق التلقائي عند عدم النشاط =================
         let inactivityTimeout;
-        const TIMEOUT_DURATION = 30 * 60 * 1000; // 30 دقيقة (بالميللي ثانية)
+        const TIMEOUT_DURATION = 30 * 60 * 1000;
 
         function resetInactivityTimer() {
             clearTimeout(inactivityTimeout);
-            // تفعيل العداد فقط إذا كان المستخدم مسجل الدخول
             const session = localStorage.getItem('os_app_session');
             if (session) {
                 inactivityTimeout = setTimeout(() => {
-                    logout(); // تسجيل الخروج التلقائي
+                    logout();
                 }, TIMEOUT_DURATION);
             }
         }
 
-        // مراقبة نشاط المستخدم لإعادة ضبط العداد
         ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
             document.addEventListener(evt, resetInactivityTimer, true);
         });
-        // ========================================================================
 
         function initAppScreen() {
             const session = JSON.parse(localStorage.getItem('os_app_session'));
             if (!session) {
-                // إظهار الدخول وإخفاء التطبيق
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('main-app').style.display = 'none';
                 document.body.classList.remove('role-viewer');
             } else {
-                // إخفاء الدخول وإظهار التطبيق
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 
-                // تحديث بيانات المستخدم في الهيدر
                 document.getElementById('display-username').innerText = session.user;
                 document.getElementById('display-role').innerText = session.role === 'admin' ? 'مدير النظام' : 'مشاهد فقط';
 
-                // تطبيق الصلاحيات
                 if (session.role === 'viewer') {
                     document.body.classList.add('role-viewer');
-                    // لو كان في صفحة الإدارة ينتقل للأوردرات تلقائياً
                     if(document.getElementById('sideTabPersons').classList.contains('active')) {
                         switchSidebarTab('orders');
                     }
@@ -917,14 +953,10 @@
                     document.body.classList.remove('role-viewer');
                 }
             }
-            
-            // تشغيل أو إيقاف عداد عدم النشاط بناءً على حالة تسجيل الدخول
             resetInactivityTimer();
         }
 
-        // تشغيل التحقق فوراً عند فتح الصفحة
         initAppScreen();
-        // ==========================================================
 
         const customFirebaseConfig = {
             apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
@@ -961,6 +993,10 @@
         let db = null;
         let auth = null;
         let useLocalFallback = true;
+        
+        // --- متغيرات التصفح للـ Pagination ---
+        let currentPage = 1;
+        const itemsPerPage = 50;
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -1198,6 +1234,11 @@
             }
         }
 
+        function filterChanged() {
+            currentPage = 1;
+            render();
+        }
+
         function clearAllFilters() {
             activeFilters = { status: [], type: [], model: [] };
             document.getElementById('searchInput').value = '';
@@ -1205,6 +1246,7 @@
             const colSearches = document.querySelectorAll('.col-search');
             colSearches.forEach(input => input.value = '');
             updateFilterUIs();
+            currentPage = 1;
             render();
             renderTawalef();
         }
@@ -1604,6 +1646,7 @@
             const index = activeFilters[key].indexOf(value);
             if (index === -1) activeFilters[key].push(value);
             else activeFilters[key].splice(index, 1);
+            currentPage = 1; // الرجوع للصفحة الأولى عند تعديل الفلتر
             render();
         }
 
@@ -1621,6 +1664,7 @@
             return true;
         }
 
+        // ===================== تحديث دالة الريندر لدعم Pagination =====================
         function render() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             
@@ -1649,8 +1693,11 @@
             const tbody = document.getElementById('tableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            let c = { total: 0, wait: 0, prep: 0, prepDone: 0, received: 0 };
 
+            let c = { total: 0, wait: 0, prep: 0, prepDone: 0, received: 0 };
+            let filteredOrders = []; // مصفوفة مؤقتة لتخزين النتائج بعد الفلترة
+
+            // 1. فلترة جميع البيانات وحساب الإحصائيات الشاملة
             orders.forEach((o, i) => {
                 const statusStr = o.status || "معلق";
                 
@@ -1682,48 +1729,18 @@
                     checkDateRangeMatch(o.receiveDate, dateFilters.receiveFrom, dateFilters.receiveTo);
 
                 if (matchesSearch && matchesStatus && matchesType && matchesModel && matchesColFilters) {
+                    // نحتفظ بالبيانات مع الكشاف (index) الأصلي الخاص بها لتسهيل عملية الحذف والتعديل
+                    filteredOrders.push({ order: o, originalIndex: i });
+                    
                     c.total++;
-                    let sClass = "s-none";
-                    
-                    if (statusStr === "تم الاستلام") { sClass = "s-received"; c.received++; }
-                    else if (statusStr === "تم التحضير") { sClass = "s-prep-done"; c.prepDone++; }
-                    else if (statusStr === "جاري التحضير") { sClass = "s-preparing"; c.prep++; }
-                    else if (statusStr === "معلق") { sClass = "s-waiting"; c.wait++; }
-
-                    let brandDisplay = o.brand && o.brand.trim() !== '' 
-                        ? `<span class="brand-badge">${o.brand}</span>` 
-                        : '-';
-
-                    const tr = document.createElement('tr');
-                    if(o.selected) tr.className = 'selected-row';
-                    
-                    tr.innerHTML = `
-                        <td class="admin-only"><input type="checkbox" ${o.selected ? 'checked' : ''} onchange="toggleSelect(${i})"></td>
-                        <td style="white-space: nowrap;"><b>${o.orderNum || '-'}</b></td>
-                        <td style="white-space: nowrap;"><b>${o.id || '-'}</b></td>
-                        <td>${brandDisplay}</td>
-                        <td>${o.model}</td>
-                        <td>${o.qty}</td>
-                        <td>${o.color || '-'}</td>
-                        <td><span class="badge ${sClass}">${statusStr}</span></td>
-                        <td>${o.type}</td>
-                        <td><b>${o.person || '-'}</b></td>
-                        <td style="font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${o.notes || ''}">${o.notes || '-'}</td>
-                        <td style="white-space: nowrap; direction: ltr;">${o.orderDate || '-'}</td>
-                        <td style="white-space: nowrap; direction: ltr;">${o.prepDate || '-'}</td>
-                        <td style="white-space: nowrap; direction: ltr;">${o.receiveDate || '-'}</td>
-                        <td>
-                            <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: nowrap;">
-                                <button class="btn-icon admin-only" onclick="edit(${i})" title="تعديل">✏️</button>
-                                <button class="btn-icon admin-only" onclick="remove(${i})" title="حذف">🗑️</button>
-                                <button class="btn-icon" onclick="openPrintModal(${i})" title="طباعة">🖨️</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
+                    if (statusStr === "تم الاستلام") { c.received++; }
+                    else if (statusStr === "تم التحضير") { c.prepDone++; }
+                    else if (statusStr === "جاري التحضير") { c.prep++; }
+                    else if (statusStr === "معلق") { c.wait++; }
                 }
             });
 
+            // 2. تحديث لوحة الإحصائيات (الداشبورد) بناءً على نتائج الفلتر الكلية
             document.getElementById('d-total').innerText = c.total;
             document.getElementById('d-waiting').innerText = c.wait;
             document.getElementById('d-preparing').innerText = c.prep;
@@ -1733,7 +1750,110 @@
             const selCount = orders.filter(o => o.selected).length;
             document.getElementById('bulkDeleteBtn').style.display = selCount > 0 ? 'block' : 'none';
             document.getElementById('bulkDeleteBtn').innerText = `حذف المختار (${selCount})`;
+
+            // 3. نظام حساب وتقسيم الصفحات
+            const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+            if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedOrders = filteredOrders.slice(startIndex, endIndex); // اقتطاع بيانات الصفحة الحالية فقط
+
+            // 4. رسم جدول الصفحة الحالية فقط
+            paginatedOrders.forEach(item => {
+                const o = item.order;
+                const i = item.originalIndex;
+                const statusStr = o.status || "معلق";
+                
+                let sClass = "s-none";
+                if (statusStr === "تم الاستلام") { sClass = "s-received"; }
+                else if (statusStr === "تم التحضير") { sClass = "s-prep-done"; }
+                else if (statusStr === "جاري التحضير") { sClass = "s-preparing"; }
+                else if (statusStr === "معلق") { sClass = "s-waiting"; }
+
+                let brandDisplay = o.brand && o.brand.trim() !== '' 
+                    ? `<span class="brand-badge">${o.brand}</span>` 
+                    : '-';
+
+                const tr = document.createElement('tr');
+                if(o.selected) tr.className = 'selected-row';
+                
+                tr.innerHTML = `
+                    <td class="admin-only"><input type="checkbox" ${o.selected ? 'checked' : ''} onchange="toggleSelect(${i})"></td>
+                    <td style="white-space: nowrap;"><b>${o.orderNum || '-'}</b></td>
+                    <td style="white-space: nowrap;"><b>${o.id || '-'}</b></td>
+                    <td>${brandDisplay}</td>
+                    <td>${o.model}</td>
+                    <td>${o.qty}</td>
+                    <td>${o.color || '-'}</td>
+                    <td><span class="badge ${sClass}">${statusStr}</span></td>
+                    <td>${o.type}</td>
+                    <td><b>${o.person || '-'}</b></td>
+                    <td style="font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${o.notes || ''}">${o.notes || '-'}</td>
+                    <td style="white-space: nowrap; direction: ltr;">${o.orderDate || '-'}</td>
+                    <td style="white-space: nowrap; direction: ltr;">${o.prepDate || '-'}</td>
+                    <td style="white-space: nowrap; direction: ltr;">${o.receiveDate || '-'}</td>
+                    <td>
+                        <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: nowrap;">
+                            <button class="btn-icon admin-only" onclick="edit(${i})" title="تعديل">✏️</button>
+                            <button class="btn-icon admin-only" onclick="remove(${i})" title="حذف">🗑️</button>
+                            <button class="btn-icon" onclick="openPrintModal(${i})" title="طباعة">🖨️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 5. رسم أزرار الصفحات السفلية
+            renderPagination(totalPages);
         }
+
+        // ================= دالة عرض أزرار الانتقال بين الصفحات =================
+        function renderPagination(totalPages) {
+            const container = document.getElementById('paginationContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (totalPages <= 1) return; // لا حاجة للأزرار إذا كانت صفحة واحدة فقط
+
+            let html = '';
+            
+            // زر السابق
+            html += `<button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" onclick="if(currentPage > 1) goToPage(currentPage - 1)">السابق &raquo;</button>`;
+            
+            // حساب نطاق الصفحات المرئية (لعرض 5 أزرار كحد أقصى بجوار بعضهم)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            
+            if (startPage > 1) {
+                html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) html += `<span class="page-dots">...</span>`;
+            }
+            
+            for (let p = startPage; p <= endPage; p++) {
+                html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<span class="page-dots">...</span>`;
+                html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            }
+            
+            // زر التالي
+            html += `<button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" onclick="if(currentPage < totalPages) goToPage(currentPage + 1)">&laquo; التالي</button>`;
+            
+            container.innerHTML = html;
+        }
+
+        // دالة الذهاب لصفحة معينة
+        function goToPage(page) {
+            currentPage = page;
+            render();
+            // التمرير لأعلى الجدول بشكل سلس
+            document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // =========================================================================
 
         function openPrintModal(i) {
             const o = orders[i];
@@ -1849,6 +1969,7 @@
                     orders = pendingImportOrders;
                     sortOrdersArray(orders);
                     saveData();
+                    currentPage = 1;
                     render();
                 } else {
                     if (!user || !db) return;
@@ -1956,6 +2077,7 @@
                 if (useLocalFallback) {
                     orders = orders.filter(o => !o.selected);
                     saveData();
+                    currentPage = 1;
                     render();
                     renderPersons();
                 } else {
@@ -2013,6 +2135,7 @@
 
         function exportToCSV() {
             let csv = "\uFEFFرقم الأوردر;رقم التحويلة;البراند;الموديل;العدد;اللون;الحالة;التصنيف;المسئول;الملاحظات;تاريخ الطلب;تاريخ التحضير;تاريخ الاستلام\n";
+            // تصدير الأوردرات كما هي مفلترة ومرتبة
             orders.forEach(o => {
                 const esc = (val) => {
                     if (val === null || val === undefined) return '';
