@@ -33,6 +33,9 @@
         <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+        <!-- مكتبة SheetJS لتصدير ملفات Excel بصيغة XLSX -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
         <style>
             :root {
                 --waiting-bg: #fff3cd; --waiting-text: #856404;
@@ -1433,17 +1436,31 @@
         }
 
         function exportTawalefToCSV() {
-            let csv = "\uFEFFرقم الأوردر;الحالة;المسئول;تاريخ الطلب;وقت الطلب;وقت التحضير;وقت التسليم\n";
+            const data = [];
+            // إضافة العناوين
+            data.push(["رقم الأوردر", "الحالة", "المسئول", "تاريخ الطلب", "وقت الطلب", "وقت التحضير", "وقت التسليم"]);
+            
+            // إضافة البيانات
             tawalef.forEach(t => {
-                csv += `"${t.orderNum || '-'}";"${t.status || 'معلق'}";"${t.person || t.deliveredBy || '-'}";"${t.orderDate || ''}";"${t.orderTime || ''}";"${t.prepTime || ''}";"${t.receiveTime || ''}"\n`;
+                data.push([
+                    t.orderNum || '-',
+                    t.status || 'معلق',
+                    t.person || t.deliveredBy || '-',
+                    t.orderDate || '',
+                    t.orderTime || '',
+                    t.prepTime || '',
+                    t.receiveTime || ''
+                ]);
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `tawalef_report_${new Date().getTime()}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+
+            // إنشاء ملف الإكسيل
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!dir'] = 'rtl'; // جعل الشيت من اليمين لليسار
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "التوالف");
+
+            // تحميل الملف
+            XLSX.writeFile(wb, `tawalef_report_${new Date().getTime()}.xlsx`);
         }
 
         function renderPersons() {
@@ -2134,22 +2151,37 @@
         }
 
         function exportToCSV() {
-            let csv = "\uFEFFرقم الأوردر;رقم التحويلة;البراند;الموديل;العدد;اللون;الحالة;التصنيف;المسئول;الملاحظات;تاريخ الطلب;تاريخ التحضير;تاريخ الاستلام\n";
+            const data = [];
+            // إضافة العناوين
+            data.push(["رقم الأوردر", "رقم التحويلة", "البراند", "الموديل", "العدد", "اللون", "الحالة", "التصنيف", "المسئول", "الملاحظات", "تاريخ الطلب", "تاريخ التحضير", "تاريخ الاستلام"]);
+            
             // تصدير الأوردرات كما هي مفلترة ومرتبة
             orders.forEach(o => {
-                const esc = (val) => {
-                    if (val === null || val === undefined) return '';
-                    return val.toString().replace(/"/g, '""');
-                };
-                csv += `"${esc(o.orderNum)}";"${esc(o.id)}";"${esc(o.brand)}";"${esc(o.model)}";"${esc(o.qty)}";"${esc(o.color)}";"${esc(o.status || 'معلق')}";"${esc(o.type)}";"${esc(o.person)}";"${esc(o.notes)}";"${esc(o.orderDate)}";"${esc(o.prepDate)}";"${esc(o.receiveDate)}"\n`;
+                data.push([
+                    o.orderNum || '',
+                    o.id || '',
+                    o.brand || '',
+                    o.model || '',
+                    o.qty || '',
+                    o.color || '',
+                    o.status || 'معلق',
+                    o.type || '',
+                    o.person || '',
+                    o.notes || '',
+                    o.orderDate || '',
+                    o.prepDate || '',
+                    o.receiveDate || ''
+                ]);
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `orders_full_data_${new Date().getTime()}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+
+            // إنشاء ملف الإكسيل
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!dir'] = 'rtl'; // جعل الشيت من اليمين لليسار
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "الأوردرات");
+
+            // تحميل الملف
+            XLSX.writeFile(wb, `orders_full_data_${new Date().getTime()}.xlsx`);
         }
 
         window.onclick = function(event) {
