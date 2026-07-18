@@ -56,7 +56,6 @@
             }
             .login-bg {
                 position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-                /* خلفية المخزن مع تأثير ضبابي */
                 background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop');
                 background-size: cover; background-position: center;
                 filter: blur(6px) brightness(0.7); 
@@ -112,30 +111,49 @@
                 border-top: 1px solid #eee; font-size: 12px; color: #777;
             }
 
-            /* ================= نظام الصلاحيات (إخفاء العناصر للـ Viewer) ================= */
+            /* ================= نظام الصلاحيات ================= */
             body.role-viewer .admin-only {
                 display: none !important;
             }
-            /* ===================================================================== */
 
-            /* تصميم الهيكل العام مع القائمة الجانبية */
+            /* ================= تصميم الهيكل العام مع القائمة الجانبية ================= */
             .app-layout { display: flex; min-height: 100vh; }
             
-            /* ================= القائمة الجانبية المطابقة للصورة ================= */
+            /* خلفية التظليل للقائمة الجانبية (Overlay) */
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.4);
+                z-index: 900;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .sidebar-overlay.show {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            /* القائمة الجانبية العائمة */
             .sidebar {
-                width: 250px;
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                width: 260px;
                 background: #ffffff;
-                border-left: 1px solid #e5e7eb; /* حد رمادي خفيف */
                 display: flex;
                 flex-direction: column;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                flex-shrink: 0;
-                z-index: 50;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 950;
+                box-shadow: -4px 0 25px rgba(0,0,0,0.1);
+                transform: translateX(0); /* ظاهر */
             }
             .sidebar.collapsed {
-                width: 0px;
-                overflow: hidden;
-                border-left: none;
+                transform: translateX(100%); /* مخفي */
             }
             
             .sidebar-menu { list-style: none; padding: 0; margin: 0; margin-top: 10px; }
@@ -145,28 +163,26 @@
                 align-items: center;
                 gap: 12px;
                 padding: 14px 20px;
-                color: #4b5563; /* لون نص رمادي داكن */
+                color: #4b5563;
                 text-decoration: none;
                 font-size: 15px;
                 transition: all 0.2s;
                 cursor: pointer;
             }
             .sidebar-link i {
-                color: #6b7280; /* لون الأيقونات */
+                color: #6b7280;
                 font-size: 16px;
                 width: 20px;
                 text-align: center;
             }
             .sidebar-link:hover { background: #f9fafb; color: #111827; }
             
-            /* حالة التحديد المطابقة للصورة (خلفية رمادية) */
             .sidebar-item.active { background-color: #e5e7eb; }
             .sidebar-item.active .sidebar-link { color: #111827; font-weight: 700; }
             .sidebar-item.active i { color: #374151; }
-            /* ==================================================================== */
             
             /* منطقة المحتوى الرئيسية */
-            .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+            .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; width: 100%; }
             .top-navbar {
                 background: #ffffff;
                 height: 70px;
@@ -204,7 +220,6 @@
                 max-height: 100px; overflow-y: auto; background: #fafafa;
             }
             
-            /* تخصيص فلتر الموديل تحديداً لعرضه في عمودين وارتفاع 150px */
             #modelFilters { 
                 max-height: 100px; 
                 display: grid; 
@@ -246,7 +261,6 @@
             /* Tables */
             .table-container { background: #fffffffa; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); border: 1px solid #edf2f7; width: 100%; }
             
-            /* تخصيص شريط التمرير للجدول ليكون واضحاً أسفل الأعمدة الأولى */
             .table-container::-webkit-scrollbar { height: 10px; }
             .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
             .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -257,7 +271,6 @@
             td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
             tr:hover { background-color: #f8fbff; }
             
-            /* Column Search Inputs */
             .col-search {
                 width: 95%;
                 margin-top: 8px;
@@ -274,7 +287,6 @@
             .col-search::placeholder { color: #888; }
             .col-search:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 4px rgba(52, 152, 219, 0.5); }
             
-            /* Date Range Filters CSS */
             .date-filter-group { display: flex; flex-direction: column; gap: 4px; align-items: center; margin-top: 8px; }
             .date-search { margin-top: 0 !important; width: 95% !important; padding: 2px 4px !important; color: #555; cursor: pointer; }
 
@@ -328,7 +340,6 @@
             .s-waiting { background: var(--waiting-bg); color: var(--waiting-text); }
             .s-none { background: #eee; color: #777; }
 
-            /* تصميم شارة البراند لمطابقة حجم شارة الحالة */
             .brand-badge {
                 background-color: #060707;
                 color: #f7f6f4;
@@ -348,7 +359,7 @@
             .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; transition: transform 0.2s; }
             .btn-icon:hover { transform: scale(1.2); }
 
-            /* Modal العامة */
+            /* Modals */
             .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
             .modal-content { background: #fff; padding: 25px; border-radius: 15px; width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; }
             .form-group { margin-bottom: 12px; }
@@ -358,7 +369,7 @@
             
             .selected-row { background-color: #e8f4fd !important; }
 
-            /* ستايل خاص بنافذة الطباعة */
+            /* ستايل نافذة الطباعة */
             #printArea { text-align: right; direction: rtl; }
             .print-field { margin-bottom: 15px; }
             .print-label { font-size: 14px; color: #666; font-weight: bold; margin-bottom: 4px; }
@@ -367,7 +378,6 @@
             .print-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
             .print-header { border-bottom: 2px solid #2c3e50; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-            /* مؤشر حالة الاتصال بالسحابة */
             #db-status-badge {
                 font-size: 10px;
                 padding: 2px 10px;
@@ -392,7 +402,6 @@
     </head>
     <body>
 
-    <!-- ==================== شاشة تسجيل الدخول ==================== -->
     <div id="login-screen" class="login-container">
         <div class="login-bg"></div>
         <div class="login-card">
@@ -423,10 +432,12 @@
         </div>
     </div>
 
-    <!-- ==================== التطبيق الرئيسي (مخفي قبل الدخول) ==================== -->
     <div class="app-layout" id="main-app" style="display:none;">
         
-        <!-- القائمة الجانبية -->
+        <!-- خلفية التظليل للقائمة الجانبية -->
+        <div class="sidebar-overlay no-print" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <!-- القائمة الجانبية العائمة -->
         <aside class="sidebar collapsed no-print" id="sidebar">
             <ul class="sidebar-menu">
                 <li class="sidebar-item active" id="sideTabOrders">
@@ -453,7 +464,7 @@
         <!-- المحتوى الرئيسي للمنصة -->
         <div class="main-wrapper">
             
-            <!-- شريط علوي جديد (Header Bar) -->
+            <!-- شريط علوي -->
             <header class="top-navbar no-print">
                 <div class="flex items-center gap-4">
                     <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-lg text-slate-700 transition-all" title="إظهار/إخفاء القائمة">
@@ -462,7 +473,7 @@
                     <h1 class="font-bold text-lg text-[#2c3e50] hidden sm:block">Orders System</h1>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span id="db-status-badge" class="db-local">جاري التحقق من السحابة...</span>
+                    <span id="db-status-badge" class="db-local">جاري التحقق...</span>
                     <!-- معلومات المستخدم وتسجيل الخروج -->
                     <div class="user-profile flex items-center gap-3 border-r-2 pr-3 border-gray-200 ml-2">
                         <div class="text-sm">
@@ -555,7 +566,6 @@
                         </table>
                     </div>
                     
-                    <!-- حاوية أرقام الصفحات (Pagination) -->
                     <div id="paginationContainer" class="pagination-container no-print"></div>
 
                 </div>
@@ -662,7 +672,6 @@
     </div>
 
     <!-- ==================== Modals (النوافذ المنبثقة) ==================== -->
-    <!-- Modal الأوردرات (الإضافة والتعديل) -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
             <h2 id="modalTitle" class="font-black text-lg text-slate-800 mb-4">بيانات الأوردر</h2>
@@ -1003,7 +1012,27 @@
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                // فتح القائمة
+                sidebar.classList.remove('collapsed');
+                overlay.classList.add('show');
+            } else {
+                // إغلاق القائمة
+                sidebar.classList.add('collapsed');
+                overlay.classList.remove('show');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (!sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+                overlay.classList.remove('show');
+            }
         }
 
         function switchSidebarTab(tabId) {
@@ -1028,6 +1057,8 @@
                 document.getElementById('personsSection').classList.remove('hidden');
                 renderPersons();
             }
+            // إغلاق القائمة بعد اختيار التبويب للمزيد من مساحة العمل
+            closeSidebar();
         }
 
         const statusBadge = document.getElementById('db-status-badge');
@@ -1437,10 +1468,7 @@
 
         function exportTawalefToCSV() {
             const data = [];
-            // إضافة العناوين
             data.push(["رقم الأوردر", "الحالة", "المسئول", "تاريخ الطلب", "وقت الطلب", "وقت التحضير", "وقت التسليم"]);
-            
-            // إضافة البيانات
             tawalef.forEach(t => {
                 data.push([
                     t.orderNum || '-',
@@ -1453,13 +1481,10 @@
                 ]);
             });
 
-            // إنشاء ملف الإكسيل
             const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!dir'] = 'rtl'; // جعل الشيت من اليمين لليسار
+            ws['!dir'] = 'rtl';
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "التوالف");
-
-            // تحميل الملف
             XLSX.writeFile(wb, `tawalef_report_${new Date().getTime()}.xlsx`);
         }
 
@@ -1663,7 +1688,7 @@
             const index = activeFilters[key].indexOf(value);
             if (index === -1) activeFilters[key].push(value);
             else activeFilters[key].splice(index, 1);
-            currentPage = 1; // الرجوع للصفحة الأولى عند تعديل الفلتر
+            currentPage = 1; 
             render();
         }
 
@@ -1681,7 +1706,6 @@
             return true;
         }
 
-        // ===================== تحديث دالة الريندر لدعم Pagination =====================
         function render() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             
@@ -1712,9 +1736,8 @@
             tbody.innerHTML = '';
 
             let c = { total: 0, wait: 0, prep: 0, prepDone: 0, received: 0 };
-            let filteredOrders = []; // مصفوفة مؤقتة لتخزين النتائج بعد الفلترة
+            let filteredOrders = []; 
 
-            // 1. فلترة جميع البيانات وحساب الإحصائيات الشاملة
             orders.forEach((o, i) => {
                 const statusStr = o.status || "معلق";
                 
@@ -1746,7 +1769,6 @@
                     checkDateRangeMatch(o.receiveDate, dateFilters.receiveFrom, dateFilters.receiveTo);
 
                 if (matchesSearch && matchesStatus && matchesType && matchesModel && matchesColFilters) {
-                    // نحتفظ بالبيانات مع الكشاف (index) الأصلي الخاص بها لتسهيل عملية الحذف والتعديل
                     filteredOrders.push({ order: o, originalIndex: i });
                     
                     c.total++;
@@ -1757,7 +1779,6 @@
                 }
             });
 
-            // 2. تحديث لوحة الإحصائيات (الداشبورد) بناءً على نتائج الفلتر الكلية
             document.getElementById('d-total').innerText = c.total;
             document.getElementById('d-waiting').innerText = c.wait;
             document.getElementById('d-preparing').innerText = c.prep;
@@ -1768,16 +1789,14 @@
             document.getElementById('bulkDeleteBtn').style.display = selCount > 0 ? 'block' : 'none';
             document.getElementById('bulkDeleteBtn').innerText = `حذف المختار (${selCount})`;
 
-            // 3. نظام حساب وتقسيم الصفحات
             const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
             if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
             if (currentPage < 1) currentPage = 1;
 
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            const paginatedOrders = filteredOrders.slice(startIndex, endIndex); // اقتطاع بيانات الصفحة الحالية فقط
+            const paginatedOrders = filteredOrders.slice(startIndex, endIndex); 
 
-            // 4. رسم جدول الصفحة الحالية فقط
             paginatedOrders.forEach(item => {
                 const o = item.order;
                 const i = item.originalIndex;
@@ -1822,24 +1841,19 @@
                 tbody.appendChild(tr);
             });
 
-            // 5. رسم أزرار الصفحات السفلية
             renderPagination(totalPages);
         }
 
-        // ================= دالة عرض أزرار الانتقال بين الصفحات =================
         function renderPagination(totalPages) {
             const container = document.getElementById('paginationContainer');
             if (!container) return;
             container.innerHTML = '';
             
-            if (totalPages <= 1) return; // لا حاجة للأزرار إذا كانت صفحة واحدة فقط
+            if (totalPages <= 1) return;
 
             let html = '';
-            
-            // زر السابق
             html += `<button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" onclick="if(currentPage > 1) goToPage(currentPage - 1)">السابق &raquo;</button>`;
             
-            // حساب نطاق الصفحات المرئية (لعرض 5 أزرار كحد أقصى بجوار بعضهم)
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, currentPage + 2);
             
@@ -1857,20 +1871,16 @@
                 html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
             }
             
-            // زر التالي
             html += `<button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" onclick="if(currentPage < totalPages) goToPage(currentPage + 1)">&laquo; التالي</button>`;
             
             container.innerHTML = html;
         }
 
-        // دالة الذهاب لصفحة معينة
         function goToPage(page) {
             currentPage = page;
             render();
-            // التمرير لأعلى الجدول بشكل سلس
             document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        // =========================================================================
 
         function openPrintModal(i) {
             const o = orders[i];
@@ -2152,10 +2162,8 @@
 
         function exportToCSV() {
             const data = [];
-            // إضافة العناوين
             data.push(["رقم الأوردر", "رقم التحويلة", "البراند", "الموديل", "العدد", "اللون", "الحالة", "التصنيف", "المسئول", "الملاحظات", "تاريخ الطلب", "تاريخ التحضير", "تاريخ الاستلام"]);
             
-            // تصدير الأوردرات كما هي مفلترة ومرتبة
             orders.forEach(o => {
                 data.push([
                     o.orderNum || '',
@@ -2174,16 +2182,15 @@
                 ]);
             });
 
-            // إنشاء ملف الإكسيل
             const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!dir'] = 'rtl'; // جعل الشيت من اليمين لليسار
+            ws['!dir'] = 'rtl';
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "الأوردرات");
 
-            // تحميل الملف
             XLSX.writeFile(wb, `orders_full_data_${new Date().getTime()}.xlsx`);
         }
 
+        // إغلاق النوافذ عند النقر خارجها
         window.onclick = function(event) {
             if (event.target.className === 'modal-overlay') {
                 closeModal();
@@ -2194,6 +2201,5 @@
             }
         }
     </script>
-
-    </body>
-    </html>
+</body>
+</html>
