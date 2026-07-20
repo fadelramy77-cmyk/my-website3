@@ -40,18 +40,49 @@
         }
         .pulse-active { animation: pulse-slow 2s infinite ease-in-out; }
 
-        /* إعدادات الطباعة الأساسية لضمان الألوان والهوامش */
+        /* إعدادات الطباعة الأساسية لضمان عملها على جميع المتصفحات (Safari, Firefox, Edge) */
         @media print {
             @page { margin: 0.5cm; }
+            
+            /* 1. الحل الجذري: إخفاء كل عناصر الصفحة تماماً باستثناء نافذة الطباعة */
+            body > *:not(#print-modal) {
+                display: none !important;
+            }
+
+            /* 2. تحرير نافذة الطباعة من الخصائص الثابتة (fixed/flex) التي تعيق الطباعة في سفاري وفايرفوكس */
+            #print-modal {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+            }
+
+            /* 3. تنظيف الحاوية الداخلية للطباعة لتجنب هوامش فارغة */
+            #print-modal > div {
+                border: none !important;
+                box-shadow: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
             body { 
                 background-color: white !important; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
             }
+            
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             
-            /* فرض الخط العريض في الطباعة */
+            /* فرض اللون الأسود للحبر في كل النصوص */
             * {
                 color: #000 !important;
             }
@@ -64,8 +95,10 @@
             .print-brand {
                 background-color: #ffffff !important;
                 color: #000000 !important;
-                border: 3px solid #000000 !important;
+                border: 2px solid #000000 !important;
                 box-shadow: none !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
         
@@ -145,7 +178,6 @@
                     </div>
                 </div>
 
-                <!-- كارت التوالف (سيتم إخفاءه عن مسئول التسليم بالبرمجة) -->
                 <div id="tawalef-card-btn" onclick="selectMode('tawalef')" class="mode-card bg-white p-6 rounded-2xl border-2 border-red-400 shadow-md flex items-center justify-between">
                     <div>
                         <h2 class="font-black text-[#2c3e50] text-lg">قسم التوالف</h2>
@@ -198,15 +230,15 @@
         </div>
     </div>
 
-    <!-- نافذة الطباعة -->
-    <div id="print-modal" class="fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 overflow-y-auto print:static print:bg-white print:p-0 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-lg p-5 print:shadow-none print:w-full print:max-w-none print:p-0">
+    <!-- نافذة الطباعة (تم تعديلها للتوافق مع الطباعة) -->
+    <div id="print-modal" class="fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-5">
             <div class="border-b-2 border-slate-200 pb-3 mb-4 flex justify-between items-center no-print">
                 <h2 class="font-bold text-[#2c3e50] text-base">نافذة الطباعة التفصيلية</h2>
                 <button onclick="closePrintModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <div id="printAreaMobile" class="text-right p-4 border-2 border-slate-800 rounded-xl bg-white print:border-none print:bg-white print:p-0 print:m-0" dir="rtl">
+            <div id="printAreaMobile" class="text-right p-4 border-2 border-slate-800 rounded-xl bg-white print:border-none print:p-0 print:m-0" dir="rtl">
                 <!-- تفاصيل الطباعة سيتم حقنها هنا -->
             </div>
 
@@ -765,18 +797,16 @@
                 
                 const updates = { 
                     status: newStatus,
-                    person: currentUser, // المسئول الذي قام بالتعديل
-                    actionTime: timeStr, // وقت التحديث العام
+                    person: currentUser, 
+                    actionTime: timeStr, 
                     timestamp: now.getTime()
                 };
 
-                // تحديد وقت وتاريخ كل حالة بشكل منفصل
                 if (newStatus === 'تم التسليم') {
                     updates.receiveDate = todayYYYYMMDD;
-                    updates.receiveTime = timeStr; // التقاط وقت التسليم بالساعة والدقيقة
+                    updates.receiveTime = timeStr; 
                     updates.deliveredBy = currentUser; 
                 } else if (newStatus === 'جاري التحضير') {
-                    // تحديث وقت التحضير بالساعة والدقيقة
                     updates.prepTime = timeStr;
                 }
 
@@ -796,7 +826,7 @@
             }
         }
 
-        // --- 6. الطباعة ---
+        // --- 6. الطباعة (محسنة لتعمل مع كل المتصفحات) ---
         function triggerPrint(docId) {
             try {
                 activePrintOrder = allOrders.find(o => o.docId === docId);
@@ -877,7 +907,8 @@
                 document.getElementById('print-modal').classList.remove('hidden');
                 document.getElementById('print-modal').classList.add('flex');
                 
-                setTimeout(() => { window.print(); }, 400);
+                // تم زيادة التوقيت لتفادي مشكلة رسم الواجهة البطيء في سفاري وفايرفوكس
+                setTimeout(() => { window.print(); }, 600);
             } catch(e) {
                 console.error("Error in print setup:", e);
                 showToast("تعذر تجهيز واجهة الطباعة", "danger");
