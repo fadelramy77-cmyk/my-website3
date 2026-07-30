@@ -339,31 +339,30 @@
         // دالة قوية لجلب الوقت من سيرفرات عالمية وتجاهل توقيت هاتف المستخدم تماماً
         async function getEgyptTime() {
             let now;
+            // إنشاء مانع كاش عشوائي تماماً لتخطي الكاش الخاص بمزودات الإنترنت
+            const cacheBuster = Date.now().toString() + Math.random().toString(36).substring(2);
+            
             try {
-                // المحاولة 1: الاعتماد على سيرفرات Github لأنها الأكثر استقراراً ولا تُحظر بسهولة
-                const res1 = await fetch('https://api.github.com', { method: 'HEAD', cache: 'no-store' });
-                const dateHeader = res1.headers.get('Date');
-                if (dateHeader) {
-                    now = new Date(dateHeader);
-                } else {
-                    throw new Error('Github Time failed');
-                }
+                // المحاولة 1: الاعتماد على WorldTimeAPI لأنه يعيد التوقيت مع الإزاحة الزمنية (Offset) بدقة
+                const res1 = await fetch(`https://worldtimeapi.org/api/timezone/Africa/Cairo?_cb=${cacheBuster}`, { cache: 'no-store' });
+                if (!res1.ok) throw new Error('WorldTimeAPI failed');
+                const data1 = await res1.json();
+                now = new Date(data1.datetime);
             } catch (e1) {
                 try {
-                    // المحاولة 2: الاعتماد على WorldTimeAPI
-                    const res2 = await fetch('https://worldtimeapi.org/api/timezone/Africa/Cairo', { cache: 'no-store' });
-                    const data2 = await res2.json();
-                    now = new Date(data2.datetime);
-                } catch (e2) {
-                    try {
-                        // المحاولة 3: الاعتماد على TimeAPI.io
-                        const res3 = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Africa/Cairo', { cache: 'no-store' });
-                        const data3 = await res3.json();
-                        now = new Date(data3.dateTime);
-                    } catch (e3) {
-                        // الملاذ الأخير إذا انقطع الإنترنت تماماً (لن يحدث إلا نادراً جداً)
-                        now = new Date(); 
+                    // المحاولة 2: الاعتماد على سيرفرات Github مع مانع الكاش
+                    const res2 = await fetch(`https://api.github.com/?_cb=${cacheBuster}`, { method: 'HEAD', cache: 'no-store' });
+                    if (!res2.ok) throw new Error('Github Time failed');
+                    const dateHeader = res2.headers.get('Date');
+                    if (dateHeader) {
+                        now = new Date(dateHeader);
+                    } else {
+                        throw new Error('No Date header');
                     }
+                } catch (e2) {
+                    // الملاذ الأخير إذا انقطع الإنترنت تماماً 
+                    console.warn("استخدام توقيت الجهاز المحلي بسبب فشل جلب التوقيت العالمي.");
+                    now = new Date(); 
                 }
             }
 
