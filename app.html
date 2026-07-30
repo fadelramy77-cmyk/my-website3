@@ -230,7 +230,7 @@
         </div>
     </div>
 
-    <!-- نافذة الطباعة (تم تعديلها للتوافق مع الطباعة) -->
+    <!-- نافذة الطباعة -->
     <div id="print-modal" class="fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 overflow-y-auto hidden">
         <div class="bg-white rounded-2xl w-full max-w-lg p-5">
             <div class="border-b-2 border-slate-200 pb-3 mb-4 flex justify-between items-center no-print">
@@ -336,35 +336,47 @@
             }
         }
 
-        // دالة لجلب التوقيت العالمي الدقيق متجاهلة توقيت الهاتف الخاطئ تماماً
-        async function getGlobalTimeData() {
+        // دالة قوية لجلب الوقت من سيرفرات عالمية وتجاهل توقيت هاتف المستخدم تماماً
+        async function getEgyptTime() {
             let now;
             try {
-                // المحاولة الأولى: عبر API مخصص للوقت للحصول على التوقيت العالمي
-                const response = await fetch('https://worldtimeapi.org/api/timezone/Africa/Cairo', { cache: 'no-store' });
-                if (!response.ok) throw new Error("API failed");
-                const data = await response.json();
-                now = new Date(data.datetime);
-            } catch (e) {
+                // المحاولة 1: الاعتماد على سيرفرات Github لأنها الأكثر استقراراً ولا تُحظر بسهولة
+                const res1 = await fetch('https://api.github.com', { method: 'HEAD', cache: 'no-store' });
+                const dateHeader = res1.headers.get('Date');
+                if (dateHeader) {
+                    now = new Date(dateHeader);
+                } else {
+                    throw new Error('Github Time failed');
+                }
+            } catch (e1) {
                 try {
-                    // المحاولة الثانية: استخدام خادم موثوق يعود برأس الوقت الصحيح
-                    const fallback = await fetch('https://api.github.com', { method: 'HEAD', cache: 'no-store' });
-                    if (!fallback.headers.get('Date')) throw new Error("API failed");
-                    now = new Date(fallback.headers.get('Date'));
+                    // المحاولة 2: الاعتماد على WorldTimeAPI
+                    const res2 = await fetch('https://worldtimeapi.org/api/timezone/Africa/Cairo', { cache: 'no-store' });
+                    const data2 = await res2.json();
+                    now = new Date(data2.datetime);
                 } catch (e2) {
-                    console.error("فشل جلب الوقت العالمي، سيتم الاعتماد مؤقتاً على الهاتف", e2);
-                    now = new Date(); // الملاذ الأخير إذا انقطع الإنترنت
+                    try {
+                        // المحاولة 3: الاعتماد على TimeAPI.io
+                        const res3 = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Africa/Cairo', { cache: 'no-store' });
+                        const data3 = await res3.json();
+                        now = new Date(data3.dateTime);
+                    } catch (e3) {
+                        // الملاذ الأخير إذا انقطع الإنترنت تماماً (لن يحدث إلا نادراً جداً)
+                        now = new Date(); 
+                    }
                 }
             }
 
-            // فرض استخراج الوقت بتوقيت القاهرة لتجنب مشاكل توقيت الهاتف (سواء تأخير أو تقديم)
+            // فرض تنسيق الوقت بتوقيت القاهرة لضمان التوافق دائماً
             const timeZone = 'Africa/Cairo';
+            const formatter = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
+            const parts = formatter.formatToParts(now);
             
-            const year = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric' }).format(now);
-            const month = new Intl.DateTimeFormat('en-US', { timeZone, month: '2-digit' }).format(now);
-            const day = new Intl.DateTimeFormat('en-US', { timeZone, day: '2-digit' }).format(now);
+            const year = parts.find(p => p.type === 'year').value;
+            const month = parts.find(p => p.type === 'month').value;
+            const day = parts.find(p => p.type === 'day').value;
+            
             const todayYYYYMMDD = `${year}-${month}-${day}`;
-
             const timeStr = now.toLocaleTimeString('ar-EG', { timeZone, hour12: true, hour: "numeric", minute: "numeric" });
             const printDateStr = now.toLocaleDateString('ar-EG', { timeZone });
 
@@ -787,7 +799,7 @@
             }
         }
 
-        // تحديث حالة الأوردر العادي باستخدام الوقت العالمي
+        // تحديث حالة الأوردر العادي باستخدام التوقيت العالمي (مستقل عن الهاتف)
         async function updateStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
@@ -795,14 +807,16 @@
                 const order = allOrders.find(o => o.docId === docId);
                 if (!order) return;
 
-                showToast(`جاري التحديث إلى "${newStatus}" (تزامن الوقت)...`, "info");
-                
-                const timeData = await getGlobalTimeData(); // جلب الوقت بشكل دقيق
+                showToast(`جاري التحقق من التوقيت العالمي وتحديث الحالة...`, "info");
+
+                // استدعاء الوقت الحقيقي من السيرفر
+                const timeData = await getEgyptTime();
+                const todayYYYYMMDD = timeData.todayYYYYMMDD;
                 
                 const updates = { status: newStatus };
                 
-                if (newStatus === 'تم الاستلام') updates.receiveDate = timeData.todayYYYYMMDD;
-                else if (newStatus === 'تم التحضير') updates.prepDate = timeData.todayYYYYMMDD;
+                if (newStatus === 'تم الاستلام') updates.receiveDate = todayYYYYMMDD;
+                else if (newStatus === 'تم التحضير') updates.prepDate = todayYYYYMMDD;
 
                 db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders').doc(docId)
                     .update(updates)
@@ -819,10 +833,11 @@
                     });
             } catch(e) {
                 console.error("Error in update status:", e);
+                showToast("حدث خطأ أثناء الاتصال", "danger");
             }
         }
 
-        // تحديث حالة التالف باستخدام الوقت العالمي
+        // تحديث حالة التالف باستخدام التوقيت العالمي (مستقل عن الهاتف)
         async function updateTawalefStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
@@ -830,9 +845,10 @@
                 const t = allTawalef.find(x => x.docId === docId);
                 if (!t) return;
 
-                showToast(`جاري التحديث (تزامن الوقت)...`, "info");
-                
-                const timeData = await getGlobalTimeData(); // جلب الوقت بشكل دقيق
+                showToast(`جاري التحقق من التوقيت العالمي للتحديث...`, "info");
+
+                // استدعاء الوقت الحقيقي من السيرفر
+                const timeData = await getEgyptTime();
                 
                 const updates = { 
                     status: newStatus,
@@ -860,6 +876,7 @@
                     });
             } catch(e) {
                 console.error("Error in update tawalef:", e);
+                showToast("حدث خطأ أثناء الاتصال", "danger");
             }
         }
 
@@ -869,13 +886,14 @@
                 activePrintOrder = allOrders.find(o => o.docId === docId);
                 if (!activePrintOrder) return;
 
+                showToast("جاري جلب التاريخ الفعلي وتجهيز الطباعة...", "info");
+                
+                // جلب الوقت للطباعة لتجنب تواريخ هواتف المستخدمين الخاطئة
+                const timeData = await getEgyptTime();
                 const printContainer = document.getElementById('printAreaMobile');
                 
                 const brandHtml = activePrintOrder.brand ? 
                     `<span class="bg-black text-white px-3 py-1 rounded-md text-sm font-black tracking-widest print-brand">${activePrintOrder.brand}</span>` : '';
-
-                showToast("جاري تجهيز الأوردر للطباعة...", "info");
-                const timeData = await getGlobalTimeData(); // جلب الوقت الصحيح للطباعة
 
                 printContainer.innerHTML = `
                     <div class="border-b-4 border-black pb-3 mb-4 flex justify-between items-center text-black">
