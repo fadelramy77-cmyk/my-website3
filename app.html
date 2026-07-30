@@ -336,6 +336,46 @@
             }
         }
 
+        // دالة لجلب التوقيت العالمي الدقيق متجاهلة توقيت الهاتف الخاطئ تماماً
+        async function getGlobalTimeData() {
+            let now;
+            try {
+                // المحاولة الأولى: عبر API مخصص للوقت للحصول على التوقيت العالمي
+                const response = await fetch('https://worldtimeapi.org/api/timezone/Africa/Cairo', { cache: 'no-store' });
+                if (!response.ok) throw new Error("API failed");
+                const data = await response.json();
+                now = new Date(data.datetime);
+            } catch (e) {
+                try {
+                    // المحاولة الثانية: استخدام خادم موثوق يعود برأس الوقت الصحيح
+                    const fallback = await fetch('https://api.github.com', { method: 'HEAD', cache: 'no-store' });
+                    if (!fallback.headers.get('Date')) throw new Error("API failed");
+                    now = new Date(fallback.headers.get('Date'));
+                } catch (e2) {
+                    console.error("فشل جلب الوقت العالمي، سيتم الاعتماد مؤقتاً على الهاتف", e2);
+                    now = new Date(); // الملاذ الأخير إذا انقطع الإنترنت
+                }
+            }
+
+            // فرض استخراج الوقت بتوقيت القاهرة لتجنب مشاكل توقيت الهاتف (سواء تأخير أو تقديم)
+            const timeZone = 'Africa/Cairo';
+            
+            const year = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric' }).format(now);
+            const month = new Intl.DateTimeFormat('en-US', { timeZone, month: '2-digit' }).format(now);
+            const day = new Intl.DateTimeFormat('en-US', { timeZone, day: '2-digit' }).format(now);
+            const todayYYYYMMDD = `${year}-${month}-${day}`;
+
+            const timeStr = now.toLocaleTimeString('ar-EG', { timeZone, hour12: true, hour: "numeric", minute: "numeric" });
+            const printDateStr = now.toLocaleDateString('ar-EG', { timeZone });
+
+            return {
+                timestamp: now.getTime(),
+                todayYYYYMMDD: todayYYYYMMDD,
+                timeStr: timeStr,
+                printDateStr: printDateStr
+            };
+        }
+
         // --- 4. التهيئة والاتصال بالسحابة ---
         function initApp() {
             try {
@@ -747,23 +787,22 @@
             }
         }
 
-        // تحديث حالة الأوردر العادي
-        function updateStatus(docId, newStatus) {
+        // تحديث حالة الأوردر العادي باستخدام الوقت العالمي
+        async function updateStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
 
                 const order = allOrders.find(o => o.docId === docId);
                 if (!order) return;
 
-                const now = new Date();
-                const todayYYYYMMDD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                showToast(`جاري التحديث إلى "${newStatus}" (تزامن الوقت)...`, "info");
+                
+                const timeData = await getGlobalTimeData(); // جلب الوقت بشكل دقيق
                 
                 const updates = { status: newStatus };
                 
-                if (newStatus === 'تم الاستلام') updates.receiveDate = todayYYYYMMDD;
-                else if (newStatus === 'تم التحضير') updates.prepDate = todayYYYYMMDD;
-
-                showToast(`جاري التحديث إلى "${newStatus}"...`, "info");
+                if (newStatus === 'تم الاستلام') updates.receiveDate = timeData.todayYYYYMMDD;
+                else if (newStatus === 'تم التحضير') updates.prepDate = timeData.todayYYYYMMDD;
 
                 db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders').doc(docId)
                     .update(updates)
@@ -783,34 +822,32 @@
             }
         }
 
-        // تحديث حالة التالف
-        function updateTawalefStatus(docId, newStatus) {
+        // تحديث حالة التالف باستخدام الوقت العالمي
+        async function updateTawalefStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
 
                 const t = allTawalef.find(x => x.docId === docId);
                 if (!t) return;
 
-                const now = new Date();
-                const todayYYYYMMDD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                const timeStr = now.toLocaleTimeString('ar-EG', { hour12: true, hour: "numeric", minute: "numeric"});
+                showToast(`جاري التحديث (تزامن الوقت)...`, "info");
+                
+                const timeData = await getGlobalTimeData(); // جلب الوقت بشكل دقيق
                 
                 const updates = { 
                     status: newStatus,
                     person: currentUser, 
-                    actionTime: timeStr, 
-                    timestamp: now.getTime()
+                    actionTime: timeData.timeStr, 
+                    timestamp: timeData.timestamp
                 };
 
                 if (newStatus === 'تم التسليم') {
-                    updates.receiveDate = todayYYYYMMDD;
-                    updates.receiveTime = timeStr; 
+                    updates.receiveDate = timeData.todayYYYYMMDD;
+                    updates.receiveTime = timeData.timeStr; 
                     updates.deliveredBy = currentUser; 
                 } else if (newStatus === 'جاري التحضير') {
-                    updates.prepTime = timeStr;
+                    updates.prepTime = timeData.timeStr;
                 }
-
-                showToast(`جاري التحديث...`, "info");
 
                 db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef').doc(docId)
                     .update(updates)
@@ -827,7 +864,7 @@
         }
 
         // --- 6. الطباعة (محسنة لتعمل مع كل المتصفحات) ---
-        function triggerPrint(docId) {
+        async function triggerPrint(docId) {
             try {
                 activePrintOrder = allOrders.find(o => o.docId === docId);
                 if (!activePrintOrder) return;
@@ -836,6 +873,9 @@
                 
                 const brandHtml = activePrintOrder.brand ? 
                     `<span class="bg-black text-white px-3 py-1 rounded-md text-sm font-black tracking-widest print-brand">${activePrintOrder.brand}</span>` : '';
+
+                showToast("جاري تجهيز الأوردر للطباعة...", "info");
+                const timeData = await getGlobalTimeData(); // جلب الوقت الصحيح للطباعة
 
                 printContainer.innerHTML = `
                     <div class="border-b-4 border-black pb-3 mb-4 flex justify-between items-center text-black">
@@ -900,7 +940,7 @@
                     </div>
                     
                     <div class="text-center mt-6 text-[10px] font-bold text-slate-400 no-print">
-                        نظام إدارة الأوردرات السحابي - ${new Date().toLocaleDateString('ar-EG')}
+                        نظام إدارة الأوردرات السحابي - ${timeData.printDateStr}
                     </div>
                 `;
 
