@@ -40,40 +40,75 @@
         }
         .pulse-active { animation: pulse-slow 2s infinite ease-in-out; }
 
-        /* إعدادات الطباعة الأساسية */
+        /* إعدادات الطباعة الأساسية لضمان عملها على جميع المتصفحات */
         @media print {
             @page { margin: 0.5cm; }
-            body > *:not(#print-modal) { display: none !important; }
+            
+            body > *:not(#print-modal) {
+                display: none !important;
+            }
+
             #print-modal {
-                display: block !important; position: absolute !important;
-                left: 0 !important; top: 0 !important; width: 100% !important;
-                height: auto !important; background-color: white !important;
-                padding: 0 !important; margin: 0 !important; overflow: visible !important;
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
             }
+
             #print-modal > div {
-                border: none !important; box-shadow: none !important;
-                max-width: 100% !important; width: 100% !important;
-                padding: 0 !important; margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
-            body { background-color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            body { 
+                background-color: white !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            
             .no-print { display: none !important; }
             .print-only { display: block !important; }
-            * { color: #000 !important; }
-            .print-bold { font-weight: 900 !important; font-size: 110% !important; }
+            
+            * {
+                color: #000 !important;
+            }
+            .print-bold {
+                font-weight: 900 !important;
+                font-size: 110% !important;
+            }
+            
             .print-brand {
-                background-color: #ffffff !important; color: #000000 !important;
-                border: 2px solid #000000 !important; box-shadow: none !important;
-                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                border: 2px solid #000000 !important;
+                box-shadow: none !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
         
+        /* مؤشر التحميل */
         .loader {
             border: 3px solid #f3f3f3; border-top: 3px solid #3498db;
             border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .mode-card { transition: all 0.2s; cursor: pointer; }
+        /* بطاقات اختيار المهام */
+        .mode-card {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
         .mode-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
@@ -85,9 +120,10 @@
     <!-- شاشة التحميل الأولية -->
     <div id="loading-screen" class="min-h-screen flex flex-col items-center justify-center z-50 bg-[#f8f9fa] absolute inset-0">
         <div class="loader mb-4"></div>
-        <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة ومزامنة التوقيت...</p>
+        <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة ومزامنة الوقت...</p>
     </div>
 
+    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md border-t-8 border-[#2c3e50]">
             <div class="bg-[#2c3e50] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md relative">
@@ -97,7 +133,7 @@
             <h1 class="text-2xl font-black text-center text-[#2c3e50] mb-2">تسجيل الدخول للمسئولين</h1>
             
             <p class="text-center text-xs text-emerald-600 mb-6 bg-emerald-50 p-2 rounded-lg border border-emerald-100 font-bold">
-                <i class="fa-solid fa-clock mr-1"></i> يتم استخدام توقيت القاهرة الموثق
+                <i class="fa-solid fa-wifi mr-1"></i> متصل بالسحابة اللحظية
             </p>
 
             <div class="space-y-4">
@@ -118,6 +154,7 @@
         </div>
     </div>
 
+    <!-- شاشة اختيار المهام -->
     <div id="mode-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
         <div class="w-full max-w-md">
             <div class="text-center mb-8">
@@ -153,6 +190,7 @@
         </div>
     </div>
 
+    <!-- شاشة التطبيق الرئيسية -->
     <div id="main-app" class="min-h-screen bg-[#f8f9fa] pb-20 print:bg-white print:pb-0 hidden">
         <header class="bg-[#2c3e50] text-white p-4 shadow-md sticky top-0 z-10 no-print">
             <div class="flex justify-between items-center mb-4">
@@ -169,7 +207,14 @@
                         <h1 id="header-name" class="font-bold text-sm text-white">اسم المستخدم</h1>
                     </div>
                 </div>
+                
                 <div class="flex items-center gap-3">
+                    <!-- الساعة العالمية الحية والتفاعلية للتطبيق -->
+                    <div class="bg-black/20 px-3 py-1.5 rounded-full text-xs font-bold text-emerald-300 border border-white/10 flex items-center gap-1.5 shadow-sm" dir="ltr">
+                        <i class="fa-solid fa-clock"></i>
+                        <span id="app-clock-text">--:--:--</span>
+                    </div>
+
                     <button onclick="handleLogout()" class="text-white/70 hover:text-white transition-all text-xl bg-white/5 w-8 h-8 rounded-full flex items-center justify-center" title="خروج آمن">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </button>
@@ -187,6 +232,7 @@
         </div>
     </div>
 
+    <!-- نافذة الطباعة -->
     <div id="print-modal" class="fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 overflow-y-auto hidden">
         <div class="bg-white rounded-2xl w-full max-w-lg p-5">
             <div class="border-b-2 border-slate-200 pb-3 mb-4 flex justify-between items-center no-print">
@@ -210,11 +256,12 @@
     </div>
 
     <script>
-        // حماية التطبيق من الانهيار
+        // --- حماية التطبيق من الانهيار (Crash Protection) ---
         window.addEventListener('error', function(e) {
             console.error("Global error caught:", e.error);
             showFallbackError("عذراً، حدث خطأ مفاجئ أثناء معالجة البيانات.");
         });
+
         window.addEventListener('unhandledrejection', function(e) {
             console.error("Unhandled promise rejection:", e.reason);
             showFallbackError("تعذر الاتصال بقاعدة البيانات السحابية، تأكد من اتصال الإنترنت.");
@@ -235,7 +282,7 @@
             }
         }
 
-        // إعدادات Firebase
+        // --- 1. إعدادات Firebase ---
         const firebaseConfig = {
             apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
             authDomain: "order-system-26c71.firebaseapp.com",
@@ -249,7 +296,7 @@
         let db, auth;
         let isFirebaseInitialized = false;
 
-        // البيانات والحالة
+        // --- 2. البيانات والحالة (State) ---
         let currentUser = null;
         let userRole = null;
         let searchQuery = '';
@@ -260,57 +307,11 @@
         let allOrders = [];
         let allTawalef = []; 
 
-        
-        let timeOffset = 0; // الفارق الزمني بين الهاتف وسيرفر الوقت العالمي بالملي ثانية
-
-        // دالة تعمل في الخلفية لجلب وقت القاهرة الحقيقي مرة واحدة ومعرفة الفارق
-        async function syncTimeOffset() {
-            try {
-                // جلب الوقت بتوقيت القاهرة من الخادم
-                const res = await fetch(`https://worldtimeapi.org/api/timezone/Africa/Cairo?_cb=${Date.now()}`, { cache: 'no-store' });
-                if (res.ok) {
-                    const data = await res.json();
-                    const trueServerTime = new Date(data.datetime).getTime();
-                    const localDeviceTime = Date.now();
-                    
-                    // حساب الفارق. لو ساعة المستخدم متأخرة ساعة، الفارق سيكون موجب. لو متقدمة، سيكون سالب.
-                    timeOffset = trueServerTime - localDeviceTime; 
-                    console.log("تمت مزامنة الوقت بنجاح. الفارق الزمني (ms):", timeOffset);
-                }
-            } catch (e) {
-                console.warn("فشل مزامنة الوقت الدقيق في الخلفية، سيتم الاعتماد على أقرب توقيت متاح.", e);
-            }
-        }
-
-        // دالة سريعة ولحظية: تعطينا وقت القاهرة المنسق فوراً دون انتظار إنترنت (تتجاهل ساعة الهاتف بفضل الـ offset)
-        function getAccurateCairoTime() {
-            // وقت الجهاز الحالي + الفارق الزمني = الوقت الحقيقي الدقيق الآن
-            const correctedTimestamp = Date.now() + timeOffset; 
-            const correctedDate = new Date(correctedTimestamp);
-
-            const timeZone = 'Africa/Cairo';
-            const formatter = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
-            const parts = formatter.formatToParts(correctedDate);
-            
-            const year = parts.find(p => p.type === 'year').value;
-            const month = parts.find(p => p.type === 'month').value;
-            const day = parts.find(p => p.type === 'day').value;
-            
-            const todayYYYYMMDD = `${year}-${month}-${day}`;
-            const timeStr = correctedDate.toLocaleTimeString('ar-EG', { timeZone, hour12: true, hour: "numeric", minute: "numeric" });
-            const printDateStr = correctedDate.toLocaleDateString('ar-EG', { timeZone });
-
-            return {
-                timestamp: correctedTimestamp,
-                todayYYYYMMDD: todayYYYYMMDD,
-                timeStr: timeStr,
-                printDateStr: printDateStr
-            };
-        }
-
+        // --- 3. دوال مساعدة (Helpers) ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
+            
             let styleClass = '';
             if (type === 'success') styleClass = 'bg-[#e2f0d9] text-[#385723] border-[#c3e6cb]';
             else if (type === 'warning') styleClass = 'bg-[#fff3cd] text-[#856404] border-[#ffeeba]';
@@ -319,8 +320,13 @@
 
             toast.className = `p-4 rounded-xl shadow-lg border text-sm font-bold flex items-center gap-2 transform transition-all duration-300 ${styleClass} animate-[pulse-slow_0.5s_ease-out]`;
             toast.innerHTML = `<span>${message}</span>`;
+            
             container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
         }
 
         function getStatusStyles(status) {
@@ -332,11 +338,75 @@
             }
         }
 
-        async function initApp() {
-            try {
-                // مزامنة الوقت أولاً بشكل متوازي
-                syncTimeOffset();
+        // --- 4. محرك الوقت العالمي والساعة المستقلة ---
+        let globalTimeOffset = 0;
 
+        async function syncGlobalClock() {
+            try {
+                const cacheBuster = Date.now().toString() + Math.random().toString(36).substring(2);
+                let res = await fetch(`https://worldtimeapi.org/api/timezone/Africa/Cairo?_cb=${cacheBuster}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error('API failed');
+                let data = await res.json();
+                let realTime = new Date(data.datetime).getTime();
+                globalTimeOffset = realTime - Date.now();
+            } catch (e1) {
+                try {
+                    const cacheBuster = Date.now().toString() + Math.random().toString(36).substring(2);
+                    let res2 = await fetch(`https://api.github.com/?_cb=${cacheBuster}`, { method: 'HEAD', cache: 'no-store' });
+                    let dateHeader = res2.headers.get('Date');
+                    if (dateHeader) {
+                        globalTimeOffset = new Date(dateHeader).getTime() - Date.now();
+                    }
+                } catch (e2) {
+                    console.warn("تعذر الاتصال بالسيرفر العالمي، سيتم استخدام التوقيت المحلي مؤقتاً");
+                }
+            }
+            
+            if (!window.clockInterval) {
+                window.clockInterval = setInterval(updateClockUI, 1000);
+            }
+            updateClockUI();
+        }
+
+        function updateClockUI() {
+            const now = new Date(Date.now() + globalTimeOffset);
+            const timeStr = now.toLocaleTimeString('ar-EG', { timeZone: 'Africa/Cairo', hour12: true, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+            const clockEl = document.getElementById('app-clock-text');
+            if(clockEl) clockEl.innerText = timeStr;
+        }
+
+        async function getEgyptTime() {
+            const now = new Date(Date.now() + globalTimeOffset);
+            
+            const timeZone = 'Africa/Cairo';
+            const formatter = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
+            const parts = formatter.formatToParts(now);
+            
+            const year = parts.find(p => p.type === 'year').value;
+            const month = parts.find(p => p.type === 'month').value;
+            const day = parts.find(p => p.type === 'day').value;
+            
+            const todayYYYYMMDD = `${year}-${month}-${day}`;
+            const timeStr = now.toLocaleTimeString('ar-EG', { timeZone, hour12: true, hour: "numeric", minute: "numeric" });
+            const printDateStr = now.toLocaleDateString('ar-EG', { timeZone });
+
+            return {
+                timestamp: now.getTime(),
+                todayYYYYMMDD: todayYYYYMMDD,
+                timeStr: timeStr,
+                printDateStr: printDateStr
+            };
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible') {
+                syncGlobalClock();
+            }
+        });
+
+        // --- 5. التهيئة والاتصال بالسحابة ---
+        function initApp() {
+            try {
                 firebase.initializeApp(firebaseConfig);
                 auth = firebase.auth();
                 db = firebase.firestore();
@@ -356,8 +426,12 @@
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
-                    searchQuery = e.target.value;
-                    renderContent();
+                    try {
+                        searchQuery = e.target.value;
+                        renderContent();
+                    } catch(err) {
+                        console.error("Search error", err);
+                    }
                 });
             }
         }
@@ -368,29 +442,40 @@
             const tawalefRef = db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef');
 
             personsRef.onSnapshot((snapshot) => {
-                availablePersons = [];
-                snapshot.forEach(doc => { availablePersons.push({ docId: doc.id, ...doc.data() }); });
-                updateLoginSelect();
-                checkSession();
+                try {
+                    availablePersons = [];
+                    snapshot.forEach(doc => { availablePersons.push({ docId: doc.id, ...doc.data() }); });
+                    updateLoginSelect();
+                    checkSession();
+                } catch(e) {}
             });
 
             ordersRef.onSnapshot((snapshot) => {
-                allOrders = [];
-                snapshot.forEach(doc => { allOrders.push({ docId: doc.id, ...doc.data() }); });
-                const indicator = document.getElementById('sync-indicator');
-                if(indicator) { indicator.classList.add('bg-yellow-400'); setTimeout(() => indicator.classList.remove('bg-yellow-400'), 500); }
-                if (currentUser && currentMode === 'orders') renderContent();
+                try {
+                    allOrders = [];
+                    snapshot.forEach(doc => { allOrders.push({ docId: doc.id, ...doc.data() }); });
+                    const indicator = document.getElementById('sync-indicator');
+                    if(indicator) {
+                        indicator.classList.add('bg-yellow-400');
+                        setTimeout(() => indicator.classList.remove('bg-yellow-400'), 500);
+                    }
+                    if (currentUser && currentMode === 'orders') renderContent();
+                } catch(e) {}
             });
 
             tawalefRef.onSnapshot((snapshot) => {
-                allTawalef = [];
-                snapshot.forEach(doc => { allTawalef.push({ docId: doc.id, ...doc.data() }); });
-                if (currentUser && currentMode === 'tawalef') renderContent();
+                try {
+                    allTawalef = [];
+                    snapshot.forEach(doc => { allTawalef.push({ docId: doc.id, ...doc.data() }); });
+                    if (currentUser && currentMode === 'tawalef') renderContent();
+                } catch(e) {}
             });
         }
 
         function checkSession() {
-            document.getElementById('loading-screen').style.display = 'none';
+            const loader = document.getElementById('loading-screen');
+            if(loader) loader.style.display = 'none';
+            
             const savedUser = localStorage.getItem('cloud_app_person');
             const savedRole = localStorage.getItem('cloud_app_role');
 
@@ -403,6 +488,7 @@
             }
         }
 
+        // --- 6. المنطق والواجهة ---
         function updateLoginSelect() {
             const select = document.getElementById('loginUserSelect');
             if (!select) return;
@@ -418,7 +504,7 @@
         function showLoginScreen() {
             document.getElementById('main-app').classList.add('hidden');
             document.getElementById('mode-screen').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden', 'flex');
+            document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('login-screen').classList.add('flex');
         }
 
@@ -426,12 +512,16 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('flex');
             document.getElementById('main-app').classList.add('hidden');
-            document.getElementById('mode-screen').classList.remove('hidden', 'flex');
+            document.getElementById('mode-screen').classList.remove('hidden');
             document.getElementById('mode-screen').classList.add('flex');
             document.getElementById('welcome-name').innerText = currentUser;
 
             const tawalefCardBtn = document.getElementById('tawalef-card-btn');
-            tawalefCardBtn.style.display = (userRole === 'تسليم') ? 'none' : 'flex';
+            if(userRole === 'تسليم') {
+                tawalefCardBtn.style.display = 'none';
+            } else {
+                tawalefCardBtn.style.display = 'flex';
+            }
         }
 
         function selectMode(mode) {
@@ -439,6 +529,7 @@
             document.getElementById('mode-screen').classList.add('hidden');
             document.getElementById('mode-screen').classList.remove('flex');
             document.getElementById('main-app').classList.remove('hidden');
+            
             document.getElementById('header-name').textContent = currentUser;
             
             if(mode === 'orders') {
@@ -450,6 +541,7 @@
                 document.getElementById('header-icon').className = "fa-solid fa-triangle-exclamation text-white";
                 document.getElementById('searchInput').placeholder = "بحث برقم أوردر التالف...";
             }
+            
             renderContent();
         }
 
@@ -463,10 +555,17 @@
             const selectedName = document.getElementById('loginUserSelect').value;
             const pinInput = document.getElementById('loginPinInput').value;
 
-            if (!selectedName) return showToast("يرجى اختيار اسم المسئول!", "warning");
-            
+            if (!selectedName) {
+                showToast("يرجى اختيار اسم المسئول!", "warning");
+                return;
+            }
+
             const person = availablePersons.find(p => p.name === selectedName);
-            if (person.pin && person.pin.toString() !== pinInput) return showToast("الرقم السري (PIN) غير صحيح!", "danger");
+            
+            if (person.pin && person.pin.toString() !== pinInput) {
+                showToast("الرقم السري (PIN) غير صحيح!", "danger");
+                return;
+            }
 
             currentUser = person.name;
             userRole = person.role || 'تحضير';
@@ -488,297 +587,397 @@
         }
 
         function renderContent() {
-            if (currentMode === 'orders') renderOrders();
-            else renderTawalef();
+            if (currentMode === 'orders') {
+                renderOrders();
+            } else {
+                renderTawalef();
+            }
         }
 
         function renderOrders() {
-            const container = document.getElementById('orders-container');
-            if (!container) return;
-            container.innerHTML = '';
+            try {
+                const container = document.getElementById('orders-container');
+                if (!container) return;
+                container.innerHTML = '';
 
-            let myOrders = allOrders.filter(o => {
-                if (o.status === 'تم الاستلام') return false;
-                if (userRole === 'تسليم' && o.status !== 'تم التحضير') return false;
-                const showAll = userRole === 'تسليم' || userRole === 'شامل';
-                const isMyOrder = showAll || (o.person && o.person === currentUser);
-                
-                const safeOrderNum = o.orderNum ? o.orderNum.toString().toLowerCase() : '';
-                const safeModel = o.model ? o.model.toLowerCase() : '';
-                const query = (searchQuery || '').trim().toLowerCase();
-                
-                return isMyOrder && (query === '' || safeOrderNum.includes(query) || safeModel.includes(query));
-            });
+                let myOrders = allOrders.filter(o => {
+                    if (o.status === 'تم الاستلام') return false;
+                    if (userRole === 'تسليم' && o.status !== 'تم التحضير') return false;
 
-            myOrders.sort((a, b) => {
-                const statusPriority = { 'جاري التحضير': 1, 'تم التحضير': 2, 'معلق': 3 };
-                const rankA = statusPriority[a.status] || 4;
-                const rankB = statusPriority[b.status] || 4;
-                if (rankA !== rankB) return rankA - rankB; 
-                
-                // الترتيب باستخدام الـ timestamp المخزن
-                const timeA = a.timestamp ? (typeof a.timestamp.toMillis === 'function' ? a.timestamp.toMillis() : a.timestamp) : 0;
-                const timeB = b.timestamp ? (typeof b.timestamp.toMillis === 'function' ? b.timestamp.toMillis() : b.timestamp) : 0;
-                return timeB - timeA;
-            });
+                    const showAll = userRole === 'تسليم' || userRole === 'شامل';
+                    const isMyOrder = showAll || (o.person && o.person === currentUser);
+                    
+                    const safeOrderNum = o.orderNum ? o.orderNum.toString().toLowerCase() : '';
+                    const safeModel = o.model ? o.model.toLowerCase() : '';
+                    const query = (searchQuery || '').trim().toLowerCase();
+                    
+                    const matchesSearch = query === '' || 
+                                          safeOrderNum.includes(query) || 
+                                          safeModel.includes(query);
+                    return isMyOrder && matchesSearch;
+                });
 
-            if (myOrders.length === 0) {
-                container.innerHTML = `<div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4"><i class="fa-solid fa-folder-open text-slate-300 text-4xl mb-4"></i><h3 class="text-sm font-bold text-slate-600">لا توجد أوردرات مطابقة للبحث</h3></div>`;
-                return;
-            }
+                myOrders.sort((a, b) => {
+                    const statusPriority = { 'جاري التحضير': 1, 'تم التحضير': 2, 'معلق': 3 };
+                    const rankA = statusPriority[a.status] || 4;
+                    const rankB = statusPriority[b.status] || 4;
+                    if (rankA !== rankB) return rankA - rankB; 
+                    return (b.timestamp || 0) - (a.timestamp || 0);
+                });
 
-            myOrders.forEach(order => {
-                const statusStyle = getStatusStyles(order.status || 'معلق');
-                const highlightBadge = order.status === 'تم التحضير' ? `<div class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow border-2 border-white z-10 animate-bounce">مستعد للتسليم!</div>` : '';
-
-                let buttonsHtml = '<div class="mt-4"><div class="flex gap-2">';
-                if (userRole === 'تحضير' || userRole === 'شامل') {
-                    const prepActive = order.status === 'جاري التحضير' ? 'bg-[#cff4fc] text-[#055160] border-[#b6effb] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
-                    const doneActive = order.status === 'تم التحضير' ? 'bg-[#d1e7dd] text-[#0f5132] border-[#badbcc] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
-                    buttonsHtml += `
-                        <button onclick="updateStatus('${order.docId}', 'جاري التحضير')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${prepActive}">جاري التحضير</button>
-                        <button onclick="updateStatus('${order.docId}', 'تم التحضير')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${doneActive}">تم التحضير</button>
+                if (myOrders.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4">
+                            <i class="fa-solid fa-folder-open text-slate-300 text-4xl mb-4"></i>
+                            <h3 class="text-sm font-bold text-slate-600">لا توجد أوردرات مطابقة للبحث</h3>
+                        </div>
                     `;
+                    return;
                 }
-                if (userRole === 'تسليم' || userRole === 'شامل') {
-                    buttonsHtml += `<button onclick="updateStatus('${order.docId}', 'تم الاستلام')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700">تم الاستلام النهائي</button>`;
-                }
-                buttonsHtml += '</div></div>';
 
-                const safeBrand = order.brand ? order.brand.trim() : '';
-                const brandHtml = safeBrand !== '' ? `<span class="bg-black text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider print-brand">${safeBrand}</span>` : '';
-                const notesHtml = order.notes ? `<div class="mt-2 bg-[#f8f9fa] border border-slate-200 rounded-lg p-2 text-xs"><span class="font-bold text-slate-500 block mb-1">الملاحظات:</span><span class="text-slate-800 font-bold">${order.notes}</span></div>` : '';
-                const borderClass = order.status === 'تم التحضير' ? 'border-[#3498db] border-2 shadow-lg' : 'border-slate-200 shadow-md border';
-                
-                container.innerHTML += `
-                    <div class="bg-white rounded-xl ${borderClass} overflow-hidden relative mb-4 transition-all">
-                        ${highlightBadge}
-                        <div class="bg-[#2c3e50] p-3 text-white flex justify-between items-center">
-                            <div class="flex flex-col">
-                                <span class="text-[10px] text-slate-300 font-bold">رقم الأوردر</span>
+                myOrders.forEach(order => {
+                    const statusStyle = getStatusStyles(order.status || 'معلق');
+                    const highlightBadge = order.status === 'تم التحضير' ? 
+                        `<div class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow border-2 border-white z-10 animate-bounce">مستعد للتسليم!</div>` : '';
+
+                    let buttonsHtml = '';
+                    buttonsHtml += '<div class="mt-4"><div class="flex gap-2">';
+                    if (userRole === 'تحضير' || userRole === 'شامل') {
+                        const prepActive = order.status === 'جاري التحضير' ? 'bg-[#cff4fc] text-[#055160] border-[#b6effb] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
+                        const doneActive = order.status === 'تم التحضير' ? 'bg-[#d1e7dd] text-[#0f5132] border-[#badbcc] shadow-inner font-extrabold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
+                        buttonsHtml += `
+                            <button onclick="updateStatus('${order.docId}', 'جاري التحضير')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${prepActive}">جاري التحضير</button>
+                            <button onclick="updateStatus('${order.docId}', 'تم التحضير')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border ${doneActive}">تم التحضير</button>
+                        `;
+                    }
+                    if (userRole === 'تسليم' || userRole === 'شامل') {
+                        buttonsHtml += `
+                            <button onclick="updateStatus('${order.docId}', 'تم الاستلام')" class="flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700">تم الاستلام النهائي</button>
+                        `;
+                    }
+                    buttonsHtml += '</div></div>';
+
+                    const safeBrand = order.brand ? order.brand.trim() : '';
+                    const brandHtml = safeBrand !== '' ? 
+                        `<span class="bg-black text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider print-brand">${safeBrand}</span>` : '';
+
+                    const notesHtml = order.notes ? `
+                        <div class="mt-2 bg-[#f8f9fa] border border-slate-200 rounded-lg p-2 text-xs">
+                            <span class="font-bold text-slate-500 block mb-1">الملاحظات:</span> 
+                            <span class="text-slate-800 font-bold">${order.notes}</span>
+                        </div>
+                    ` : '';
+
+                    const borderClass = order.status === 'تم التحضير' ? 'border-[#3498db] border-2 shadow-lg' : 'border-slate-200 shadow-md border';
+                    
+                    const orderHtml = `
+                        <div class="bg-white rounded-xl ${borderClass} overflow-hidden relative mb-4 transition-all">
+                            ${highlightBadge}
+                            <div class="bg-[#2c3e50] p-3 text-white flex justify-between items-center">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-slate-300 font-bold">رقم الأوردر</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-black text-sm tracking-wide text-white">${order.orderNum || '-'}</span>
+                                        ${brandHtml}
+                                    </div>
+                                </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="font-black text-sm tracking-wide text-white">${order.orderNum || '-'}</span>
-                                    ${brandHtml}
+                                    <button onclick="triggerPrint('${order.docId}')" class="bg-white/10 p-1.5 rounded-md hover:bg-white/25 text-white transition-all text-xs" title="طباعة الأوردر">
+                                        <i class="fa-solid fa-print"></i>
+                                    </button>
+                                    <div class="px-3 py-1 rounded-md text-[11px] font-bold ${statusStyle}">
+                                        ${order.status || 'معلق'}
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="triggerPrint('${order.docId}')" class="bg-white/10 p-1.5 rounded-md hover:bg-white/25 text-white transition-all text-xs" title="طباعة الأوردر"><i class="fa-solid fa-print"></i></button>
-                                <div class="px-3 py-1 rounded-md text-[11px] font-bold ${statusStyle}">${order.status || 'معلق'}</div>
+
+                            <div class="p-3">
+                                <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm border-b border-slate-100 pb-3">
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] text-slate-400 font-bold mb-0.5">الموديل</span>
+                                        <span class="font-black text-slate-800">${order.model || '-'}</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] text-slate-400 font-bold mb-0.5">العدد واللون</span>
+                                        <div class="flex items-center gap-1">
+                                            <span class="font-black text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-xs">${order.qty || '-'}</span>
+                                            <span class="font-bold text-slate-700 text-xs">${order.color || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-[11px] border-b border-slate-100 py-2.5 text-slate-500">
+                                    <div>رقم التحويلة: <span class="font-black text-slate-800">${order.id || '-'}</span></div>
+                                    <div>التصنيف: <span class="font-black text-[#3498db] bg-[#3498db15] px-1 rounded">${order.type || '-'}</span></div>
+                                    <div class="col-span-2">تاريخ الطلب: <span class="font-bold text-slate-700">${order.orderDate || '-'}</span></div>
+                                    <div class="col-span-2">المسئول الحالي: <span class="font-bold text-slate-800">${order.person || 'غير محدد'}</span></div>
+                                </div>
+
+                                ${notesHtml}
+                                ${buttonsHtml}
                             </div>
                         </div>
-                        <div class="p-3">
-                            <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm border-b border-slate-100 pb-3">
-                                <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold mb-0.5">الموديل</span><span class="font-black text-slate-800">${order.model || '-'}</span></div>
-                                <div class="flex flex-col"><span class="text-[10px] text-slate-400 font-bold mb-0.5">العدد واللون</span><div class="flex items-center gap-1"><span class="font-black text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-xs">${order.qty || '-'}</span><span class="font-bold text-slate-700 text-xs">${order.color || '-'}</span></div></div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-[11px] border-b border-slate-100 py-2.5 text-slate-500">
-                                <div>رقم التحويلة: <span class="font-black text-slate-800">${order.id || '-'}</span></div>
-                                <div>التصنيف: <span class="font-black text-[#3498db] bg-[#3498db15] px-1 rounded">${order.type || '-'}</span></div>
-                                <div class="col-span-2">تاريخ الطلب: <span class="font-bold text-slate-700">${order.orderDate || '-'}</span></div>
-                                <div class="col-span-2">المسئول الحالي: <span class="font-bold text-slate-800">${order.person || 'غير محدد'}</span></div>
-                            </div>
-                            ${notesHtml}
-                            ${buttonsHtml}
-                        </div>
-                    </div>
-                `;
-            });
+                    `;
+                    container.innerHTML += orderHtml;
+                });
+            } catch (error) {
+                console.error("Error rendering orders:", error);
+            }
         }
 
         function renderTawalef() {
-            const container = document.getElementById('orders-container');
-            if (!container) return;
-            container.innerHTML = '';
+            try {
+                const container = document.getElementById('orders-container');
+                if (!container) return;
+                container.innerHTML = '';
 
-            let myTawalef = allTawalef.filter(t => {
-                if (t.status === 'تم التسليم') return false;
-                const query = (searchQuery || '').trim().toLowerCase();
-                return query === '' || (t.orderNum && t.orderNum.toString().toLowerCase().includes(query));
-            });
+                let myTawalef = allTawalef.filter(t => {
+                    if (t.status === 'تم التسليم') return false; 
+                    
+                    const query = (searchQuery || '').trim().toLowerCase();
+                    const matchesSearch = query === '' || (t.orderNum && t.orderNum.toString().toLowerCase().includes(query));
+                    return matchesSearch;
+                });
 
-            myTawalef.sort((a, b) => {
-                const timeA = a.timestamp ? (typeof a.timestamp.toMillis === 'function' ? a.timestamp.toMillis() : a.timestamp) : 0;
-                const timeB = b.timestamp ? (typeof b.timestamp.toMillis === 'function' ? b.timestamp.toMillis() : b.timestamp) : 0;
-                return timeB - timeA;
-            });
+                myTawalef.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-            if (myTawalef.length === 0) {
-                container.innerHTML = `<div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4"><i class="fa-solid fa-clipboard-check text-slate-300 text-4xl mb-4"></i><h3 class="text-sm font-bold text-slate-600">لا توجد توالف قيد التحضير حالياً</h3></div>`;
-                return;
-            }
-
-            myTawalef.forEach(t => {
-                const isPending = t.status === 'معلق' || !t.status;
-                const statusLabel = t.status || 'معلق';
-                const headerColor = isPending ? 'bg-amber-500' : 'bg-red-500';
-                const borderColor = isPending ? 'border-amber-200' : 'border-red-200';
-                const textColor = isPending ? 'text-amber-600' : 'text-red-600';
-
-                let actionBtnHtml = '';
-                if (isPending) {
-                    actionBtnHtml = `<button onclick="updateTawalefStatus('${t.docId}', 'جاري التحضير')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 flex items-center justify-center gap-2"><i class="fa-solid fa-play"></i> بدء التحضير</button>`;
-                } else if (t.status === 'جاري التحضير') {
-                    actionBtnHtml = `<button onclick="updateTawalefStatus('${t.docId}', 'تم التسليم')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 flex items-center justify-center gap-2"><i class="fa-solid fa-check-circle"></i> تم التسليم والتسوية</button>`;
+                if (myTawalef.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4">
+                            <i class="fa-solid fa-clipboard-check text-slate-300 text-4xl mb-4"></i>
+                            <h3 class="text-sm font-bold text-slate-600">لا توجد توالف قيد التحضير حالياً</h3>
+                        </div>
+                    `;
+                    return;
                 }
 
-                container.innerHTML += `
-                    <div class="bg-white rounded-xl border ${borderColor} shadow-md overflow-hidden relative mb-4 transition-all">
-                        <div class="${headerColor} p-3 text-white flex justify-between items-center">
-                            <div class="flex flex-col"><span class="text-[10px] text-white/80 font-bold">رقم أوردر التالف</span><div class="flex items-center gap-2"><span class="font-black text-lg tracking-wide text-white">${t.orderNum || '-'}</span></div></div>
-                            <div class="px-3 py-1 rounded-md text-[11px] font-bold bg-white ${textColor}">${statusLabel}</div>
-                        </div>
-                        <div class="p-4">
-                            <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 pb-3 text-slate-500">
-                                <div class="col-span-2">تاريخ اليوم: <span class="font-bold text-slate-800">${t.orderDate || '-'}</span></div>
-                                <div>وقت الطلب: <span class="font-bold text-slate-800">${t.orderTime || '-'}</span></div>
-                                <div>وقت التحضير: <span class="font-bold text-blue-600">${t.prepTime || '-'}</span></div>
-                                <div>وقت التسليم: <span class="font-bold text-emerald-600">${t.receiveTime || '-'}</span></div>
-                                <div class="col-span-2 mt-1">أخر تحديث بواسطة: <span class="font-bold text-slate-800">${t.person || t.deliveredBy || '-'}</span></div>
+                myTawalef.forEach(t => {
+                    const isPending = t.status === 'معلق' || !t.status;
+                    const statusLabel = t.status || 'معلق';
+                    
+                    const headerColor = isPending ? 'bg-amber-500' : 'bg-red-500';
+                    const borderColor = isPending ? 'border-amber-200' : 'border-red-200';
+                    const textColor = isPending ? 'text-amber-600' : 'text-red-600';
+
+                    let actionBtnHtml = '';
+                    if (isPending) {
+                        actionBtnHtml = `
+                            <button onclick="updateTawalefStatus('${t.docId}', 'جاري التحضير')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-play"></i> بدء التحضير
+                            </button>
+                        `;
+                    } else if (t.status === 'جاري التحضير') {
+                        actionBtnHtml = `
+                            <button onclick="updateTawalefStatus('${t.docId}', 'تم التسليم')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check-circle"></i> تم التسليم والتسوية
+                            </button>
+                        `;
+                    }
+
+                    const orderHtml = `
+                        <div class="bg-white rounded-xl border ${borderColor} shadow-md overflow-hidden relative mb-4 transition-all">
+                            <div class="${headerColor} p-3 text-white flex justify-between items-center">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-white/80 font-bold">رقم أوردر التالف</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-black text-lg tracking-wide text-white">${t.orderNum || '-'}</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 py-1 rounded-md text-[11px] font-bold bg-white ${textColor}">
+                                    ${statusLabel}
+                                </div>
                             </div>
-                            <div class="mt-4">${actionBtnHtml}</div>
+
+                            <div class="p-4">
+                                <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 pb-3 text-slate-500">
+                                    <div class="col-span-2">تاريخ اليوم: <span class="font-bold text-slate-800">${t.orderDate || '-'}</span></div>
+                                    <div>وقت الطلب: <span class="font-bold text-slate-800">${t.orderTime || '-'}</span></div>
+                                    <div>وقت التحضير: <span class="font-bold text-blue-600">${t.prepTime || '-'}</span></div>
+                                    <div>وقت التسليم: <span class="font-bold text-emerald-600">${t.receiveTime || '-'}</span></div>
+                                    <div class="col-span-2 mt-1">أخر تحديث بواسطة: <span class="font-bold text-slate-800">${t.person || t.deliveredBy || '-'}</span></div>
+                                </div>
+
+                                <div class="mt-4">
+                                    ${actionBtnHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += orderHtml;
+                });
+            } catch (error) {
+                console.error("Error rendering tawalef:", error);
+            }
+        }
+
+        // تحديث حالة الأوردر العادي
+        async function updateStatus(docId, newStatus) {
+            try {
+                if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
+
+                const order = allOrders.find(o => o.docId === docId);
+                if (!order) return;
+
+                showToast(`جاري تحديث الحالة...`, "info");
+
+                const timeData = await getEgyptTime();
+                const todayYYYYMMDD = timeData.todayYYYYMMDD;
+                
+                const updates = { status: newStatus };
+                
+                if (newStatus === 'تم الاستلام') updates.receiveDate = todayYYYYMMDD;
+                else if (newStatus === 'تم التحضير') updates.prepDate = todayYYYYMMDD;
+
+                db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders').doc(docId)
+                    .update(updates)
+                    .then(() => {
+                        if(newStatus === 'تم الاستلام') {
+                            showToast("تم الاستلام وإزالة الأوردر من القائمة", "success");
+                        } else {
+                            showToast(`تم تحديث الحالة بنجاح`, "success");
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Update error:", err);
+                        showToast("فشل في تحديث الحالة، تحقق من الإنترنت", "danger");
+                    });
+            } catch(e) {
+                console.error("Error in update status:", e);
+                showToast("حدث خطأ أثناء الاتصال", "danger");
+            }
+        }
+
+        // تحديث حالة التالف
+        async function updateTawalefStatus(docId, newStatus) {
+            try {
+                if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
+
+                const t = allTawalef.find(x => x.docId === docId);
+                if (!t) return;
+
+                showToast(`جاري تحديث الحالة...`, "info");
+
+                const timeData = await getEgyptTime();
+                
+                const updates = { 
+                    status: newStatus,
+                    person: currentUser, 
+                    actionTime: timeData.timeStr, 
+                    timestamp: timeData.timestamp
+                };
+
+                if (newStatus === 'تم التسليم') {
+                    updates.receiveDate = timeData.todayYYYYMMDD;
+                    updates.receiveTime = timeData.timeStr; 
+                    updates.deliveredBy = currentUser; 
+                } else if (newStatus === 'جاري التحضير') {
+                    updates.prepTime = timeData.timeStr;
+                }
+
+                db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef').doc(docId)
+                    .update(updates)
+                    .then(() => {
+                        showToast(`تم تغيير الحالة إلى ${newStatus}`, "success");
+                    })
+                    .catch(err => {
+                        console.error("Update error:", err);
+                        showToast("فشل في التحديث، تحقق من الإنترنت", "danger");
+                    });
+            } catch(e) {
+                console.error("Error in update tawalef:", e);
+                showToast("حدث خطأ أثناء الاتصال", "danger");
+            }
+        }
+
+        // --- 7. الطباعة ---
+        async function triggerPrint(docId) {
+            try {
+                activePrintOrder = allOrders.find(o => o.docId === docId);
+                if (!activePrintOrder) return;
+
+                showToast("جاري تجهيز الطباعة...", "info");
+                
+                const timeData = await getEgyptTime();
+                const printContainer = document.getElementById('printAreaMobile');
+                
+                const brandHtml = activePrintOrder.brand ? 
+                    `<span class="bg-black text-white px-3 py-1 rounded-md text-sm font-black tracking-widest print-brand">${activePrintOrder.brand}</span>` : '';
+
+                printContainer.innerHTML = `
+                    <div class="border-b-4 border-black pb-3 mb-4 flex justify-between items-center text-black">
+                        <h3 class="font-black text-2xl">بيانات الأوردر التفصيلية</h3>
+                        ${brandHtml}
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4 text-black">
+                        <div class="border-2 border-slate-300 p-3 rounded-lg">
+                            <div class="text-[11px] font-bold text-slate-600 mb-1">رقم الأوردر</div>
+                            <div class="font-black text-xl">${activePrintOrder.orderNum || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-3 rounded-lg">
+                            <div class="text-[11px] font-bold text-slate-600 mb-1">رقم التحويلة</div>
+                            <div class="font-black text-xl">${activePrintOrder.id || '-'}</div>
                         </div>
                     </div>
+
+                    <div class="border-2 border-slate-300 p-3 rounded-lg mb-4 text-black">
+                        <div class="text-[11px] font-bold text-slate-600 mb-1">الموديل (المنتج)</div>
+                        <div class="font-black text-xl">${activePrintOrder.model || '-'}</div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 mb-4 text-black">
+                        <div class="border-2 border-slate-300 p-2 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">العدد</div>
+                            <div class="font-black text-lg">${activePrintOrder.qty || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">اللون</div>
+                            <div class="font-black text-lg">${activePrintOrder.color || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">التصنيف</div>
+                            <div class="font-black text-lg">${activePrintOrder.type || '-'}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-slate-300 p-3 rounded-lg mb-4 text-black">
+                        <div class="text-[11px] font-bold text-slate-600 mb-1">الحالة الحالية</div>
+                        <div class="font-black text-lg bg-slate-100 p-1 rounded text-center border border-slate-400">${activePrintOrder.status || 'معلق'}</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4 text-black">
+                        <div class="border-2 border-slate-300 p-2 rounded-lg">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">تاريخ الطلب</div>
+                            <div class="font-black text-sm">${activePrintOrder.orderDate || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">تاريخ التحضير</div>
+                            <div class="font-black text-sm">${activePrintOrder.prepDate || '-'}</div>
+                        </div>
+                        <div class="border-2 border-slate-300 p-2 rounded-lg col-span-2">
+                            <div class="text-[10px] font-bold text-slate-600 mb-1">المسئول الموجه إليه</div>
+                            <div class="font-black text-base">${activePrintOrder.person || '-'}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-slate-300 p-3 rounded-lg text-black">
+                        <div class="text-[11px] font-bold text-slate-600 mb-1">الملاحظات</div>
+                        <div class="font-black text-base leading-relaxed min-h-[60px]">${activePrintOrder.notes || 'لا توجد ملاحظات إضافية'}</div>
+                    </div>
+                    
+                    <div class="text-center mt-6 text-[10px] font-bold text-slate-400 no-print">
+                        نظام إدارة الأوردرات السحابي - ${timeData.printDateStr}
+                    </div>
                 `;
-            });
-        }
 
-        
-        // تحديث حالة الأوردر العادي (سريع ولحظي)
-        function updateStatus(docId, newStatus) {
-            if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
-            const order = allOrders.find(o => o.docId === docId);
-            if (!order) return;
-
-            // الحصول على وقت القاهرة اللحظي دون تأخير استدعاء الإنترنت (استخدام الـ Offset)
-            const timeData = getAccurateCairoTime();
-            
-            // تجهيز البيانات
-            const updates = { 
-                status: newStatus,
-                // استخدام وقت سيرفر فايربيز الحقيقي الدقيق لتخزينه في الحقل الأساسي للترتيب الزمني
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            if (newStatus === 'تم الاستلام') updates.receiveDate = timeData.todayYYYYMMDD;
-            else if (newStatus === 'تم التحضير') updates.prepDate = timeData.todayYYYYMMDD;
-
-            // تحديث الواجهة فوراً (Optimistic Update) لجعل التطبيق يبدو أسرع
-            order.status = newStatus;
-            renderOrders();
-            
-            // إرسال البيانات للخلفية
-            db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders').doc(docId)
-                .update(updates)
-                .then(() => {
-                    if(newStatus === 'تم الاستلام') showToast("تم الاستلام وإزالة الأوردر من القائمة", "success");
-                    else showToast(`تم التحديث بنجاح`, "success");
-                })
-                .catch(err => {
-                    console.error("Update error:", err);
-                    showToast("فشل في تحديث الحالة، تحقق من الإنترنت", "danger");
-                    // إعادة تحميل البيانات لو فشل التحديث
-                    renderOrders(); 
-                });
-        }
-
-        // تحديث حالة التالف (سريع ولحظي)
-        function updateTawalefStatus(docId, newStatus) {
-            if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
-            const t = allTawalef.find(x => x.docId === docId);
-            if (!t) return;
-
-            // الحصول على وقت القاهرة اللحظي
-            const timeData = getAccurateCairoTime();
-            
-            const updates = { 
-                status: newStatus,
-                person: currentUser, 
-                actionTime: timeData.timeStr, 
-                // استخدام وقت سيرفر فايربيز الحقيقي الدقيق
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            if (newStatus === 'تم التسليم') {
-                updates.receiveDate = timeData.todayYYYYMMDD;
-                updates.receiveTime = timeData.timeStr; 
-                updates.deliveredBy = currentUser; 
-            } else if (newStatus === 'جاري التحضير') {
-                updates.prepTime = timeData.timeStr;
+                document.getElementById('print-modal').classList.remove('hidden');
+                document.getElementById('print-modal').classList.add('flex');
+                
+                setTimeout(() => { window.print(); }, 600);
+            } catch(e) {
+                console.error("Error in print setup:", e);
+                showToast("تعذر تجهيز واجهة الطباعة", "danger");
             }
-
-            // تحديث الواجهة فوراً (Optimistic Update)
-            t.status = newStatus;
-            renderTawalef();
-
-            db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef').doc(docId)
-                .update(updates)
-                .then(() => {
-                    showToast(`تم تغيير الحالة إلى ${newStatus}`, "success");
-                })
-                .catch(err => {
-                    console.error("Update error:", err);
-                    showToast("فشل في التحديث، تحقق من الإنترنت", "danger");
-                    renderTawalef();
-                });
-        }
-
-        function triggerPrint(docId) {
-            activePrintOrder = allOrders.find(o => o.docId === docId);
-            if (!activePrintOrder) return;
-
-            // استخدام وقت القاهرة اللحظي للطباعة
-            const timeData = getAccurateCairoTime();
-            const printContainer = document.getElementById('printAreaMobile');
-            
-            const brandHtml = activePrintOrder.brand ? `<span class="bg-black text-white px-3 py-1 rounded-md text-sm font-black tracking-widest print-brand">${activePrintOrder.brand}</span>` : '';
-
-            printContainer.innerHTML = `
-                <div class="border-b-4 border-black pb-3 mb-4 flex justify-between items-center text-black">
-                    <h3 class="font-black text-2xl">بيانات الأوردر التفصيلية</h3>
-                    ${brandHtml}
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 mb-4 text-black">
-                    <div class="border-2 border-slate-300 p-3 rounded-lg"><div class="text-[11px] font-bold text-slate-600 mb-1">رقم الأوردر</div><div class="font-black text-xl">${activePrintOrder.orderNum || '-'}</div></div>
-                    <div class="border-2 border-slate-300 p-3 rounded-lg"><div class="text-[11px] font-bold text-slate-600 mb-1">رقم التحويلة</div><div class="font-black text-xl">${activePrintOrder.id || '-'}</div></div>
-                </div>
-
-                <div class="border-2 border-slate-300 p-3 rounded-lg mb-4 text-black">
-                    <div class="text-[11px] font-bold text-slate-600 mb-1">الموديل (المنتج)</div>
-                    <div class="font-black text-xl">${activePrintOrder.model || '-'}</div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-3 mb-4 text-black">
-                    <div class="border-2 border-slate-300 p-2 rounded-lg text-center"><div class="text-[10px] font-bold text-slate-600 mb-1">العدد</div><div class="font-black text-lg">${activePrintOrder.qty || '-'}</div></div>
-                    <div class="border-2 border-slate-300 p-2 rounded-lg text-center"><div class="text-[10px] font-bold text-slate-600 mb-1">اللون</div><div class="font-black text-lg">${activePrintOrder.color || '-'}</div></div>
-                    <div class="border-2 border-slate-300 p-2 rounded-lg text-center"><div class="text-[10px] font-bold text-slate-600 mb-1">التصنيف</div><div class="font-black text-lg">${activePrintOrder.type || '-'}</div></div>
-                </div>
-
-                <div class="border-2 border-slate-300 p-3 rounded-lg mb-4 text-black">
-                    <div class="text-[11px] font-bold text-slate-600 mb-1">الحالة الحالية</div>
-                    <div class="font-black text-lg bg-slate-100 p-1 rounded text-center border border-slate-400">${activePrintOrder.status || 'معلق'}</div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 mb-4 text-black">
-                    <div class="border-2 border-slate-300 p-2 rounded-lg"><div class="text-[10px] font-bold text-slate-600 mb-1">تاريخ الطلب</div><div class="font-black text-sm">${activePrintOrder.orderDate || '-'}</div></div>
-                    <div class="border-2 border-slate-300 p-2 rounded-lg"><div class="text-[10px] font-bold text-slate-600 mb-1">تاريخ التحضير</div><div class="font-black text-sm">${activePrintOrder.prepDate || '-'}</div></div>
-                    <div class="border-2 border-slate-300 p-2 rounded-lg col-span-2"><div class="text-[10px] font-bold text-slate-600 mb-1">المسئول الموجه إليه</div><div class="font-black text-base">${activePrintOrder.person || '-'}</div></div>
-                </div>
-
-                <div class="border-2 border-slate-300 p-3 rounded-lg text-black">
-                    <div class="text-[11px] font-bold text-slate-600 mb-1">الملاحظات</div>
-                    <div class="font-black text-base leading-relaxed min-h-[60px]">${activePrintOrder.notes || 'لا توجد ملاحظات إضافية'}</div>
-                </div>
-                
-                <div class="text-center mt-6 text-[10px] font-bold text-slate-400 no-print">
-                    نظام إدارة الأوردرات السحابي - ${timeData.printDateStr} | ${timeData.timeStr}
-                </div>
-            `;
-
-            document.getElementById('print-modal').classList.remove('hidden');
-            document.getElementById('print-modal').classList.add('flex');
-            
-            setTimeout(() => { window.print(); }, 600);
         }
 
         function closePrintModal() {
@@ -787,9 +986,15 @@
             activePrintOrder = null;
         }
 
-        // تشغيل التطبيق
+        // تشغيل التطبيق مع مزامنة الساعة العالمية
         document.addEventListener('DOMContentLoaded', () => {
-            initApp();
+            try {
+                syncGlobalClock();
+                initApp();
+            } catch(e) {
+                console.error("Startup error:", e);
+                showFallbackError("لم نتمكن من تشغيل التطبيق بشكل صحيح، حاول التحديث.");
+            }
         });
 
     </script>
