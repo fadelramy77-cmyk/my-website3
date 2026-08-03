@@ -301,21 +301,36 @@
         // التحديث الأهم: جلب الوقت مرة واحدة عند فتح التطبيق وتخزين الفرق
         async function syncServerTimeOnLoad() {
             try {
+                // نستخدم API موثوق جداً (GitHub) كبديل قوي لجلب الوقت العالمي (يتجنب حجب الاتصال تماماً)
                 const startFetch = Date.now();
-                const res = await fetch(`https://worldtimeapi.org/api/timezone/Africa/Cairo?_cb=${Date.now()}`, { cache: 'no-store' });
+                const res = await fetch('https://api.github.com/', { method: 'HEAD', cache: 'no-store' });
+                
                 if (res.ok) {
-                    const data = await res.json();
-                    const serverTime = new Date(data.datetime).getTime();
+                    const dateHeader = res.headers.get('Date');
+                    const serverTime = new Date(dateHeader).getTime();
                     const endFetch = Date.now();
                     const latency = (endFetch - startFetch) / 2;
                     // حساب فرق التوقيت بدقة وتخزينه
                     timeOffsetMs = serverTime - (endFetch - latency);
-                    console.log("تم مزامنة الوقت بنجاح. الفرق بالثواني:", timeOffsetMs / 1000);
+                    console.log("تم مزامنة الوقت الدولي بنجاح. الفرق:", timeOffsetMs / 1000);
+                } else {
+                    throw new Error("Primary API failed");
                 }
             } catch (e) {
-                console.warn("فشل مزامنة الوقت، سيتم استخدام وقت الجهاز.");
-                timeOffsetMs = 0; 
+                console.warn("فشل المصدر الأول، جاري محاولة مصدر بديل للوقت...");
+                try {
+                    const res = await fetch(`https://worldtimeapi.org/api/timezone/Africa/Cairo?_cb=${Date.now()}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const serverTime = new Date(data.datetime).getTime();
+                        timeOffsetMs = serverTime - Date.now();
+                    }
+                } catch (e2) {
+                    console.warn("فشل مزامنة الوقت بالكامل، سيتم استخدام وقت الجهاز كحل أخير.");
+                }
             }
+            // إعادة المزامنة كل 15 دقيقة لضمان عدم تأخر وقت الهاتف أثناء عمل التطبيق
+            setTimeout(syncServerTimeOnLoad, 15 * 60 * 1000);
         }
 
         // دالة فورية سريعة جداً تعتمد على الفرق المحسوب مسبقاً (لا تستخدم الإنترنت أبداً)
@@ -676,9 +691,12 @@
 
             // 2. التنفيذ السريع في الخلفية
             try {
-                // جلب الوقت السريع بدون إنترنت
+                // جلب الوقت السريع المعتمد على التوقيت الدولي (بغض النظر عن وقت الهاتف)
                 const timeData = getFastEgyptTime(); 
-                const updates = { status: newStatus };
+                const updates = { 
+                    status: newStatus,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp() // توثيق دقيق ومؤكد من سيرفرات جوجل
+                };
                 
                 if (newStatus === 'تم الاستلام') updates.receiveDate = timeData.todayYYYYMMDD;
                 else if (newStatus === 'تم التحضير') updates.prepDate = timeData.todayYYYYMMDD;
@@ -724,7 +742,7 @@
                     status: newStatus,
                     person: currentUser, 
                     actionTime: timeData.timeStr, 
-                    timestamp: timeData.timestamp
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp() // توثيق دقيق ومؤكد من سيرفرات جوجل
                 };
 
                 if (newStatus === 'تم التسليم') {
