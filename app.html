@@ -798,7 +798,7 @@
             }
         }
 
-        // تحديث حالة الأوردر العادي
+        // تحديث حالة الأوردر العادي باستخدام التوقيت العالمي (مستقل عن الهاتف)
         async function updateStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
@@ -806,7 +806,7 @@
                 const order = allOrders.find(o => o.docId === docId);
                 if (!order) return;
 
-                showToast(`جاري تحديث الحالة...`, "info");
+                showToast(`جاري التحقق من التوقيت العالمي وتحديث الحالة...`, "info");
 
                 // استدعاء الوقت الحقيقي من السيرفر
                 const timeData = await getEgyptTime();
@@ -836,7 +836,7 @@
             }
         }
 
-        // تحديث حالة التالف
+        // تحديث حالة التالف باستخدام التوقيت العالمي (مستقل عن الهاتف)
         async function updateTawalefStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
@@ -844,7 +844,7 @@
                 const t = allTawalef.find(x => x.docId === docId);
                 if (!t) return;
 
-                showToast(`جاري تحديث الحالة...`, "info");
+                showToast(`جاري التحقق من التوقيت العالمي للتحديث...`, "info");
 
                 // استدعاء الوقت الحقيقي من السيرفر
                 const timeData = await getEgyptTime();
@@ -885,7 +885,7 @@
                 activePrintOrder = allOrders.find(o => o.docId === docId);
                 if (!activePrintOrder) return;
 
-                showToast("جاري تجهيز الطباعة...", "info");
+                showToast("جاري جلب التاريخ الفعلي وتجهيز الطباعة...", "info");
                 
                 // جلب الوقت للطباعة لتجنب تواريخ هواتف المستخدمين الخاطئة
                 const timeData = await getEgyptTime();
