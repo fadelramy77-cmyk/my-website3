@@ -785,8 +785,6 @@
                 const order = allOrders.find(o => o.docId === docId);
                 if (!order) return;
 
-                showToast(`جاري الاتصال بالتوقيت الشبكي لتحديث الحالة...`, "info");
-
                 let timeData;
                 try {
                     timeData = await getEgyptTime();
@@ -826,8 +824,6 @@
 
                 const t = allTawalef.find(x => x.docId === docId);
                 if (!t) return;
-
-                showToast(`جاري جلب التوقيت الشبكي...`, "info");
 
                 let timeData;
                 try {
@@ -872,7 +868,7 @@
                 activePrintOrder = allOrders.find(o => o.docId === docId);
                 if (!activePrintOrder) return;
 
-                showToast("جاري تجهيز الطباعة وجلب التوقيت الآمن...", "info");
+                showToast("جاري تجهيز الطباعة...", "info");
                 
                 let timeData;
                 try {
