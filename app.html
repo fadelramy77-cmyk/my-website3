@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تطبيق المسئولين الذكي - سحابي</title>
     
-    <!-- مكتبة Tailwind CSS للتصميم العصري -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -23,10 +22,8 @@
         }
     </script>
     
-    <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- مكتبات Firebase السحابية متوافقة مع الويب -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -40,16 +37,13 @@
         }
         .pulse-active { animation: pulse-slow 2s infinite ease-in-out; }
 
-        /* إعدادات الطباعة الأساسية لضمان عملها على جميع المتصفحات (Safari, Firefox, Edge) */
         @media print {
             @page { margin: 0.5cm; }
             
-            /* 1. الحل الجذري: إخفاء كل عناصر الصفحة تماماً باستثناء نافذة الطباعة */
             body > *:not(#print-modal) {
                 display: none !important;
             }
 
-            /* 2. تحرير نافذة الطباعة من الخصائص الثابتة (fixed/flex) التي تعيق الطباعة في سفاري وفايرفوكس */
             #print-modal {
                 display: block !important;
                 position: absolute !important;
@@ -63,7 +57,6 @@
                 overflow: visible !important;
             }
 
-            /* 3. تنظيف الحاوية الداخلية للطباعة لتجنب هوامش فارغة */
             #print-modal > div {
                 border: none !important;
                 box-shadow: none !important;
@@ -82,16 +75,9 @@
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             
-            /* فرض اللون الأسود للحبر في كل النصوص */
-            * {
-                color: #000 !important;
-            }
-            .print-bold {
-                font-weight: 900 !important;
-                font-size: 110% !important;
-            }
+            * { color: #000 !important; }
+            .print-bold { font-weight: 900 !important; font-size: 110% !important; }
             
-            /* حل مشكلة البراند في الطباعة ليظهر بوضوح */
             .print-brand {
                 background-color: #ffffff !important;
                 color: #000000 !important;
@@ -102,27 +88,20 @@
             }
         }
         
-        /* مؤشر التحميل */
         .loader {
             border: 3px solid #f3f3f3; border-top: 3px solid #3498db;
             border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* بطاقات اختيار المهام */
-        .mode-card {
-            transition: all 0.2s;
-            cursor: pointer;
-        }
+        .mode-card { transition: all 0.2s; cursor: pointer; }
         .mode-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="bg-[#f8f9fa] antialiased font-sans relative">
 
-    <!-- حاوية التنبيهات -->
     <div id="toast-container" class="fixed top-4 left-4 right-4 z-[9999] space-y-2 pointer-events-none max-w-sm mx-auto no-print"></div>
 
-    <!-- شاشة التحميل الأولية -->
     <div id="loading-screen" class="min-h-screen flex flex-col items-center justify-center z-50 bg-[#f8f9fa] absolute inset-0">
         <div class="loader mb-4"></div>
         <p class="text-slate-500 font-bold text-sm">جاري الاتصال بالسحابة...</p>
@@ -159,7 +138,6 @@
         </div>
     </div>
 
-    <!-- شاشة اختيار المهام -->
     <div id="mode-screen" class="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4 relative hidden">
         <div class="w-full max-w-md">
             <div class="text-center mb-8">
@@ -195,7 +173,6 @@
         </div>
     </div>
 
-    <!-- شاشة التطبيق الرئيسية -->
     <div id="main-app" class="min-h-screen bg-[#f8f9fa] pb-20 print:bg-white print:pb-0 hidden">
         <header class="bg-[#2c3e50] text-white p-4 shadow-md sticky top-0 z-10 no-print">
             <div class="flex justify-between items-center mb-4">
@@ -225,9 +202,7 @@
             </div>
         </header>
 
-        <div id="orders-container" class="p-4 space-y-4 no-print">
-            <!-- سيتم إضافة الأوردرات هنا بواسطة الجافاسكريبت -->
-        </div>
+        <div id="orders-container" class="p-4 space-y-4 no-print"></div>
     </div>
 
     <!-- نافذة الطباعة -->
@@ -238,9 +213,7 @@
                 <button onclick="closePrintModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <div id="printAreaMobile" class="text-right p-4 border-2 border-slate-800 rounded-xl bg-white print:border-none print:p-0 print:m-0" dir="rtl">
-                <!-- تفاصيل الطباعة سيتم حقنها هنا -->
-            </div>
+            <div id="printAreaMobile" class="text-right p-4 border-2 border-slate-800 rounded-xl bg-white print:border-none print:p-0 print:m-0" dir="rtl"></div>
 
             <div class="mt-4 flex gap-3 no-print">
                 <button onclick="window.print()" class="flex-1 py-3 bg-black text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg">
@@ -254,7 +227,6 @@
     </div>
 
     <script>
-        // --- حماية التطبيق من الانهيار (Crash Protection) ---
         window.addEventListener('error', function(e) {
             console.error("Global error caught:", e.error);
             showFallbackError("عذراً، حدث خطأ مفاجئ أثناء معالجة البيانات.");
@@ -280,7 +252,6 @@
             }
         }
 
-        // --- 1. إعدادات Firebase ---
         const firebaseConfig = {
             apiKey: "AIzaSyD2DSKOWAOgALzvmNIIb_Oj00OoLuFPDqw", 
             authDomain: "order-system-26c71.firebaseapp.com",
@@ -294,7 +265,6 @@
         let db, auth;
         let isFirebaseInitialized = false;
 
-        // --- 2. البيانات والحالة (State) ---
         let currentUser = null;
         let userRole = null;
         let searchQuery = '';
@@ -305,7 +275,6 @@
         let allOrders = [];
         let allTawalef = []; 
 
-        // --- 3. دوال مساعدة (Helpers) ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -332,25 +301,26 @@
                 case 'تم الاستلام': return 'bg-[#e2f0d9] text-[#385723] border border-[#c3e6cb]';
                 case 'تم التحضير': return 'bg-[#d1e7dd] text-[#0f5132] border border-[#badbcc] shadow-md';
                 case 'جاري التحضير': return 'bg-[#cff4fc] text-[#055160] border border-[#b6effb]';
-                default: return 'bg-[#fff3cd] text-[#856404] border border-[#ffeeba]'; // معلق
+                default: return 'bg-[#fff3cd] text-[#856404] border border-[#ffeeba]';
             }
         }
 
-        // دالة قوية لجلب الوقت من سيرفرات عالمية وتجاهل توقيت هاتف المستخدم تماماً
+        // هذه الدالة تم برمجتها لكي تتجاهل توقيت الهاتف تماماً، ولن تلجأ إليه نهائياً.
+        // إذا فشلت في جلب التوقيت العالمي ستقوم بإرجاع خطأ يتم التعامل معه لمنع العمليات بتوقيت خاطئ.
         async function getEgyptTime() {
             let now;
-            // إنشاء مانع كاش عشوائي تماماً لتخطي الكاش الخاص بمزودات الإنترنت
+            // كاش باستر لتخطي الحفظ المؤقت في المتصفح أو شبكات الإنترنت
             const cacheBuster = Date.now().toString() + Math.random().toString(36).substring(2);
             
             try {
-                // المحاولة 1: الاعتماد على WorldTimeAPI لأنه يعيد التوقيت مع الإزاحة الزمنية (Offset) بدقة
+                // الخيار 1: WorldTimeAPI
                 const res1 = await fetch(`https://worldtimeapi.org/api/timezone/Africa/Cairo?_cb=${cacheBuster}`, { cache: 'no-store' });
                 if (!res1.ok) throw new Error('WorldTimeAPI failed');
                 const data1 = await res1.json();
                 now = new Date(data1.datetime);
             } catch (e1) {
                 try {
-                    // المحاولة 2: الاعتماد على سيرفرات Github مع مانع الكاش
+                    // الخيار 2: Github API Headers كبديل موثوق
                     const res2 = await fetch(`https://api.github.com/?_cb=${cacheBuster}`, { method: 'HEAD', cache: 'no-store' });
                     if (!res2.ok) throw new Error('Github Time failed');
                     const dateHeader = res2.headers.get('Date');
@@ -360,13 +330,20 @@
                         throw new Error('No Date header');
                     }
                 } catch (e2) {
-                    // الملاذ الأخير إذا انقطع الإنترنت تماماً 
-                    console.warn("استخدام توقيت الجهاز المحلي بسبب فشل جلب التوقيت العالمي.");
-                    now = new Date(); 
+                    try {
+                        // الخيار 3: TimeAPI.io كمحاولة أخيرة
+                        const res3 = await fetch(`https://timeapi.io/api/Time/current/zone?timeZone=Africa/Cairo`, { cache: 'no-store' });
+                        if (!res3.ok) throw new Error('TimeAPI failed');
+                        const data3 = await res3.json();
+                        now = new Date(data3.dateTime);
+                    } catch(e3) {
+                        // إيقاف العملية بالكامل ورفض استخدام توقيت الجهاز!
+                        throw new Error("فشل الاتصال بسيرفرات الوقت العالمية. يرجى التحقق من اتصال الإنترنت، لا يمكن استخدام توقيت الجهاز لحماية البيانات.");
+                    }
                 }
             }
 
-            // فرض تنسيق الوقت بتوقيت القاهرة لضمان التوافق دائماً
+            // فرض تنسيق الوقت بتوقيت القاهرة
             const timeZone = 'Africa/Cairo';
             const formatter = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
             const parts = formatter.formatToParts(now);
@@ -387,7 +364,6 @@
             };
         }
 
-        // --- 4. التهيئة والاتصال بالسحابة ---
         function initApp() {
             try {
                 firebase.initializeApp(firebaseConfig);
@@ -471,7 +447,6 @@
             }
         }
 
-        // --- 5. المنطق والواجهة ---
         function updateLoginSelect() {
             const select = document.getElementById('loginUserSelect');
             if (!select) return;
@@ -499,7 +474,6 @@
             document.getElementById('mode-screen').classList.add('flex');
             document.getElementById('welcome-name').innerText = currentUser;
 
-            // إخفاء كارت التوالف بالكامل عن مسئول التسليم
             const tawalefCardBtn = document.getElementById('tawalef-card-btn');
             if(userRole === 'تسليم') {
                 tawalefCardBtn.style.display = 'none';
@@ -715,16 +689,14 @@
                 if (!container) return;
                 container.innerHTML = '';
 
-                // عرض التوالف لمسئولي التحضير والشامل فقط
                 let myTawalef = allTawalef.filter(t => {
-                    if (t.status === 'تم التسليم') return false; // إخفاء المكتملة
+                    if (t.status === 'تم التسليم') return false;
                     
                     const query = (searchQuery || '').trim().toLowerCase();
                     const matchesSearch = query === '' || (t.orderNum && t.orderNum.toString().toLowerCase().includes(query));
                     return matchesSearch;
                 });
 
-                // ترتيب زمني
                 myTawalef.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
                 if (myTawalef.length === 0) {
@@ -741,12 +713,10 @@
                     const isPending = t.status === 'معلق' || !t.status;
                     const statusLabel = t.status || 'معلق';
                     
-                    // ألوان بناءً على الحالة
                     const headerColor = isPending ? 'bg-amber-500' : 'bg-red-500';
                     const borderColor = isPending ? 'border-amber-200' : 'border-red-200';
                     const textColor = isPending ? 'text-amber-600' : 'text-red-600';
 
-                    // أزرار العمليات
                     let actionBtnHtml = '';
                     if (isPending) {
                         actionBtnHtml = `
@@ -798,7 +768,6 @@
             }
         }
 
-        // تحديث حالة الأوردر العادي
         async function updateStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
@@ -806,12 +775,18 @@
                 const order = allOrders.find(o => o.docId === docId);
                 if (!order) return;
 
-                showToast(`جاري تحديث الحالة...`, "info");
+                showToast(`جاري الاتصال بالسيرفر الزمني لتحديث الحالة...`, "info");
 
-                // استدعاء الوقت الحقيقي من السيرفر
-                const timeData = await getEgyptTime();
-                const todayYYYYMMDD = timeData.todayYYYYMMDD;
+                // استدعاء الوقت الحقيقي من السيرفر. في حالة الفشل، سيتم إيقاف العملية (catch error)
+                let timeData;
+                try {
+                    timeData = await getEgyptTime();
+                } catch(timeError) {
+                    showToast(timeError.message, "danger");
+                    return; // إيقاف العملية لمنع استخدام أي وقت خاطئ
+                }
                 
+                const todayYYYYMMDD = timeData.todayYYYYMMDD;
                 const updates = { status: newStatus };
                 
                 if (newStatus === 'تم الاستلام') updates.receiveDate = todayYYYYMMDD;
@@ -832,11 +807,10 @@
                     });
             } catch(e) {
                 console.error("Error in update status:", e);
-                showToast("حدث خطأ أثناء الاتصال", "danger");
+                showToast("حدث خطأ غير متوقع", "danger");
             }
         }
 
-        // تحديث حالة التالف
         async function updateTawalefStatus(docId, newStatus) {
             try {
                 if (!isFirebaseInitialized) return showToast("التطبيق غير متصل بالسحابة حالياً", "danger");
@@ -844,10 +818,16 @@
                 const t = allTawalef.find(x => x.docId === docId);
                 if (!t) return;
 
-                showToast(`جاري تحديث الحالة...`, "info");
+                showToast(`جاري جلب الوقت العالمي والتحديث...`, "info");
 
-                // استدعاء الوقت الحقيقي من السيرفر
-                const timeData = await getEgyptTime();
+                // استدعاء الوقت الحقيقي من السيرفر. في حالة الفشل، سيتم إيقاف العملية.
+                let timeData;
+                try {
+                    timeData = await getEgyptTime();
+                } catch(timeError) {
+                    showToast(timeError.message, "danger");
+                    return; 
+                }
                 
                 const updates = { 
                     status: newStatus,
@@ -875,20 +855,25 @@
                     });
             } catch(e) {
                 console.error("Error in update tawalef:", e);
-                showToast("حدث خطأ أثناء الاتصال", "danger");
+                showToast("حدث خطأ غير متوقع", "danger");
             }
         }
 
-        // --- 6. الطباعة (محسنة لتعمل مع كل المتصفحات) ---
         async function triggerPrint(docId) {
             try {
                 activePrintOrder = allOrders.find(o => o.docId === docId);
                 if (!activePrintOrder) return;
 
-                showToast("جاري تجهيز الطباعة...", "info");
+                showToast("جاري تجهيز الطباعة وجلب التوقيت الآمن...", "info");
                 
-                // جلب الوقت للطباعة لتجنب تواريخ هواتف المستخدمين الخاطئة
-                const timeData = await getEgyptTime();
+                let timeData;
+                try {
+                    timeData = await getEgyptTime();
+                } catch(timeError) {
+                    showToast(timeError.message, "danger");
+                    return; // نرفض الطباعة حتى لا يتم تزوير تاريخ الإيصال بتوقيت الهاتف
+                }
+
                 const printContainer = document.getElementById('printAreaMobile');
                 
                 const brandHtml = activePrintOrder.brand ? 
@@ -964,7 +949,6 @@
                 document.getElementById('print-modal').classList.remove('hidden');
                 document.getElementById('print-modal').classList.add('flex');
                 
-                // تم زيادة التوقيت لتفادي مشكلة رسم الواجهة البطيء في سفاري وفايرفوكس
                 setTimeout(() => { window.print(); }, 600);
             } catch(e) {
                 console.error("Error in print setup:", e);
@@ -978,7 +962,6 @@
             activePrintOrder = null;
         }
 
-        // تشغيل التطبيق
         document.addEventListener('DOMContentLoaded', () => {
             try {
                 initApp();
