@@ -507,7 +507,7 @@
             } else {
                 document.getElementById('header-role').textContent = `التوالف (${userRole})`;
                 document.getElementById('header-icon').className = "fa-solid fa-triangle-exclamation text-white";
-                document.getElementById('searchInput').placeholder = "بحث برقم أوردر التالف...";
+                document.getElementById('searchInput').placeholder = "بحث برقم أوردر التالف أو اسم المخزن...";
             }
             
             renderContent();
@@ -703,7 +703,10 @@
                     if (t.status === 'تم التسليم') return false;
                     
                     const query = (searchQuery || '').trim().toLowerCase();
-                    const matchesSearch = query === '' || (t.orderNum && t.orderNum.toString().toLowerCase().includes(query));
+                    const safeOrderNum = t.orderNum ? t.orderNum.toString().toLowerCase() : '';
+                    const warehouseVal = (t.warehouse || t.store || t.warehouseName || t.storeName || t.whName || t.branch || t.warehouse_name || t.store_name || '').toString().toLowerCase();
+                    
+                    const matchesSearch = query === '' || safeOrderNum.includes(query) || warehouseVal.includes(query);
                     return matchesSearch;
                 });
 
@@ -727,6 +730,17 @@
                     const borderColor = isPending ? 'border-amber-200' : 'border-red-200';
                     const textColor = isPending ? 'text-amber-600' : 'text-red-600';
 
+                    // استخراج اسم المخزن بجميع الاحتمالات المتاحة لحقول البيانات
+                    const warehouseName = t.warehouse || t.store || t.warehouseName || t.storeName || t.whName || t.branch || t.warehouse_name || t.store_name || '';
+
+                    // شارة اسم المخزن للظهور بشكل ممتاز وواضح في رأس كارت التالف
+                    const warehouseBadge = warehouseName ? `
+                        <span class="bg-white/20 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-black border border-white/30 flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-warehouse text-[11px]"></i>
+                            <span>${warehouseName}</span>
+                        </span>
+                    ` : '';
+
                     let actionBtnHtml = '';
                     if (isPending) {
                         actionBtnHtml = `
@@ -744,20 +758,22 @@
 
                     const orderHtml = `
                         <div class="bg-white rounded-xl border ${borderColor} shadow-md overflow-hidden relative mb-4 transition-all">
-                            <div class="${headerColor} p-3 text-white flex justify-between items-center">
-                                <div class="flex flex-col">
-                                    <span class="text-[10px] text-white/80 font-bold">رقم أوردر التالف</span>
-                                    <div class="flex items-center gap-2">
+                            <div class="${headerColor} p-3 text-white flex justify-between items-center gap-2">
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-[10px] text-white/80 font-bold">رقم أوردر التالف والمخزن</span>
+                                    <div class="flex items-center gap-2 flex-wrap">
                                         <span class="font-black text-lg tracking-wide text-white">${t.orderNum || '-'}</span>
+                                        ${warehouseBadge}
                                     </div>
                                 </div>
-                                <div class="px-3 py-1 rounded-md text-[11px] font-bold bg-white ${textColor}">
+                                <div class="px-3 py-1 rounded-md text-[11px] font-bold bg-white ${textColor} shrink-0">
                                     ${statusLabel}
                                 </div>
                             </div>
 
                             <div class="p-4">
                                 <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 pb-3 text-slate-500">
+                                    ${warehouseName ? `<div class="col-span-2 text-slate-700 font-bold flex items-center gap-1.5 bg-slate-50 p-2 rounded-lg border border-slate-200"><i class="fa-solid fa-store text-slate-500"></i> المخزن: <span class="font-black text-slate-900">${warehouseName}</span></div>` : ''}
                                     <div class="col-span-2">تاريخ اليوم: <span class="font-bold text-slate-800">${t.orderDate || '-'}</span></div>
                                     <div>وقت الطلب: <span class="font-bold text-slate-800">${t.orderTime || '-'}</span></div>
                                     <div>وقت التحضير: <span class="font-bold text-blue-600">${t.prepTime || '-'}</span></div>
