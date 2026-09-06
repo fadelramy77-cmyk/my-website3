@@ -607,19 +607,21 @@
                         <thead>
                             <tr style="background: var(--primary); color: white;">
                                 <th width="3%" class="admin-only"><input type="checkbox" id="selectAllTawalef" onchange="toggleSelectAllTawalef(this.checked)"></th>
-                                <th width="10%">رقم الأوردر<br><input type="text" class="col-search" id="ct-orderNum" oninput="renderTawalef()" placeholder="تصفية..."></th>
-                                <th width="8%">المخزن<br><input type="text" class="col-search" id="ct-warehouse" oninput="renderTawalef()" placeholder="تصفية..."></th>
-                                <th width="12%">الحالة<br><input type="text" class="col-search" id="ct-status" oninput="renderTawalef()" placeholder="تصفية..."></th>
-                                <th width="12%">المسئول<br><input type="text" class="col-search" id="ct-person" oninput="renderTawalef()" placeholder="تصفية..."></th>
-                                <th width="15%">تاريخ الطلب
+                                <th width="8%">رقم الأوردر<br><input type="text" class="col-search" id="ct-orderNum" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="6%">المخزن<br><input type="text" class="col-search" id="ct-warehouse" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="8%">الحالة<br><input type="text" class="col-search" id="ct-status" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="10%">مسئول التحضير<br><input type="text" class="col-search" id="ct-prepPerson" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="10%">مسئول التسليم<br><input type="text" class="col-search" id="ct-deliveryPerson" oninput="renderTawalef()" placeholder="تصفية..."></th>
+                                <th width="12%">تاريخ الطلب
                                     <div class="date-filter-group">
                                         <input type="date" class="col-search date-search" id="ct-orderDate-from" oninput="renderTawalef()">
                                         <input type="date" class="col-search date-search" id="ct-orderDate-to" oninput="renderTawalef()">
                                     </div>
                                 </th>
-                                <th width="10%">وقت الطلب</th>
-                                <th width="10%">وقت التحضير</th>
-                                <th width="10%">وقت التسليم</th>
+                                <th width="8%">وقت الطلب</th>
+                                <th width="8%">بدء التحضير</th>
+                                <th width="8%">وقت التحضير</th>
+                                <th width="8%">وقت التسليم</th>
                                 <th width="10%" class="admin-only">الإجراءات</th>
                             </tr>
                         </thead>
@@ -718,36 +720,49 @@
 </div>
 
 <div class="modal-overlay" id="tawalefModal">
-    <div class="modal-content" style="width: 500px;">
+    <div class="modal-content" style="width: 600px;">
         <h2 id="tawalefModalTitle" class="font-black text-lg text-red-600 mb-4">إضافة / تعديل تالف</h2>
         <input type="hidden" id="editTawalefIndex" value="-1">
         
-        <div class="form-group">
-            <label>رقم الأوردر المعني</label>
-            <input type="text" id="ft-orderNum" placeholder="أدخل رقم الأوردر المتضرر">
+        <div style="display:flex; gap:10px">
+            <div class="form-group" style="flex:1">
+                <label>رقم الأوردر المعني</label>
+                <input type="text" id="ft-orderNum" placeholder="أدخل رقم الأوردر المتضرر">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>المخزن</label>
+                <select id="ft-warehouse">
+                    <option value="W3">W3</option>
+                    <option value="W5">W5</option>
+                </select>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>المخزن</label>
-            <select id="ft-warehouse">
-                <option value="W3">W3</option>
-                <option value="W5">W5</option>
-            </select>
+        <div style="display:flex; gap:10px">
+            <div class="form-group" style="flex:1">
+                <label>مسئول التحضير</label>
+                <input type="text" id="ft-prepPerson" placeholder="اسم المسئول">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>مسئول التسليم</label>
+                <input type="text" id="ft-deliveryPerson" placeholder="اسم المسئول">
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>الحالة</label>
-            <select id="ft-status">
-                <option value="معلق">معلق</option>
-                <option value="جاري التحضير">جاري التحضير</option>
-                <option value="تم التحضير">تم التحضير</option>
-                <option value="تم التسليم">تم التسليم</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>تاريخ اليوم (تاريخ الطلب)</label>
-            <input type="date" id="ft-orderDate">
+        <div style="display:flex; gap:10px">
+            <div class="form-group" style="flex:1">
+                <label>الحالة</label>
+                <select id="ft-status">
+                    <option value="معلق">معلق</option>
+                    <option value="جاري التحضير">جاري التحضير</option>
+                    <option value="تم التحضير">تم التحضير</option>
+                    <option value="تم التسليم">تم التسليم</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>تاريخ اليوم (الطلب)</label>
+                <input type="date" id="ft-orderDate">
+            </div>
         </div>
 
         <div style="display:flex; gap:10px">
@@ -756,12 +771,19 @@
                 <input type="text" id="ft-orderTime" placeholder="مثال: 02:30 م" dir="rtl">
             </div>
             <div class="form-group" style="flex:1">
+                <label>بدء التحضير</label>
+                <input type="text" id="ft-startPrepTime" placeholder="تلقائي" dir="rtl">
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:10px">
+            <div class="form-group" style="flex:1">
                 <label>وقت التحضير</label>
-                <input type="text" id="ft-prepTime" placeholder="تلقائي من التطبيق" dir="rtl">
+                <input type="text" id="ft-prepTime" placeholder="تلقائي" dir="rtl">
             </div>
             <div class="form-group" style="flex:1">
                 <label>وقت التسليم</label>
-                <input type="text" id="ft-receiveTime" placeholder="تلقائي من التطبيق" dir="rtl">
+                <input type="text" id="ft-receiveTime" placeholder="تلقائي" dir="rtl">
             </div>
         </div>
 
@@ -1297,7 +1319,8 @@
             orderNum: document.getElementById('ct-orderNum').value.toLowerCase(),
             warehouse: document.getElementById('ct-warehouse').value.toLowerCase(),
             status: document.getElementById('ct-status').value.toLowerCase(),
-            person: document.getElementById('ct-person').value.toLowerCase()
+            prepPerson: document.getElementById('ct-prepPerson').value.toLowerCase(),
+            deliveryPerson: document.getElementById('ct-deliveryPerson').value.toLowerCase()
         };
 
         const dateFilters = {
@@ -1308,12 +1331,16 @@
         let total = 0, pending = 0, prepDone = 0, solved = 0;
 
         tawalef.forEach((t, i) => {
-            const deliveredBy = t.person || t.deliveredBy || '-'; 
+            // التوافق مع البيانات القديمة
+            const pPerson = t.prepPerson || (t.status !== 'تم التسليم' && t.status !== 'معلق' ? (t.person || '-') : '-');
+            const dPerson = t.deliveryPerson || (t.status === 'تم التسليم' ? (t.person || t.deliveredBy || '-') : '-');
+
             const matchesSearch = !searchQuery || (t.orderNum && t.orderNum.toLowerCase().includes(searchQuery));
             const matchesColFilters = checkColMatch(t.orderNum, colFilters.orderNum) &&
                                     checkColMatch(t.warehouse, colFilters.warehouse) &&
                                     checkColMatch(t.status, colFilters.status) &&
-                                    checkColMatch(deliveredBy, colFilters.person) &&
+                                    checkColMatch(pPerson, colFilters.prepPerson) &&
+                                    checkColMatch(dPerson, colFilters.deliveryPerson) &&
                                     checkDateRangeMatch(t.orderDate, dateFilters.orderFrom, dateFilters.orderTo);
 
             if (matchesSearch && matchesColFilters) {
@@ -1335,9 +1362,11 @@
                     <td class="font-bold text-slate-800 text-center" style="font-size: 14px;">${t.orderNum || '-'}</td>
                     <td class="font-bold text-center text-indigo-600">${t.warehouse || '-'}</td>
                     <td><span class="badge ${sClass}">${t.status || 'معلق'}</span></td>
-                    <td class="font-bold text-[#3498db]">${deliveredBy}</td>
+                    <td class="font-bold text-[#3498db]">${pPerson}</td>
+                    <td class="font-bold text-[#27ae60]">${dPerson}</td>
                     <td class="text-slate-600 font-bold">${t.orderDate || '-'}</td>
                     <td class="text-slate-600">${t.orderTime || '-'}</td>
+                    <td class="text-indigo-600 font-bold">${t.startPrepTime || '-'}</td>
                     <td class="text-blue-600 font-bold">${t.prepTime || '-'}</td>
                     <td class="text-emerald-600 font-bold">${t.receiveTime || '-'}</td>
                     <td class="admin-only">
@@ -1367,9 +1396,13 @@
         document.getElementById('ft-orderNum').value = "";
         document.getElementById('ft-warehouse').value = "W3";
         document.getElementById('ft-status').value = "معلق";
+        document.getElementById('ft-prepPerson').value = "";
+        document.getElementById('ft-deliveryPerson').value = "";
+        
         const now = new Date();
         document.getElementById('ft-orderDate').value = formatDateToYYYYMMDD(now.toISOString().split('T')[0]); 
         document.getElementById('ft-orderTime').value = now.toLocaleTimeString('ar-EG', { hour12: true, hour: "numeric", minute: "numeric"});
+        document.getElementById('ft-startPrepTime').value = "";
         document.getElementById('ft-prepTime').value = "";
         document.getElementById('ft-receiveTime').value = "";
         document.getElementById('tawalefModal').style.display = 'flex';
@@ -1384,8 +1417,12 @@
         const orderNum = document.getElementById('ft-orderNum').value.trim();
         const warehouse = document.getElementById('ft-warehouse').value;
         const status = document.getElementById('ft-status').value;
+        const prepPerson = document.getElementById('ft-prepPerson').value.trim();
+        const deliveryPerson = document.getElementById('ft-deliveryPerson').value.trim();
+        
         const orderDate = document.getElementById('ft-orderDate').value;
         const orderTime = document.getElementById('ft-orderTime').value;
+        const startPrepTime = document.getElementById('ft-startPrepTime').value;
         const prepTime = document.getElementById('ft-prepTime').value;
         const receiveTime = document.getElementById('ft-receiveTime').value;
 
@@ -1396,7 +1433,7 @@
         }
 
         const data = {
-            orderNum, warehouse, status, orderDate, orderTime, prepTime, receiveTime,
+            orderNum, warehouse, status, prepPerson, deliveryPerson, orderDate, orderTime, startPrepTime, prepTime, receiveTime,
             timestamp: idx === -1 ? Date.now() : (tawalef[idx].timestamp || Date.now())
         };
 
@@ -1434,8 +1471,13 @@
         document.getElementById('ft-orderNum').value = t.orderNum || "";
         document.getElementById('ft-warehouse').value = t.warehouse || "W3";
         document.getElementById('ft-status').value = t.status || "معلق";
+        
+        document.getElementById('ft-prepPerson').value = t.prepPerson || (t.status !== 'تم التسليم' && t.status !== 'معلق' ? (t.person || '') : '');
+        document.getElementById('ft-deliveryPerson').value = t.deliveryPerson || (t.status === 'تم التسليم' ? (t.person || t.deliveredBy || '') : '');
+
         document.getElementById('ft-orderDate').value = t.orderDate && t.orderDate.includes('-') ? t.orderDate : "";
         document.getElementById('ft-orderTime').value = t.orderTime || "";
+        document.getElementById('ft-startPrepTime').value = t.startPrepTime || "";
         document.getElementById('ft-prepTime').value = t.prepTime || "";
         document.getElementById('ft-receiveTime').value = t.receiveTime || "";
         document.getElementById('tawalefModal').style.display = 'flex';
@@ -1479,15 +1521,20 @@
 
     function exportTawalefToCSV() {
         const data = [];
-        data.push(["رقم الأوردر", "المخزن", "الحالة", "المسئول", "تاريخ الطلب", "وقت الطلب", "وقت التحضير", "وقت التسليم"]);
+        data.push(["رقم الأوردر", "المخزن", "الحالة", "مسئول التحضير", "مسئول التسليم", "تاريخ الطلب", "وقت الطلب", "بدء التحضير", "وقت التحضير", "وقت التسليم"]);
         tawalef.forEach(t => {
+            const pPerson = t.prepPerson || (t.status !== 'تم التسليم' && t.status !== 'معلق' ? (t.person || '-') : '-');
+            const dPerson = t.deliveryPerson || (t.status === 'تم التسليم' ? (t.person || t.deliveredBy || '-') : '-');
+            
             data.push([
                 t.orderNum || '-',
                 t.warehouse || '-',
                 t.status || 'معلق',
-                t.person || t.deliveredBy || '-',
+                pPerson,
+                dPerson,
                 t.orderDate || '',
                 t.orderTime || '',
+                t.startPrepTime || '',
                 t.prepTime || '',
                 t.receiveTime || ''
             ]);
