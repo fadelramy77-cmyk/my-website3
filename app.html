@@ -145,7 +145,7 @@
             </div>
             
             <div class="space-y-4">
-                <div onclick="selectMode('orders')" class="mode-card bg-white p-6 rounded-2xl border-2 border-[#3498db] shadow-md flex items-center justify-between">
+                <div id="orders-card-btn" onclick="selectMode('orders')" class="mode-card bg-white p-6 rounded-2xl border-2 border-[#3498db] shadow-md flex items-center justify-between">
                     <div>
                         <h2 class="font-black text-[#2c3e50] text-lg">أوردرات المبيعات</h2>
                         <p class="text-xs font-bold text-slate-400 mt-1">الطلبيات الجديدة واليومية</p>
@@ -304,14 +304,11 @@
             }
         }
 
-        // دالة جلب الوقت الشبكي الدقيق المربوط مباشرة بسيرفرات التوقيت الذري للشبكات المحلية (فودافون مصر / توقيت القاهرة الرسمي)
         async function getEgyptTime() {
             let now = null;
             const cacheBuster = Date.now().toString() + '_' + Math.random().toString(36).substring(2);
             
-            // مصادر جلب التوقيت اللحظي بدقة أجزاء الثانية ودون تخزين مؤقت
             const timeProviders = [
-                // 1. Cloudflare Trace (أسرع خادم ذرّي مطابق لتوقيت أبراج شبكات المحمول المحلية مثل فودافون)
                 async () => {
                     const res = await fetch(`https://www.cloudflare.com/cdn-cgi/trace?_cb=${cacheBuster}`, { cache: 'no-store' });
                     if (!res.ok) throw new Error('Cloudflare network time error');
@@ -320,7 +317,6 @@
                     if (!match) throw new Error('Invalid ts header format');
                     return new Date(parseFloat(match[1]) * 1000);
                 },
-                // 2. TimeAPI.io (توقيت مصر / القاهرة الرسمي)
                 async () => {
                     const res = await fetch(`https://timeapi.io/api/v1/time/current/zone?timeZone=Africa/Cairo&_cb=${cacheBuster}`, { cache: 'no-store' });
                     if (!res.ok) throw new Error('TimeAPI error');
@@ -328,7 +324,6 @@
                     if (data.dateTime) return new Date(data.dateTime);
                     throw new Error('Invalid TimeAPI response');
                 },
-                // 3. WorldTimeAPI (توقيت القاهرة)
                 async () => {
                     const res = await fetch(`https://worldtimeapi.org/api/timezone/Africa/Cairo?_cb=${cacheBuster}`, { cache: 'no-store' });
                     if (!res.ok) throw new Error('WorldTimeAPI error');
@@ -347,13 +342,11 @@
                 }
             }
 
-            // في حالة انقطاع الاتصال بالسيرفرات الزمنية الخارجية، نعتمد التوقيت المحلي بدقة المنطقة الزمنية للقاهرة
             if (!now || isNaN(now.getTime())) {
                 console.warn("Using system fallback time with Africa/Cairo offset");
                 now = new Date();
             }
 
-            // تطبيق التنسيق الدقيق لتوقيت مصر والقاهرة (UTC+3 / EST)
             const timeZone = 'Africa/Cairo';
             const formatter = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
             const parts = formatter.formatToParts(now);
@@ -485,10 +478,17 @@
             document.getElementById('welcome-name').innerText = currentUser;
 
             const tawalefCardBtn = document.getElementById('tawalef-card-btn');
+            const ordersCardBtn = document.getElementById('orders-card-btn');
+            
             if(userRole === 'تسليم') {
                 tawalefCardBtn.style.display = 'none';
+                ordersCardBtn.style.display = 'flex';
+            } else if (userRole === 'تسليم توالف') {
+                tawalefCardBtn.style.display = 'flex';
+                ordersCardBtn.style.display = 'none';
             } else {
                 tawalefCardBtn.style.display = 'flex';
+                ordersCardBtn.style.display = 'flex';
             }
         }
 
@@ -702,6 +702,9 @@
                 let myTawalef = allTawalef.filter(t => {
                     if (t.status === 'تم التسليم') return false;
                     
+                    // إخفاء ما لم يتم تحضيره إذا كان المسئول تسليم توالف
+                    if (userRole === 'تسليم توالف' && t.status !== 'تم التحضير') return false;
+                    
                     const query = (searchQuery || '').trim().toLowerCase();
                     const safeOrderNum = t.orderNum ? t.orderNum.toString().toLowerCase() : '';
                     const warehouseVal = (t.warehouse || t.store || t.warehouseName || t.storeName || t.whName || t.branch || t.warehouse_name || t.store_name || '').toString().toLowerCase();
@@ -716,7 +719,7 @@
                     container.innerHTML = `
                         <div class="text-center py-16 px-4 bg-white rounded-xl shadow-sm border border-slate-200 mt-4">
                             <i class="fa-solid fa-clipboard-check text-slate-300 text-4xl mb-4"></i>
-                            <h3 class="text-sm font-bold text-slate-600">لا توجد توالف قيد التحضير حالياً</h3>
+                            <h3 class="text-sm font-bold text-slate-600">لا توجد توالف متطابقة حالياً</h3>
                         </div>
                     `;
                     return;
@@ -724,16 +727,16 @@
 
                 myTawalef.forEach(t => {
                     const isPending = t.status === 'معلق' || !t.status;
+                    const isPrep = t.status === 'جاري التحضير';
+                    const isPrepDone = t.status === 'تم التحضير';
                     const statusLabel = t.status || 'معلق';
                     
-                    const headerColor = isPending ? 'bg-amber-500' : 'bg-red-500';
-                    const borderColor = isPending ? 'border-amber-200' : 'border-red-200';
-                    const textColor = isPending ? 'text-amber-600' : 'text-red-600';
+                    const headerColor = isPending ? 'bg-amber-500' : (isPrep ? 'bg-blue-500' : (isPrepDone ? 'bg-[#3498db]' : 'bg-red-500'));
+                    const borderColor = isPending ? 'border-amber-200' : (isPrep ? 'border-blue-200' : (isPrepDone ? 'border-[#3498db]' : 'border-red-200'));
+                    const textColor = isPending ? 'text-amber-600' : (isPrep ? 'text-blue-600' : (isPrepDone ? 'text-[#3498db]' : 'text-red-600'));
 
-                    // استخراج اسم المخزن بجميع الاحتمالات المتاحة لحقول البيانات
                     const warehouseName = t.warehouse || t.store || t.warehouseName || t.storeName || t.whName || t.branch || t.warehouse_name || t.store_name || '';
 
-                    // شارة اسم المخزن للظهور بشكل ممتاز وواضح في رأس كارت التالف
                     const warehouseBadge = warehouseName ? `
                         <span class="bg-white/20 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-black border border-white/30 flex items-center gap-1.5 shadow-sm">
                             <i class="fa-solid fa-warehouse text-[11px]"></i>
@@ -742,13 +745,23 @@
                     ` : '';
 
                     let actionBtnHtml = '';
-                    if (isPending) {
+                    
+                    // أزرار التحضير
+                    if (isPending && (userRole === 'تحضير' || userRole === 'شامل' || !userRole)) {
                         actionBtnHtml = `
                             <button onclick="updateTawalefStatus('${t.docId}', 'جاري التحضير')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-play"></i> بدء التحضير
                             </button>
                         `;
-                    } else if (t.status === 'جاري التحضير') {
+                    } else if (isPrep && (userRole === 'تحضير' || userRole === 'شامل' || !userRole)) {
+                        actionBtnHtml = `
+                            <button onclick="updateTawalefStatus('${t.docId}', 'تم التحضير')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-[#e8f4fd] hover:bg-[#d5ebfa] border-[#3498db] text-[#2980b9] flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check"></i> إنهاء التحضير
+                            </button>
+                        `;
+                    } 
+                    // زر التسليم النهائي
+                    else if (isPrepDone && (userRole === 'تسليم توالف' || userRole === 'شامل' || !userRole)) {
                         actionBtnHtml = `
                             <button onclick="updateTawalefStatus('${t.docId}', 'تم التسليم')" class="w-full py-3 rounded-lg text-sm font-bold transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-check-circle"></i> تم التسليم والتسوية
@@ -766,7 +779,7 @@
                                         ${warehouseBadge}
                                     </div>
                                 </div>
-                                <div class="px-3 py-1 rounded-md text-[11px] font-bold bg-white ${textColor} shrink-0">
+                                <div class="px-3 py-1 rounded-md text-[11px] font-bold bg-white ${textColor} shrink-0 shadow-sm">
                                     ${statusLabel}
                                 </div>
                             </div>
@@ -860,6 +873,9 @@
                     updates.receiveDate = timeData.todayYYYYMMDD;
                     updates.receiveTime = timeData.timeStr; 
                     updates.deliveredBy = currentUser; 
+                } else if (newStatus === 'تم التحضير') {
+                    // يمكننا حفظ وقت الانتهاء من التحضير في نفس الخانة الخاصة بوقت التحضير أو تحديثها
+                    updates.prepTime = timeData.timeStr;
                 } else if (newStatus === 'جاري التحضير') {
                     updates.prepTime = timeData.timeStr;
                 }
