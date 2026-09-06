@@ -592,6 +592,10 @@
                         <h3>جاري التحضير / معلق</h3>
                         <div id="dt-pending" class="value">0</div>
                     </div>
+                    <div class="card prep-done" style="border-color: #3498db;">
+                        <h3>تم التحضير ✅</h3>
+                        <div id="dt-prep-done" class="value">0</div>
+                    </div>
                     <div class="card received" style="border-color: #27ae60;">
                         <h3>تم التسليم</h3>
                         <div id="dt-solved" class="value">0</div>
@@ -639,7 +643,7 @@
                 <div class="dashboard">
                     <div class="card total"><h3>إجمالي المسئولين</h3><div id="dp-total" class="value">0</div></div>
                     <div class="card prep-process"><h3>مسئولي التحضير</h3><div id="dp-prep" class="value">0</div></div>
-                    <div class="card wait"><h3>مسئولي التسليم</h3><div id="dp-delivery" class="value">0</div></div>
+                    <div class="card wait"><h3>تسليم توالف</h3><div id="dp-tawalef" class="value">0</div></div>
                     <div class="card total" style="border-color: #9b59b6; color: #8e44ad;"><h3>مسئولين شاملين</h3><div id="dp-all" class="value">0</div></div>
                 </div>
 
@@ -736,6 +740,7 @@
             <select id="ft-status">
                 <option value="معلق">معلق</option>
                 <option value="جاري التحضير">جاري التحضير</option>
+                <option value="تم التحضير">تم التحضير</option>
                 <option value="تم التسليم">تم التسليم</option>
             </select>
         </div>
@@ -782,6 +787,7 @@
             <select id="fp-role">
                 <option value="تحضير">مسئول تحضير فقط (Prep)</option>
                 <option value="تسليم">مسئول تسليم فقط (Delivery)</option>
+                <option value="تسليم توالف">مسئول تسليم توالف (Tawalef Delivery)</option>
                 <option value="شامل">شامل (تحضير وتسليم)</option>
             </select>
         </div>
@@ -1299,7 +1305,7 @@
             orderTo: document.getElementById('ct-orderDate-to').value
         };
 
-        let total = 0, pending = 0, solved = 0;
+        let total = 0, pending = 0, prepDone = 0, solved = 0;
 
         tawalef.forEach((t, i) => {
             const deliveredBy = t.person || t.deliveredBy || '-'; 
@@ -1313,10 +1319,12 @@
             if (matchesSearch && matchesColFilters) {
                 total++;
                 if (t.status === 'تم التسليم') solved++;
+                else if (t.status === 'تم التحضير') prepDone++;
                 else pending++;
 
                 let sClass = "s-waiting"; 
                 if (t.status === 'تم التسليم') sClass = "s-received"; 
+                else if (t.status === 'تم التحضير') sClass = "s-prep-done";
                 else if (t.status === 'جاري التحضير') sClass = "s-preparing"; 
 
                 const tr = document.createElement('tr');
@@ -1345,6 +1353,7 @@
 
         document.getElementById('dt-total').innerText = total;
         document.getElementById('dt-pending').innerText = pending;
+        document.getElementById('dt-prep-done').innerText = prepDone;
         document.getElementById('dt-solved').innerText = solved;
 
         const selCount = tawalef.filter(t => t.selected).length;
@@ -1499,11 +1508,13 @@
         let total = savedPersons.length;
         let preps = 0;
         let deliveries = 0;
+        let tawalefDel = 0;
         let comprehensive = 0;
 
         savedPersons.forEach((p, idx) => {
             if (p.role === 'تحضير') preps++;
             else if (p.role === 'تسليم') deliveries++;
+            else if (p.role === 'تسليم توالف') tawalefDel++;
             else comprehensive++;
 
             const assocOrders = orders.filter(o => o.person && o.person.trim() === p.name.trim());
@@ -1512,10 +1523,13 @@
 
             const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ar-EG') : '-';
 
+            let roleDisplay = p.role === 'شامل' ? 'شامل' : 'مسئول ' + p.role;
+            let badgeClass = p.role === 'شامل' ? 's-prep-done' : (p.role === 'تحضير' ? 's-preparing' : (p.role === 'تسليم توالف' ? 's-received' : 's-waiting'));
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding: 15px; font-weight: bold; color: var(--primary); text-align: right;">👤 ${p.name}</td>
-                <td><span class="badge ${p.role === 'شامل' ? 's-prep-done' : (p.role === 'تحضير' ? 's-preparing' : 's-waiting')}">${p.role === 'شامل' ? 'شامل' : 'مسئول ' + p.role}</span></td>
+                <td><span class="badge ${badgeClass}">${roleDisplay}</span></td>
                 <td>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <span id="pin-text-${idx}" style="font-family: monospace; letter-spacing: 2px;">••••</span>
@@ -1535,7 +1549,7 @@
 
         document.getElementById('dp-total').innerText = total;
         document.getElementById('dp-prep').innerText = preps;
-        document.getElementById('dp-delivery').innerText = deliveries;
+        document.getElementById('dp-tawalef').innerText = tawalefDel;
         document.getElementById('dp-all').innerText = comprehensive;
     }
 
