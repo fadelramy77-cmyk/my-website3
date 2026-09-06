@@ -700,9 +700,12 @@
                 container.innerHTML = '';
 
                 let myTawalef = allTawalef.filter(t => {
-                    if (t.status === 'تم التسليم') return false;
+                    if (t.status === 'تم التسليم') return false; // الإخفاء الدائم عند التسليم
                     
-                    // إخفاء ما لم يتم تحضيره إذا كان المسئول تسليم توالف
+                    // إخفاء عن مسئول التحضير بمجرد إتمام التحضير
+                    if (userRole === 'تحضير' && t.status === 'تم التحضير') return false;
+
+                    // إخفاء عن مسئول التسليم ما لم يتم التحضير
                     if (userRole === 'تسليم توالف' && t.status !== 'تم التحضير') return false;
                     
                     const query = (searchQuery || '').trim().toLowerCase();
@@ -769,6 +772,9 @@
                         `;
                     }
 
+                    const pPerson = t.prepPerson || (t.status !== 'تم التسليم' && t.status !== 'معلق' ? (t.person || '-') : 'جاري العمل...');
+                    const dPerson = t.deliveryPerson || (t.status === 'تم التسليم' ? (t.person || t.deliveredBy || '-') : 'في الانتظار...');
+
                     const orderHtml = `
                         <div class="bg-white rounded-xl border ${borderColor} shadow-md overflow-hidden relative mb-4 transition-all">
                             <div class="${headerColor} p-3 text-white flex justify-between items-center gap-2">
@@ -785,13 +791,34 @@
                             </div>
 
                             <div class="p-4">
-                                <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-xs border-b border-slate-100 pb-3 text-slate-500">
-                                    ${warehouseName ? `<div class="col-span-2 text-slate-700 font-bold flex items-center gap-1.5 bg-slate-50 p-2 rounded-lg border border-slate-200"><i class="fa-solid fa-store text-slate-500"></i> المخزن: <span class="font-black text-slate-900">${warehouseName}</span></div>` : ''}
-                                    <div class="col-span-2">تاريخ اليوم: <span class="font-bold text-slate-800">${t.orderDate || '-'}</span></div>
-                                    <div>وقت الطلب: <span class="font-bold text-slate-800">${t.orderTime || '-'}</span></div>
-                                    <div>وقت التحضير: <span class="font-bold text-blue-600">${t.prepTime || '-'}</span></div>
-                                    <div>وقت التسليم: <span class="font-bold text-emerald-600">${t.receiveTime || '-'}</span></div>
-                                    <div class="col-span-2 mt-1">أخر تحديث بواسطة: <span class="font-bold text-slate-800">${t.person || t.deliveredBy || '-'}</span></div>
+                                ${warehouseName ? `<div class="mb-3 text-slate-700 font-bold flex items-center gap-1.5 bg-slate-50 p-2 rounded-lg border border-slate-200 text-xs"><i class="fa-solid fa-store text-slate-500"></i> المخزن: <span class="font-black text-slate-900">${warehouseName}</span></div>` : ''}
+                                
+                                <div class="grid grid-cols-2 gap-3 mb-3 border-b border-slate-100 pb-3">
+                                    <div class="bg-blue-50/50 p-2 rounded-lg border border-blue-100">
+                                        <div class="text-[10px] text-blue-600 font-bold mb-1"><i class="fa-solid fa-user-gear"></i> مسئول التحضير</div>
+                                        <div class="font-black text-slate-800 text-xs">${pPerson}</div>
+                                    </div>
+                                    <div class="bg-emerald-50/50 p-2 rounded-lg border border-emerald-100">
+                                        <div class="text-[10px] text-emerald-600 font-bold mb-1"><i class="fa-solid fa-user-check"></i> مسئول التسليم</div>
+                                        <div class="font-black text-slate-800 text-xs">${dPerson}</div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-y-2 gap-x-2 text-[11px] text-slate-500">
+                                    <div class="col-span-2 text-center text-slate-400 font-bold border-b border-slate-50 pb-1 mb-1">الجدول الزمني للعمليات</div>
+                                    
+                                    <div class="flex justify-between items-center bg-slate-50 px-2 py-1.5 rounded">
+                                        <span>وقت الطلب:</span> <span class="font-bold text-slate-800">${t.orderTime || '-'}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-50 px-2 py-1.5 rounded">
+                                        <span>بدء التحضير:</span> <span class="font-bold text-indigo-600">${t.startPrepTime || '-'}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-50 px-2 py-1.5 rounded">
+                                        <span>وقت التحضير:</span> <span class="font-bold text-blue-600">${t.prepTime || '-'}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-50 px-2 py-1.5 rounded">
+                                        <span>وقت التسليم:</span> <span class="font-bold text-emerald-600">${t.receiveTime || '-'}</span>
+                                    </div>
                                 </div>
 
                                 <div class="mt-4">
@@ -864,7 +891,6 @@
                 
                 const updates = { 
                     status: newStatus,
-                    person: currentUser, 
                     actionTime: timeData.timeStr, 
                     timestamp: timeData.timestamp
                 };
@@ -872,12 +898,13 @@
                 if (newStatus === 'تم التسليم') {
                     updates.receiveDate = timeData.todayYYYYMMDD;
                     updates.receiveTime = timeData.timeStr; 
-                    updates.deliveredBy = currentUser; 
+                    updates.deliveryPerson = currentUser; // تسجيل اسم مسئول التسليم
                 } else if (newStatus === 'تم التحضير') {
-                    // يمكننا حفظ وقت الانتهاء من التحضير في نفس الخانة الخاصة بوقت التحضير أو تحديثها
                     updates.prepTime = timeData.timeStr;
+                    updates.prepPerson = currentUser; // تثبيت اسم مسئول التحضير
                 } else if (newStatus === 'جاري التحضير') {
-                    updates.prepTime = timeData.timeStr;
+                    updates.startPrepTime = timeData.timeStr;
+                    updates.prepPerson = currentUser; // تسجيل اسم مسئول التحضير عند البدء
                 }
 
                 db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('tawalef').doc(docId)
