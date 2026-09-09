@@ -852,7 +852,10 @@
                 const todayYYYYMMDD = timeData.todayYYYYMMDD;
                 const updates = { status: newStatus };
                 
-                if (newStatus === 'تم الاستلام') updates.receiveDate = todayYYYYMMDD;
+                if (newStatus === 'تم الاستلام') {
+                    updates.receiveDate = todayYYYYMMDD;
+                    updates.deliveryPerson = currentUser;
+                }
                 else if (newStatus === 'تم التحضير') updates.prepDate = todayYYYYMMDD;
 
                 db.collection('artifacts').doc(appIdentifier).collection('public').doc('data').collection('orders').doc(docId)
