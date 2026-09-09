@@ -214,7 +214,7 @@
             border: 1px solid #ddd; border-radius: 8px; padding: 5px;
             max-height: 100px; overflow-y: auto; background: #fafafa;
         }
-        
+
         /* تعديل الموديل ليكون متغير الحجم (Resizable) */
         #modelFilters { 
             height: 100px;
@@ -266,7 +266,7 @@
         .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        table { width: 100%; border-collapse: collapse; min-width: 1300px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
         th { background: var(--primary); color: white; padding: 15px; position: sticky; top: 0; text-align: center; font-size: 13px; vertical-align: top; }
         td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
         tr:hover { background-color: #f8fbff; }
@@ -526,16 +526,17 @@
                         <thead>
                             <tr>
                                 <th width="3%" class="admin-only"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)"></th>
-                                <th width="8%">رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="8%">رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="9%">البراند<br><input type="text" class="col-search" id="c-brand" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="7%">رقم الأوردر<br><input type="text" class="col-search" id="c-orderNum" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="7%">رقم التحويلة<br><input type="text" class="col-search" id="c-id" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="8%">البراند<br><input type="text" class="col-search" id="c-brand" oninput="filterChanged()" placeholder="تصفية..."></th>
                                 <th>الموديل<br><input type="text" class="col-search" id="c-model" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="5%">العدد<br><input type="text" class="col-search" id="c-qty" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="6%">اللون<br><input type="text" class="col-search" id="c-color" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="9%">الحالة<br><input type="text" class="col-search" id="c-status" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="6%">التصنيف<br><input type="text" class="col-search" id="c-type" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="9%">المسئول<br><input type="text" class="col-search" id="c-person" oninput="filterChanged()" placeholder="تصفية..."></th>
-                                <th width="10%">الملاحظات<br><input type="text" class="col-search" id="c-notes" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="4%">العدد<br><input type="text" class="col-search" id="c-qty" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="5%">اللون<br><input type="text" class="col-search" id="c-color" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="8%">الحالة<br><input type="text" class="col-search" id="c-status" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="5%">التصنيف<br><input type="text" class="col-search" id="c-type" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="8%">المسئول<br><input type="text" class="col-search" id="c-person" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="8%">مسئول التسليم<br><input type="text" class="col-search" id="c-deliveryPerson" oninput="filterChanged()" placeholder="تصفية..."></th>
+                                <th width="9%">الملاحظات<br><input type="text" class="col-search" id="c-notes" oninput="filterChanged()" placeholder="تصفية..."></th>
                                 <th>تاريخ الطلب
                                     <div class="date-filter-group">
                                         <input type="date" class="col-search date-search" id="c-orderDate-from" oninput="filterChanged()" title="من تاريخ">
@@ -554,7 +555,7 @@
                                         <input type="date" class="col-search date-search" id="c-receiveDate-to" oninput="filterChanged()" title="إلى تاريخ">
                                     </div>
                                 </th>
-                                <th width="7%">إجراءات</th>
+                                <th width="6%">إجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
@@ -706,9 +707,15 @@
             <div class="form-group" style="flex:1"><label>تاريخ الاستلام</label><input type="date" id="f-receiveDate"></div>
         </div>
 
-        <div class="form-group">
-            <label>المسئول الموجه إليه</label>
-            <select id="f-person" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"></select>
+        <div style="display:flex; gap:10px">
+            <div class="form-group" style="flex:1">
+                <label>المسئول الموجه إليه (التحضير)</label>
+                <select id="f-person" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"></select>
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>مسئول التسليم</label>
+                <select id="f-deliveryPerson" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"></select>
+            </div>
         </div>
 
         <div class="form-group"><label>الملاحظات</label><textarea id="f-notes" placeholder="أي ملاحظات إضافية..."></textarea></div>
@@ -890,9 +897,15 @@
                 </div>
             </div>
 
-            <div class="print-field">
-                <div class="print-label">المسئول</div>
-                <div id="p-person" class="print-value"></div>
+            <div class="print-row">
+                <div class="print-field">
+                    <div class="print-label">المسئول الموجه إليه (التحضير)</div>
+                    <div id="p-person" class="print-value"></div>
+                </div>
+                <div class="print-field">
+                    <div class="print-label">مسئول التسليم</div>
+                    <div id="p-deliveryPerson" class="print-value"></div>
+                </div>
             </div>
 
             <div class="print-field">
@@ -1041,11 +1054,9 @@
         const overlay = document.getElementById('sidebarOverlay');
         
         if (sidebar.classList.contains('collapsed')) {
-            // فتح القائمة
             sidebar.classList.remove('collapsed');
             overlay.classList.add('show');
         } else {
-            // إغلاق القائمة
             sidebar.classList.add('collapsed');
             overlay.classList.remove('show');
         }
@@ -1083,7 +1094,6 @@
             document.getElementById('personsSection').classList.remove('hidden');
             renderPersons();
         }
-        // إغلاق القائمة بعد اختيار التبويب للمزيد من مساحة العمل
         closeSidebar();
     }
 
@@ -1277,11 +1287,21 @@
 
     function updatePersonDropdown() {
         const select = document.getElementById('f-person');
-        if (!select) return;
-        select.innerHTML = '<option value="">-- اختر المسئول الموجه إليه --</option>';
-        savedPersons.forEach(p => {
-            select.innerHTML += `<option value="${p.name}">${p.name} (${p.role})</option>`;
-        });
+        const delSelect = document.getElementById('f-deliveryPerson');
+        
+        if (select) {
+            select.innerHTML = '<option value="">-- اختر المسئول الموجه إليه --</option>';
+            savedPersons.forEach(p => {
+                select.innerHTML += `<option value="${p.name}">${p.name} (${p.role})</option>`;
+            });
+        }
+        
+        if (delSelect) {
+            delSelect.innerHTML = '<option value="">-- اختر مسئول التسليم --</option>';
+            savedPersons.forEach(p => {
+                delSelect.innerHTML += `<option value="${p.name}">${p.name} (${p.role})</option>`;
+            });
+        }
     }
 
     function saveData() {
@@ -1331,7 +1351,6 @@
         let total = 0, pending = 0, prepDone = 0, solved = 0;
 
         tawalef.forEach((t, i) => {
-            // التوافق مع البيانات القديمة
             const pPerson = t.prepPerson || (t.status !== 'تم التسليم' && t.status !== 'معلق' ? (t.person || '-') : '-');
             const dPerson = t.deliveryPerson || (t.status === 'تم التسليم' ? (t.person || t.deliveredBy || '-') : '-');
 
@@ -1786,6 +1805,7 @@
             status: document.getElementById('c-status').value.toLowerCase(),
             type: document.getElementById('c-type').value.toLowerCase(),
             person: document.getElementById('c-person').value.toLowerCase(),
+            deliveryPerson: document.getElementById('c-deliveryPerson') ? document.getElementById('c-deliveryPerson').value.toLowerCase() : '',
             notes: document.getElementById('c-notes').value.toLowerCase()
         };
 
@@ -1815,6 +1835,7 @@
                                 (o.brand && o.brand.toLowerCase().includes(query)) ||
                                 o.model.toLowerCase().includes(query) ||
                                 (o.person && o.person.toLowerCase().includes(query)) ||
+                                (o.deliveryPerson && o.deliveryPerson.toLowerCase().includes(query)) ||
                                 (o.notes && o.notes.toLowerCase().includes(query));
 
             const matchesStatus = activeFilters.status.length === 0 || activeFilters.status.includes(statusStr);
@@ -1832,6 +1853,7 @@
                 checkColMatch(statusStr, colFilters.status) &&
                 checkColMatch(o.type, colFilters.type) &&
                 checkColMatch(o.person, colFilters.person) &&
+                checkColMatch(o.deliveryPerson, colFilters.deliveryPerson) &&
                 checkColMatch(o.notes, colFilters.notes) &&
                 checkDateRangeMatch(o.orderDate, dateFilters.orderFrom, dateFilters.orderTo) &&
                 checkDateRangeMatch(o.prepDate, dateFilters.prepFrom, dateFilters.prepTo) &&
@@ -1895,6 +1917,7 @@
                 <td><span class="badge ${sClass}">${statusStr}</span></td>
                 <td>${o.type}</td>
                 <td><b>${o.person || '-'}</b></td>
+                <td><b>${o.deliveryPerson || (o.status === 'تم الاستلام' ? (o.deliveredBy || '-') : '-')}</b></td>
                 <td style="font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${o.notes || ''}">${o.notes || '-'}</td>
                 <td style="white-space: nowrap; direction: ltr;">${o.orderDate || '-'}</td>
                 <td style="white-space: nowrap; direction: ltr;">${o.prepDate || '-'}</td>
@@ -1965,6 +1988,7 @@
         document.getElementById('p-prepDate').innerText = o.prepDate || '-';
         document.getElementById('p-receiveDate').innerText = o.receiveDate || '-';
         document.getElementById('p-person').innerText = o.person || '-';
+        document.getElementById('p-deliveryPerson').innerText = o.deliveryPerson || (o.status === 'تم الاستلام' ? (o.deliveredBy || '-') : '-');
         document.getElementById('p-notes').innerText = o.notes || '-';
         
         document.getElementById('printModal').style.display = 'flex';
@@ -1995,7 +2019,8 @@
                 color: headers.findIndex(h => h.includes('اللون') || h.toLowerCase().includes('color')),
                 status: headers.findIndex(h => h.includes('الحال') || h.toLowerCase().includes('status')),
                 type: headers.findIndex(h => h.includes('التصنيف') || h.toLowerCase().includes('type')),
-                person: headers.findIndex(h => h.includes('المسئول') || h.toLowerCase().includes('person')),
+                person: headers.findIndex(h => (h.includes('المسئول') || h.toLowerCase().includes('person')) && !h.includes('تسليم')),
+                deliveryPerson: headers.findIndex(h => h.includes('تسليم') || h.toLowerCase().includes('deliveryperson')),
                 notes: headers.findIndex(h => h.includes('ملاحظات') || h.toLowerCase().includes('note')),
                 orderDate: headers.findIndex(h => h.includes('الطلب')),
                 prepDate: headers.findIndex(h => h.includes('التحضير')),
@@ -2024,6 +2049,7 @@
                         status: map.status !== -1 ? (cols[map.status] || 'معلق') : 'معلق',
                         type: map.type !== -1 ? (cols[map.type] || 'PA') : 'PA',
                         person: map.person !== -1 ? (cols[map.person] || '') : '',
+                        deliveryPerson: map.deliveryPerson !== -1 ? (cols[map.deliveryPerson] || '') : '',
                         notes: map.notes !== -1 ? (cols[map.notes] || '') : '',
                         orderDate: formatDateToYYYYMMDD(orderDateRaw),
                         prepDate: formatDateToYYYYMMDD(prepDateRaw),
@@ -2109,6 +2135,7 @@
             type: document.getElementById('f-type').value,
             status: document.getElementById('f-status').value,
             person: document.getElementById('f-person').value,
+            deliveryPerson: document.getElementById('f-deliveryPerson') ? document.getElementById('f-deliveryPerson').value : '',
             notes: document.getElementById('f-notes').value.trim(),
             orderDate: document.getElementById('f-orderDate').value,
             prepDate: document.getElementById('f-prepDate').value,
@@ -2150,33 +2177,60 @@
         }
     }
 
+    function openModal(idx = -1) {
+        const modal = document.getElementById('modal');
+        document.getElementById('editIndex').value = idx;
+        if (idx === -1) {
+            document.getElementById('modalTitle').innerText = "بيانات الأوردر الجديد";
+            document.getElementById('f-orderNum').value = "";
+            document.getElementById('f-id').value = "";
+            document.getElementById('f-brand').value = "";
+            document.getElementById('f-model').value = "";
+            document.getElementById('f-qty').value = "1";
+            document.getElementById('f-color').value = "";
+            document.getElementById('f-type').value = "PA";
+            document.getElementById('f-status').value = "معلق";
+            document.getElementById('f-person').value = "";
+            document.getElementById('f-deliveryPerson').value = "";
+            document.getElementById('f-notes').value = "";
+            document.getElementById('f-orderDate').value = formatDateToYYYYMMDD(new Date().toISOString().split('T')[0]);
+            document.getElementById('f-prepDate').value = "";
+            document.getElementById('f-receiveDate').value = "";
+        } else {
+            const o = orders[idx];
+            document.getElementById('modalTitle').innerText = "تعديل بيانات الأوردر";
+            document.getElementById('f-orderNum').value = o.orderNum || "";
+            document.getElementById('f-id').value = o.id || "";
+            document.getElementById('f-brand').value = o.brand || "";
+            document.getElementById('f-model').value = o.model || "";
+            document.getElementById('f-qty').value = o.qty || 1;
+            document.getElementById('f-color').value = o.color || "";
+            document.getElementById('f-type').value = o.type || "PA";
+            document.getElementById('f-status').value = o.status || "معلق";
+            document.getElementById('f-person').value = o.person || "";
+            document.getElementById('f-deliveryPerson').value = o.deliveryPerson || "";
+            document.getElementById('f-notes').value = o.notes || "";
+            document.getElementById('f-orderDate').value = o.orderDate || "";
+            document.getElementById('f-prepDate').value = o.prepDate || "";
+            document.getElementById('f-receiveDate').value = o.receiveDate || "";
+        }
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
     function edit(i) {
-        const o = orders[i];
-        document.getElementById('modalTitle').innerText = "تعديل الأوردر";
-        document.getElementById('editIndex').value = i;
-        document.getElementById('f-orderNum').value = o.orderNum || "";
-        document.getElementById('f-id').value = o.id || "";
-        document.getElementById('f-brand').value = o.brand || "";
-        document.getElementById('f-model').value = o.model;
-        document.getElementById('f-qty').value = o.qty;
-        document.getElementById('f-color').value = o.color || "";
-        document.getElementById('f-type').value = o.type;
-        document.getElementById('f-status').value = o.status || "معلق";
-        document.getElementById('f-person').value = o.person || "";
-        document.getElementById('f-notes').value = o.notes || "";
-        document.getElementById('f-orderDate').value = o.orderDate || "";
-        document.getElementById('f-prepDate').value = o.prepDate || "";
-        document.getElementById('f-receiveDate').value = o.receiveDate || "";
-        document.getElementById('modal').style.display = 'flex';
+        openModal(i);
     }
 
     function remove(i) {
-        if(confirm("هل تريد حذف هذا الأوردر؟")) {
+        if (confirm("هل تريد حذف هذا الأوردر نهائياً؟")) {
             if (useLocalFallback) {
                 orders.splice(i, 1);
                 saveData();
                 render();
-                renderPersons();
             } else {
                 if (!user || !db) return;
                 db.collection('artifacts').doc(appId).collection('public').doc('data').collection('orders').doc(orders[i].docId)
@@ -2186,16 +2240,22 @@
         }
     }
 
-    function toggleSelect(i) { orders[i].selected = !orders[i].selected; render(); }
-    function toggleSelectAll(checked) { orders.forEach(o => o.selected = checked); render(); }
+    function toggleSelect(i) {
+        orders[i].selected = !orders[i].selected;
+        render();
+    }
+
+    function toggleSelectAll(checked) {
+        orders.forEach(o => o.selected = checked);
+        render();
+    }
 
     function removeSelected() {
-        if(confirm("هل أنت متأكد من حذف المختار؟")) {
+        if (confirm("هل أنت متأكد من حذف المختار من الأوردرات؟")) {
             if (useLocalFallback) {
                 orders = orders.filter(o => !o.selected);
                 saveData();
                 render();
-                renderPersons();
             } else {
                 if (!user || !db) return;
                 orders.forEach(o => {
@@ -2205,37 +2265,31 @@
                     }
                 });
             }
-            document.getElementById('selectAll').checked = false;
         }
     }
 
-    function openModal() {
-        document.getElementById('modalTitle').innerText = "إضافة أوردر جديد";
-        document.getElementById('editIndex').value = "-1";
-        document.getElementById('f-orderNum').value = "";
-        document.getElementById('f-id').value = "";
-        document.getElementById('f-brand').value = "";
-        document.getElementById('f-model').value = "";
-        document.getElementById('f-qty').value = "1";
-        document.getElementById('f-color').value = "";
-        document.getElementById('f-type').value = "PA";
-        document.getElementById('f-status').value = "معلق";
-        document.getElementById('f-person').value = "";
-        document.getElementById('f-notes').value = "";
-        document.getElementById('f-orderDate').value = formatDateToYYYYMMDD(new Date().toISOString().split('T')[0]); 
-        document.getElementById('f-prepDate').value = "";
-        document.getElementById('f-receiveDate').value = "";
-        document.getElementById('modal').style.display = 'flex';
-    }
-
-    function closeModal() { document.getElementById('modal').style.display = 'none'; }
-
     function exportToCSV() {
         const data = [];
-        data.push(["رقم الأوردر", "رقم التحويلة", "البراند", "الموديل", "العدد", "اللون", "التصنيف", "الحالة", "المسئول", "تاريخ الطلب", "تاريخ التحضير", "تاريخ الاستلام", "ملاحظات"]);
+        data.push(["رقم الأوردر", "رقم التحويلة", "البراند", "الموديل", "العدد", "اللون", "الحالة", "التصنيف", "المسئول", "مسئول التسليم", "الملاحظات", "تاريخ الطلب", "تاريخ التحضير", "تاريخ الاستلام"]);
         orders.forEach(o => {
-            data.push([o.orderNum, o.id || '', o.brand || '', o.model, o.qty, o.color || '', o.type, o.status || 'معلق', o.person || '', o.orderDate || '', o.prepDate || '', o.receiveDate || '', o.notes || '']);
+            data.push([
+                o.orderNum || '-',
+                o.id || '-',
+                o.brand || '-',
+                o.model || '-',
+                o.qty || 0,
+                o.color || '-',
+                o.status || 'معلق',
+                o.type || 'PA',
+                o.person || '-',
+                o.deliveryPerson || '-',
+                o.notes || '-',
+                o.orderDate || '',
+                o.prepDate || '',
+                o.receiveDate || ''
+            ]);
         });
+
         const ws = XLSX.utils.aoa_to_sheet(data);
         ws['!dir'] = 'rtl';
         const wb = XLSX.utils.book_new();
@@ -2243,9 +2297,8 @@
         XLSX.writeFile(wb, `orders_report_${new Date().getTime()}.xlsx`);
     }
 
-    // Initialize App Core
+    // Initialize Auth & Storage
     initAuth();
 </script>
-
 </body>
 </html>
