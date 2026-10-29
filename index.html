@@ -228,6 +228,20 @@
             resize: vertical;
             overflow-y: auto;
         }
+
+        /* تعديل البراند ليكون صفين وعامودين مع متغير الحجم (Resizable) */
+        #brandFilters {
+            height: 100px;
+            min-height: 60px;
+            max-height: 400px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 8px;
+            row-gap: 2px;
+            min-width: 280px;
+            resize: vertical;
+            overflow-y: auto;
+        }
         
         .multi-select-option { font-size: 12px; display: flex; align-items: center; gap: 5px; padding: 2px 5px; cursor: pointer; }
         .multi-select-option:hover { background: #edf2f7; }
@@ -502,8 +516,8 @@
 
                     <div class="filter-section">
                         <div class="filter-item"><label>الموديل:</label><div class="multi-select-box" id="modelFilters"></div></div>
-                        <div class="filter-item"><label>الحالة:</label><div class="multi-select-box" id="statusFilters"></div></div>
                         <div class="filter-item"><label>البراند:</label><div class="multi-select-box" id="brandFilters"></div></div>
+                        <div class="filter-item"><label>الحالة:</label><div class="multi-select-box" id="statusFilters"></div></div>
                         <div class="filter-item"><label>التصنيف:</label><div class="multi-select-box" id="typeFilters"></div></div>
                         <div class="filter-item" style="justify-content: flex-end;">
                             <button class="btn btn-clear-filters" onclick="clearAllFilters()">
